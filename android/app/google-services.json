@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "830492013093",
+    "project_id": "komekci-salon-tm-2026",
+    "storage_bucket": "komekci-salon-tm-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:830492013093:android:991831d7537faf724b85cc",
+        "android_client_info": {
+          "package_name": "com.gurbanov.salon"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkkxa3tAMmZ5gjxhuv13tvN74sSq0OSgg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
