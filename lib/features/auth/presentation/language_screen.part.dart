@@ -1,40 +1,75 @@
 part of '../../../app/komekci_app.dart';
 
 class LanguageScreen extends StatelessWidget {
-  const LanguageScreen({super.key});
+  const LanguageScreen({super.key, this.standalone = false});
+
+  /// True when opened from the client's Profile menu rather than the
+  /// onboarding flow: shows a back button and "Save" just pops back to
+  /// Profile instead of pushing [RoleScreen] onto a signed-in user's stack.
+  final bool standalone;
+
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>();
     final tr = Tr(language.language);
+    final tokens = context.appTokens;
     return Scaffold(
+      appBar: standalone
+          ? CabinetAppBar(
+              title: pickTr(
+                language.language,
+                tk: 'Dil',
+                ru: 'Язык',
+                en: 'Language',
+              ),
+            )
+          : null,
       body: Container(
-        color: Colors.white,
+        color: tokens.surface,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(28, 26, 28, 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 48),
-                Text(
-                  tr.chooseLanguage,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -.5,
+                SizedBox(height: standalone ? 12 : 48),
+                // Fixed heights (not just maxLines) so switching languages —
+                // whose strings wrap to a different number of lines — never
+                // shifts the cards below up or down.
+                SizedBox(
+                  height: 64,
+                  child: Center(
+                    child: Text(
+                      tr.chooseLanguage,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -.5,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 9),
-                Text(
-                  language.language == AppLanguage.tk
-                      ? 'Programmany ulanmak üçin öz diliňizi saýlaň'
-                      : 'Выберите предпочтительный язык для приложения',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontSize: 14,
-                    height: 1.35,
+                SizedBox(
+                  height: 40,
+                  child: Center(
+                    child: Text(
+                      pickTr(
+                        language.language,
+                        tk: 'Programmany ulanmak üçin öz diliňizi saýlaň',
+                        ru: 'Выберите предпочтительный язык для приложения',
+                        en: 'Choose your preferred language for the app',
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      style: TextStyle(
+                        color: tokens.textSecondary,
+                        fontSize: 14,
+                        height: 1.35,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 38),
@@ -53,11 +88,30 @@ class LanguageScreen extends StatelessWidget {
                   selected: language.language == AppLanguage.ru,
                   onTap: () => language.select(AppLanguage.ru),
                 ),
+                const SizedBox(height: 12),
+                LanguageOptionCard(
+                  flag: '🇬🇧',
+                  primary: 'English',
+                  secondary: 'English language',
+                  selected: language.language == AppLanguage.en,
+                  onTap: () => language.select(AppLanguage.en),
+                ),
                 const Spacer(),
                 PrimaryButton(
-                  label: tr.continueText,
-                  onTap: () =>
-                      Navigator.push(context, _pageRoute(const RoleScreen())),
+                  label: standalone
+                      ? pickTr(
+                          language.language,
+                          tk: 'Ýatda sakla',
+                          ru: 'Сохранить',
+                          en: 'Save',
+                        )
+                      : tr.continueText,
+                  onTap: () => standalone
+                      ? Navigator.maybePop(context)
+                      : Navigator.push(
+                          context,
+                          pageRoute(const RoleScreen()),
+                        ),
                 ),
                 const SizedBox(height: 4),
               ],
@@ -84,83 +138,86 @@ class LanguageOptionCard extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(22),
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
-      height: 61,
-      padding: const EdgeInsets.symmetric(horizontal: 15),
-      decoration: BoxDecoration(
-        color: selected ? const Color(0xffFFFCF6) : Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: selected ? gold : line,
-          width: selected ? 1.7 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: .025),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(22),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        height: 61,
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        decoration: BoxDecoration(
+          color: selected ? tokens.surfaceElevated : tokens.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected ? tokens.accent : tokens.border,
+            width: selected ? 1.7 : 1,
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 34,
-            height: 34,
-            child: Center(
-              child: Text(
-                flag,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .025),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  primary,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: ink,
+          ],
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 34,
+              height: 34,
+              child: Center(
+                child: Text(
+                  flag,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 1),
-                Text(
-                  secondary,
-                  style: TextStyle(fontSize: 11, color: Colors.black45),
-                ),
-              ],
-            ),
-          ),
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 180),
-            width: 19,
-            height: 19,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: selected ? gold : Colors.transparent,
-              border: Border.all(
-                color: selected ? gold : const Color(0xffD8D5CE),
               ),
             ),
-            child: selected
-                ? const AppIcon(Icons.check, color: Colors.white, size: 12)
-                : null,
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    primary,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: tokens.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    secondary,
+                    style: TextStyle(fontSize: 11, color: tokens.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 19,
+              height: 19,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: selected ? tokens.accent : Colors.transparent,
+                border: Border.all(
+                  color: selected ? tokens.accent : tokens.border,
+                ),
+              ),
+              child: selected
+                  ? AppIcon(Icons.check, color: tokens.accentOn, size: 12)
+                  : null,
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

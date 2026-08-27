@@ -19,8 +19,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final isTurkmen = context.watch<LanguageProvider>().isTurkmen;
+    final tokens = context.appTokens;
     return Scaffold(
-      backgroundColor: ink,
+      backgroundColor: tokens.textPrimary,
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
@@ -90,9 +91,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 27, 24, 22),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(
+                  decoration: BoxDecoration(
+                    color: tokens.surfaceElevated,
+                    borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(30),
                     ),
                   ),
@@ -112,8 +113,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         isTurkmen
                             ? 'Telefon belgiňiz bilen dowam ediň.'
                             : 'Продолжите с номером телефона.',
-                        style: const TextStyle(
-                          color: Colors.black54,
+                        style: TextStyle(
+                          color: tokens.textSecondary,
                           fontSize: 14,
                         ),
                       ),
@@ -139,8 +140,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             vertical: 14,
                           ),
                           prefixText: '+993  ',
-                          prefixStyle: const TextStyle(
-                            color: ink,
+                          prefixStyle: TextStyle(
+                            color: tokens.textPrimary,
                             fontSize: 17,
                             fontWeight: FontWeight.w600,
                           ),
@@ -150,15 +151,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                     : 'Введите 8-значный номер')
                               : null,
                           filled: true,
-                          fillColor: const Color(0xffF7F4EE),
+                          fillColor: tokens.surfaceElevated,
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
-                            borderSide: const BorderSide(color: line),
+                            borderSide: BorderSide(color: tokens.border),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
-                            borderSide: const BorderSide(
-                              color: gold,
+                            borderSide: BorderSide(
+                              color: tokens.accent,
                               width: 1.5,
                             ),
                           ),
@@ -204,8 +205,9 @@ class _LoginScreenState extends State<LoginScreen> {
     auth.sendOtp();
     Navigator.push(
       context,
-      _pageRoute(
+      pageRoute(
         OtpScreen(
+          phone: '+993 ${_phoneController.text}',
           next: auth.isMaster ? const MasterHome() : const ClientHome(),
         ),
       ),

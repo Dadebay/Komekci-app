@@ -9,6 +9,8 @@ class MockAppointmentRepository {
       serviceName: 'Kantovka',
       startsAt: DateTime(2026, 8, 13, 9),
       price: 60,
+      status: AppointmentStatus.completed,
+      note: 'Saç uçlaryny kesmek',
     ),
     Appointment(
       id: 'a2',
@@ -17,6 +19,8 @@ class MockAppointmentRepository {
       serviceName: 'Saç reňklemek',
       startsAt: DateTime(2026, 8, 13, 9, 30),
       price: 80,
+      status: AppointmentStatus.completed,
+      note: 'Reňk açmak',
     ),
     Appointment(
       id: 'a3',
@@ -25,6 +29,8 @@ class MockAppointmentRepository {
       serviceName: 'Keratin prosedurasy',
       startsAt: DateTime(2026, 8, 13, 10),
       price: 100,
+      status: AppointmentStatus.completed,
+      note: 'Saçlary tekizlemek',
     ),
     Appointment(
       id: 'a4',
@@ -34,6 +40,7 @@ class MockAppointmentRepository {
       startsAt: DateTime(2026, 8, 13, 10, 30),
       price: 50,
       status: AppointmentStatus.arrived,
+      note: 'Model boýunça kesmek',
     ),
     Appointment(
       id: 'a5',
@@ -42,6 +49,7 @@ class MockAppointmentRepository {
       serviceName: 'Manikýur',
       startsAt: DateTime(2026, 8, 13, 11, 30),
       price: 40,
+      note: 'Gel lak salmak',
     ),
     Appointment(
       id: 'a6',
@@ -50,6 +58,31 @@ class MockAppointmentRepository {
       serviceName: 'Botoks saç üçin',
       startsAt: DateTime(2026, 8, 13, 13),
       price: 120,
+      note: 'Ýumşadyjy ulanmak',
+    ),
+    Appointment(
+      id: 'a7',
+      customerId: 'c7',
+      clientName: 'Aýnabat Saparowa',
+      serviceName: 'Saç kesmek we fen',
+      startsAt: DateTime(2026, 8, 14, 10),
+      price: 60,
+    ),
+    Appointment(
+      id: 'a8',
+      customerId: 'c11',
+      clientName: 'Selbi Atajanowa',
+      serviceName: 'Manikýur',
+      startsAt: DateTime(2026, 8, 14, 14),
+      price: 40,
+    ),
+    Appointment(
+      id: 'a9',
+      customerId: 'c23',
+      clientName: 'Maksat Geldiýew',
+      serviceName: 'Saç kesmek',
+      startsAt: DateTime(2026, 8, 15, 11),
+      price: 50,
     ),
   ];
 }

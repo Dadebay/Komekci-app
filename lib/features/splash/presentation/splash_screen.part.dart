@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen>
     }
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (mounted) {
-      Navigator.pushReplacement(context, _pageRoute(const LanguageScreen()));
+      Navigator.pushReplacement(context, pageRoute(const LanguageScreen()));
     }
   }
 
@@ -56,6 +56,15 @@ class _SplashScreenState extends State<SplashScreen>
       await FirebaseMessagingService(
         onToken: (token) async {
           debugPrint('KOMEKCI FCM TOKEN: $token');
+        },
+        onMessage: (message) {
+          final notification = message.notification;
+          if (notification == null || !mounted) return;
+          context.read<NotificationProvider>().add(
+            title: notification.title ?? 'KÖMEKÇI',
+            body: notification.body ?? '',
+            data: message.data,
+          );
         },
       ).initialize();
       await AnalyticsService(FirebaseAnalytics.instance).screen('splash');
@@ -83,6 +92,11 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    // This screen is the fixed brand moment (see app spec 1.1 "Splash":
+    // "Ivory arka plan, serif KÖMEKÇI logotype") — it intentionally always
+    // renders in Ivory colours (ink/gold/line + the warm gradient below),
+    // never the active AppThemeTokens theme, so it is deliberately left
+    // un-tokenized rather than migrated to context.appTokens.
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(

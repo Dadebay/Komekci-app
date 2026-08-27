@@ -10,6 +10,9 @@ class Appointment {
     this.customerId,
     this.status = AppointmentStatus.expected,
     this.isLate = false,
+    this.minutes = 45,
+    this.note = '',
+    this.notifyEarlierSlot = false,
   });
   final String id;
   final String clientName;
@@ -22,6 +25,15 @@ class Appointment {
   final double price;
   final AppointmentStatus status;
   final bool isLate;
+
+  /// Service duration — needed to compute [endsAt] and detect overlaps.
+  final int minutes;
+  final String note;
+
+  /// Client opted in to a push if an earlier slot opens up before this time.
+  final bool notifyEarlierSlot;
+
+  DateTime get endsAt => startsAt.add(Duration(minutes: minutes));
 
   Appointment copyWith({
     AppointmentStatus? status,
@@ -36,5 +48,8 @@ class Appointment {
     price: price,
     status: status ?? this.status,
     isLate: isLate ?? this.isLate,
+    minutes: minutes,
+    note: note,
+    notifyEarlierSlot: notifyEarlierSlot,
   );
 }

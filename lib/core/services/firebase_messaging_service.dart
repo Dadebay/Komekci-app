@@ -6,10 +6,16 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'local_notifications_service.dart';
 
 typedef FcmTokenHandler = Future<void> Function(String token);
+typedef FcmMessageHandler = void Function(RemoteMessage message);
 
 class FirebaseMessagingService {
-  FirebaseMessagingService({required this.onToken});
+  FirebaseMessagingService({required this.onToken, this.onMessage});
   final FcmTokenHandler onToken;
+
+  /// Fired for every message that carries a [RemoteMessage.notification] —
+  /// while the app is foregrounded, when a background notification is
+  /// tapped, and once at startup if the app was launched from a notification.
+  final FcmMessageHandler? onMessage;
 
   Future<void> initialize() async {
     await LocalNotificationsService.instance.initialize();
@@ -20,6 +26,10 @@ class FirebaseMessagingService {
     );
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    // The OS already showed these in the notification tray — just record them.
+    FirebaseMessaging.onMessageOpenedApp.listen(_recordMessage);
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) _recordMessage(initialMessage);
     FirebaseMessaging.instance.onTokenRefresh.listen(onToken);
     final token = await FirebaseMessaging.instance.getToken();
     if (token != null) {
@@ -70,6 +80,11 @@ class FirebaseMessagingService {
         payload: message.data.toString(),
       );
     }
+    _recordMessage(message);
+  }
+
+  void _recordMessage(RemoteMessage message) {
+    if (message.notification != null) onMessage?.call(message);
   }
 }
 

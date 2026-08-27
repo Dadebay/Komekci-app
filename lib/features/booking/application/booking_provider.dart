@@ -30,25 +30,48 @@ class BookingProvider extends ChangeNotifier {
           .toList()
         ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
 
-  void create({
+  /// True when [start]..[start]+[minutes] overlaps an existing, non-cancelled
+  /// appointment. The UI must call this again right before submitting a
+  /// booking — a slot can only be trusted at the moment it's reserved.
+  bool hasConflict(DateTime start, int minutes, {String? excludeId}) {
+    final end = start.add(Duration(minutes: minutes));
+    for (final a in _appointments) {
+      if (a.id == excludeId || a.status == AppointmentStatus.cancelled) {
+        continue;
+      }
+      if (start.isBefore(a.endsAt) && a.startsAt.isBefore(end)) return true;
+    }
+    return false;
+  }
+
+  /// Returns the created appointment, or null if [startsAt] now conflicts —
+  /// checked again here so a slot picked earlier in a wizard can't silently
+  /// double-book if something else claimed it in the meantime.
+  Appointment? create({
     required String service,
     required DateTime startsAt,
     required double price,
+    required int minutes,
     String clientName = 'Ayna Orazova',
     String? customerId,
+    String note = '',
+    bool notifyEarlierSlot = false,
   }) {
-    _appointments = [
-      ..._appointments,
-      Appointment(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        clientName: clientName,
-        customerId: customerId,
-        serviceName: service,
-        startsAt: startsAt,
-        price: price,
-      ),
-    ];
+    if (hasConflict(startsAt, minutes)) return null;
+    final appointment = Appointment(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      clientName: clientName,
+      customerId: customerId,
+      serviceName: service,
+      startsAt: startsAt,
+      price: price,
+      minutes: minutes,
+      note: note,
+      notifyEarlierSlot: notifyEarlierSlot,
+    );
+    _appointments = [..._appointments, appointment];
     notifyListeners();
+    return appointment;
   }
 
   void complete(String id) {
@@ -57,6 +80,10 @@ class BookingProvider extends ChangeNotifier {
 
   void arrive(String id) {
     _replace(id, (a) => a.copyWith(status: AppointmentStatus.arrived));
+  }
+
+  void markNoShow(String id) {
+    _replace(id, (a) => a.copyWith(status: AppointmentStatus.noShow));
   }
 
   void cancel(String id) {
