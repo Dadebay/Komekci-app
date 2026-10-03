@@ -19,12 +19,13 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
   bool get _phoneReady =>
       _phoneController.text.replaceAll(RegExp(r'\D'), '').length == 8;
 
-  void _sendCode() {
+  /// The account is created (and the SMS sent) only after the profile step,
+  /// so this just carries the number forward.
+  void _continue() {
     if (!_phoneReady) return;
-    context.read<AuthProvider>().sendOtp();
     Navigator.push(
       context,
-      pageRoute(MasterOtpScreen(phone: '+993 ${_phoneController.text}')),
+      pageRoute(MasterRegistrationScreen(phone: toApiPhone(_phoneController.text))),
     );
   }
 
@@ -67,9 +68,9 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
               const SizedBox(height: 10),
               Text(
                 t(
-                  tk: 'Belgiňize tassyklama kody iberiler.',
-                  ru: 'На ваш номер придёт код подтверждения.',
-                  en: "We'll send a verification code to your number.",
+                  tk: 'Profilni dolduranyňyzdan soň belgiňize tassyklama kody iberiler.',
+                  ru: 'После заполнения профиля на ваш номер придёт код подтверждения.',
+                  en: "We'll send a verification code once your profile is filled in.",
                 ),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: tokens.textSecondary, height: 1.45),
@@ -137,9 +138,9 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
               const SizedBox(height: 10),
               Text(
                 t(
-                  tk: 'Dogry telefon belgiňizi giriziň. Size kod iberiler.',
-                  ru: 'Введите корректный номер. Мы отправим код.',
-                  en: "Enter a valid phone number. We'll send you a code.",
+                  tk: 'Dogry telefon belgiňizi giriziň.',
+                  ru: 'Введите корректный номер телефона.',
+                  en: 'Enter a valid phone number.',
                 ),
                 style: TextStyle(
                   color: tokens.textSecondary,
@@ -149,9 +150,9 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
               ),
               const SizedBox(height: 26),
               _MasterActionButton(
-                label: t(tk: 'Kod iber', ru: 'Отправить код', en: 'Send code'),
+                label: t(tk: 'Dowam et', ru: 'Продолжить', en: 'Continue'),
                 enabled: _phoneReady,
-                onTap: _sendCode,
+                onTap: _continue,
               ),
               const SizedBox(height: 26),
               const _PrivacyNote(),

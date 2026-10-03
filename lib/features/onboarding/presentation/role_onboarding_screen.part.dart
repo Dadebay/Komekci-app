@@ -210,10 +210,6 @@ class _RoleOnboardingScreenState extends State<RoleOnboardingScreen>
       Navigator.push(context, pageRoute(const MasterPhoneScreen()));
       return;
     }
-    Navigator.pushAndRemoveUntil(
-      context,
-      pageRoute(const ClientHome()),
-      (_) => false,
-    );
+    Navigator.push(context, pageRoute(const ClientRegistrationScreen()));
   }
 }

@@ -1,18 +1,31 @@
 part of '../../../app/komekci_app.dart';
 
+/// Step 3 of master sign-up: confirms the SMS code sent by
+/// `POST /auth/register`. A verified code signs the account in and moves on
+/// to the subscription payment.
 class MasterOtpScreen extends StatefulWidget {
-  const MasterOtpScreen({super.key, required this.phone});
+  const MasterOtpScreen({super.key, required this.phone, this.registration});
+
+  /// `+993XXXXXXXX`.
   final String phone;
+
+  /// What was submitted, kept so "resend" can fall back to registering again
+  /// if the server does not yet treat the pending account as signed-up.
+  final RegistrationData? registration;
 
   @override
   State<MasterOtpScreen> createState() => _MasterOtpScreenState();
 }
 
 class _MasterOtpScreenState extends State<MasterOtpScreen> {
-  final _codeControllers = List.generate(4, (_) => TextEditingController());
-  final _codeNodes = List.generate(4, (_) => FocusNode());
-  int _secondsLeft = 45;
+  static const _length = 6;
+  final _codeControllers = List.generate(_length, (_) => TextEditingController());
+  final _codeNodes = List.generate(_length, (_) => FocusNode());
+  int _secondsLeft = 60;
   Timer? _resendTimer;
+  String? _error;
+  bool _verifying = false;
+  bool _resending = false;
 
   @override
   void initState() {
@@ -38,8 +51,8 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
   bool get _codeReady =>
       _codeControllers.every((controller) => controller.text.isNotEmpty);
 
-  void _startCountdown() {
-    setState(() => _secondsLeft = 45);
+  void _startCountdown([int seconds = 60]) {
+    setState(() => _secondsLeft = seconds);
     _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsLeft == 0) {
@@ -50,15 +63,69 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
     });
   }
 
-  void _resend() {
-    context.read<AuthProvider>().sendOtp();
-    _startCountdown();
+  Future<void> _resend() async {
+    if (_resending) return;
+    final auth = context.read<AuthProvider>();
+    final language = context.read<LanguageProvider>().language;
+    setState(() {
+      _resending = true;
+      _error = null;
+    });
+    try {
+      try {
+        await auth.requestOtp(widget.phone);
+      } on ApiException catch (e) {
+        // A pending (not yet verified) account may not count as "active" for
+        // the sign-in code endpoint; registering again re-sends the code.
+        if (e.code == ApiErrors.phoneNotFound && widget.registration != null) {
+          await auth.register(widget.registration!);
+        } else {
+          rethrow;
+        }
+      }
+      if (!mounted) return;
+      for (final c in _codeControllers) {
+        c.clear();
+      }
+      _codeNodes.first.requestFocus();
+      setState(() => _resending = false);
+      _startCountdown();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _resending = false;
+        _error = apiErrorMessage(error, language);
+      });
+      if (error is ApiException && error.retryAfterSeconds != null) {
+        _startCountdown(error.retryAfterSeconds!);
+      }
+    }
   }
 
-  void _verify() {
-    if (!_codeReady) return;
-    context.read<AuthProvider>().verifyOtp();
-    Navigator.push(context, pageRoute(const MasterRegistrationScreen()));
+  Future<void> _verify() async {
+    if (!_codeReady || _verifying) return;
+    final code = _codeControllers.map((c) => c.text).join();
+    final auth = context.read<AuthProvider>();
+    final language = context.read<LanguageProvider>().language;
+    setState(() {
+      _verifying = true;
+      _error = null;
+    });
+    try {
+      await auth.verifyOtp(widget.phone, code);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _verifying = false;
+        _error = apiErrorMessage(error, language);
+      });
+      return;
+    }
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      pageRoute(const MasterSubscriptionScreen()),
+      (_) => false,
+    );
   }
 
   @override
@@ -80,7 +147,7 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _MasterProgressIndicator(step: 2),
+              const _MasterProgressIndicator(step: 3),
               const SizedBox(height: 34),
               Text(
                 t(
@@ -106,13 +173,13 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
                   children: [
                     TextSpan(
                       text: t(
-                        tk: 'Size SMS arkaly iberilen 4 belgili kody giriziň.\n',
-                        ru: 'Введите 4-значный код из SMS.\n',
-                        en: 'Enter the 4-digit code sent to you by SMS.\n',
+                        tk: 'Size SMS arkaly iberilen 6 belgili kody giriziň.\n',
+                        ru: 'Введите 6-значный код из SMS.\n',
+                        en: 'Enter the 6-digit code sent to you by SMS.\n',
                       ),
                     ),
                     TextSpan(
-                      text: widget.phone,
+                      text: displayPhone(widget.phone),
                       style: TextStyle(
                         color: tokens.textPrimary,
                         fontWeight: FontWeight.w700,
@@ -125,8 +192,12 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
               const SizedBox(height: 30),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(4, (index) => _codeBox(index, tokens)),
+                children: List.generate(_length, (index) => _codeBox(index, tokens)),
               ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                _FieldError(_error!),
+              ],
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -157,16 +228,19 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
                     ),
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    '($countdown)',
-                    style: TextStyle(color: tokens.textSecondary, fontSize: 13),
-                  ),
+                  if (_secondsLeft > 0)
+                    Text(
+                      '($countdown)',
+                      style: TextStyle(color: tokens.textSecondary, fontSize: 13),
+                    ),
                 ],
               ),
               const SizedBox(height: 26),
               _MasterActionButton(
-                label: t(tk: 'Tassyklaň', ru: 'Подтвердить', en: 'Verify'),
-                enabled: _codeReady,
+                label: _verifying
+                    ? t(tk: 'Barlanýar...', ru: 'Проверка...', en: 'Verifying...')
+                    : t(tk: 'Tassyklaň', ru: 'Подтвердить', en: 'Verify'),
+                enabled: _codeReady && !_verifying,
                 onTap: _verify,
               ),
               const SizedBox(height: 26),
@@ -179,33 +253,41 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
   }
 
   Widget _codeBox(int index, AppThemeTokens tokens) => SizedBox(
-    width: 66,
-    height: 92,
+    width: 46,
+    height: 64,
     child: TextField(
       controller: _codeControllers[index],
       focusNode: _codeNodes[index],
       textAlign: TextAlign.center,
       keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       maxLength: 1,
-      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
       onChanged: (value) {
-        if (value.isNotEmpty && index < 3) {
+        if (_error != null) setState(() => _error = null);
+        if (value.isNotEmpty && index < _length - 1) {
           _codeNodes[index + 1].requestFocus();
         } else if (value.isEmpty && index > 0) {
           _codeNodes[index - 1].requestFocus();
         }
         setState(() {});
+        if (_codeReady) _verify();
       },
       decoration: InputDecoration(
         counterText: '',
-        contentPadding: EdgeInsets.symmetric(vertical: 17, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(vertical: 14),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: tokens.border),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: _error != null ? tokens.danger : tokens.border,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide(color: tokens.accent, width: 1.6),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: _error != null ? tokens.danger : tokens.accent,
+            width: 1.6,
+          ),
         ),
       ),
     ),

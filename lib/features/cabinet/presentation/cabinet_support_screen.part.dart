@@ -9,6 +9,7 @@ class SupportScreen extends StatelessWidget {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
+    final supportContact = context.watch<AppSettingsProvider>().supportContact;
     final faq = switch (language) {
       AppLanguage.tk => [
         (
@@ -86,19 +87,9 @@ class SupportScreen extends StatelessWidget {
                 ru: 'Связаться с поддержкой',
                 en: 'Contact support',
               ),
-              enabled: true,
+              enabled: supportContact.isNotEmpty,
               leading: Icons.chat_bubble_outline,
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    t(
-                      tk: 'Goldaw bilen habarlaşylýar...',
-                      ru: 'Связываемся с поддержкой...',
-                      en: 'Connecting with support...',
-                    ),
-                  ),
-                ),
-              ),
+              onTap: () => _openSupportContact(supportContact),
             ),
           ],
         ),

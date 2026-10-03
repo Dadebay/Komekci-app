@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:developer' as developer;
+import 'dart:io' show Platform;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -17,6 +19,12 @@ class FirebaseMessagingService {
   /// tapped, and once at startup if the app was launched from a notification.
   final FcmMessageHandler? onMessage;
 
+  /// Everyone who opens the app joins this topic; broadcasts are sent to it.
+  static const topic = 'komekci';
+
+  /// Long enough for a fresh install on a slow network.
+  static const _apnsWait = Duration(seconds: 6);
+
   Future<void> initialize() async {
     await LocalNotificationsService.instance.initialize();
     await FirebaseMessaging.instance.requestPermission(
@@ -31,30 +39,56 @@ class FirebaseMessagingService {
     final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) _recordMessage(initialMessage);
     FirebaseMessaging.instance.onTokenRefresh.listen(onToken);
-    final token = await FirebaseMessaging.instance.getToken();
-    if (token != null) {
-      developer.log('FCM TOKEN: $token', name: 'Komekci FCM');
-      _printToken(label: 'FCM TOKEN', token: token, ansiColor: '32');
-      await onToken(token);
-    } else {
-      _printToken(
-        label: 'FCM TOKEN',
-        token: 'not available yet',
-        ansiColor: '33',
-      );
+    // Not awaited: waiting for APNs can take seconds (and never ends on a
+    // simulator), which must not hold up the splash screen.
+    unawaited(_registerDevice());
+  }
+
+  /// Joins the broadcast [topic] and reports the device token.
+  ///
+  /// On iOS the FCM token and topic subscriptions both depend on the APNs
+  /// token; asking before it exists returns null / throws, with no second
+  /// attempt, so wait for it first.
+  Future<void> _registerDevice() async {
+    try {
+      await _awaitApns();
+      try {
+        await FirebaseMessaging.instance.subscribeToTopic(topic);
+        developer.log('Subscribed to topic "$topic"', name: 'Komekci FCM');
+      } on Object catch (e) {
+        developer.log('Topic subscription failed: $e', name: 'Komekci FCM');
+      }
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        developer.log('FCM TOKEN: $token', name: 'Komekci FCM');
+        _printToken(label: 'FCM TOKEN', token: token, ansiColor: '32');
+        await onToken(token);
+      } else {
+        _printToken(label: 'FCM TOKEN', token: 'not available yet', ansiColor: '33');
+      }
+      if (Platform.isIOS) {
+        final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+        _printToken(
+          label: 'APNS TOKEN',
+          token: apnsToken ?? 'not available yet (physical iPhone + APNs setup required)',
+          ansiColor: apnsToken == null ? '33' : '35',
+        );
+      }
+    } on Object catch (e) {
+      developer.log('Push device registration failed: $e', name: 'Komekci FCM');
     }
-    final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-    developer.log(
-      'APNS TOKEN: ${apnsToken ?? 'not available'}',
-      name: 'Komekci FCM',
-    );
-    _printToken(
-      label: 'APNS TOKEN',
-      token:
-          apnsToken ??
-          'not available yet (physical iPhone + APNs setup required)',
-      ansiColor: apnsToken == null ? '33' : '35',
-    );
+  }
+
+  /// Waits for APNs to hand iOS its device token, up to [_apnsWait]. A no-op
+  /// on Android; on the simulator it simply runs out and push stays off.
+  Future<void> _awaitApns() async {
+    if (!Platform.isIOS) return;
+    final deadline = DateTime.now().add(_apnsWait);
+    while (DateTime.now().isBefore(deadline)) {
+      if (await FirebaseMessaging.instance.getAPNSToken() != null) return;
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+    }
+    developer.log('APNs did not answer in ${_apnsWait.inSeconds}s', name: 'Komekci FCM');
   }
 
   void _printToken({

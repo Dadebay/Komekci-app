@@ -1,15 +1,24 @@
 import 'package:flutter/foundation.dart';
 
-enum ClientBookingStatus { expected, completed, cancelled }
+import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_scoped.dart';
+import '../../../data/models/api/client_models.dart';
+import '../../../data/models/api/master_models.dart';
+import '../../../data/models/api/user_models.dart';
+import '../../../data/repositories/client_repository.dart';
+
+enum ClientBookingStatus { expected, completed, cancelled, noShow }
 
 /// One of the client's own upcoming or past bookings, made with any master —
-/// distinct from [Appointment]/`BookingProvider`, which model a single
+/// distinct from `Appointment`/`BookingProvider`, which model a single
 /// master's day calendar of many different clients. A client's booking list
 /// is inherently cross-master, so it needs its own shape and its own store.
 class ClientBooking {
   const ClientBooking({
     required this.id,
+    required this.masterId,
     required this.masterName,
+    required this.serviceId,
     required this.serviceName,
     required this.startsAt,
     required this.minutes,
@@ -17,16 +26,22 @@ class ClientBooking {
     this.status = ClientBookingStatus.expected,
     this.note = '',
     this.lateMinutes,
+    this.masterPhotoUrl,
+    this.waitlistEarlier = false,
   });
 
   final String id;
+  final int masterId;
   final String masterName;
+  final String? masterPhotoUrl;
+  final int serviceId;
   final String serviceName;
   final DateTime startsAt;
   final int minutes;
   final double price;
   final ClientBookingStatus status;
   final String note;
+  final bool waitlistEarlier;
 
   /// 5 or 10 once the client has signalled they're running late; null
   /// otherwise. Sending again overwrites the previous value.
@@ -34,143 +49,203 @@ class ClientBooking {
 
   DateTime get endsAt => startsAt.add(Duration(minutes: minutes));
 
+  factory ClientBooking.fromApi(ClientAppointment a) => ClientBooking(
+    id: '${a.id}',
+    masterId: a.master.id,
+    masterName: a.master.name,
+    masterPhotoUrl: a.master.photoUrl,
+    serviceId: a.service.id,
+    serviceName: a.service.name,
+    startsAt: a.startsAt,
+    minutes: a.service.durationMin > 0
+        ? a.service.durationMin
+        : a.endsAt.difference(a.startsAt).inMinutes,
+    price: a.service.price,
+    status: switch (a.status) {
+      ApiAppointmentStatus.expected => ClientBookingStatus.expected,
+      ApiAppointmentStatus.completed => ClientBookingStatus.completed,
+      ApiAppointmentStatus.cancelled => ClientBookingStatus.cancelled,
+      ApiAppointmentStatus.noShow => ClientBookingStatus.noShow,
+    },
+    note: a.note ?? '',
+    lateMinutes: a.lateMinutes,
+    waitlistEarlier: a.waitlistEarlier,
+  );
+
   ClientBooking copyWith({
     ClientBookingStatus? status,
-    String? note,
     int? lateMinutes,
-    bool clearLate = false,
     DateTime? startsAt,
   }) => ClientBooking(
     id: id,
+    masterId: masterId,
     masterName: masterName,
+    masterPhotoUrl: masterPhotoUrl,
+    serviceId: serviceId,
     serviceName: serviceName,
     startsAt: startsAt ?? this.startsAt,
     minutes: minutes,
     price: price,
     status: status ?? this.status,
-    note: note ?? this.note,
-    lateMinutes: clearLate ? null : (lateMinutes ?? this.lateMinutes),
+    note: note,
+    lateMinutes: lateMinutes ?? this.lateMinutes,
+    waitlistEarlier: waitlistEarlier,
   );
 }
 
-class ClientBookingsProvider extends ChangeNotifier {
-  ClientBookingsProvider() : _bookings = List.of(_seed);
-  List<ClientBooking> _bookings;
+/// The client's appointments (`/appointments`).
+class ClientBookingsProvider extends SessionScoped {
+  ClientBookingsProvider(this._repository);
 
-  List<ClientBooking> get bookings => List.unmodifiable(_bookings);
+  final ClientRepository _repository;
 
-  List<ClientBooking> get upcoming =>
-      _bookings.where((b) => b.status == ClientBookingStatus.expected).toList()
-        ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+  /// Pages read per list on a full load.
+  static const _maxPages = 5;
 
-  List<ClientBooking> get history =>
-      _bookings.where((b) => b.status != ClientBookingStatus.expected).toList()
-        ..sort((a, b) => b.startsAt.compareTo(a.startsAt));
+  List<ClientBooking> _upcoming = const [];
+  List<ClientBooking> _history = const [];
+  String? _historyCursor;
+  bool _loading = false;
+  bool _loadingMore = false;
+  ApiException? _error;
 
-  void add(ClientBooking booking) {
-    _bookings = [..._bookings, booking];
+  List<ClientBooking> get bookings => List.unmodifiable([..._upcoming, ..._history]);
+
+  List<ClientBooking> get upcoming => List.of(_upcoming)..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+
+  List<ClientBooking> get history => List.of(_history)..sort((a, b) => b.startsAt.compareTo(a.startsAt));
+
+  bool get loading => _loading;
+  bool get loadingMore => _loadingMore;
+  bool get hasMoreHistory => _historyCursor != null;
+  ApiException? get error => _error;
+
+  @override
+  void reset() {
+    _upcoming = const [];
+    _history = const [];
+    _historyCursor = null;
+    _loading = _loadingMore = false;
+    _error = null;
+  }
+
+  @override
+  Future<void> onSignedIn(Me me) async {
+    if (!me.isMaster) await load();
+  }
+
+  Future<void> load() async {
+    _loading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      final upcoming = <ClientBooking>[];
+      String? cursor;
+      var pages = 0;
+      do {
+        final page = await _repository.appointments(scope: 'upcoming', cursor: cursor);
+        upcoming.addAll(page.items.map(ClientBooking.fromApi));
+        cursor = page.nextCursor;
+      } while (cursor != null && ++pages < _maxPages);
+      final history = await _repository.appointments(scope: 'history');
+      _upcoming = upcoming;
+      _history = history.items.map(ClientBooking.fromApi).toList();
+      _historyCursor = history.nextCursor;
+    } on ApiException catch (e) {
+      _error = e;
+      debugPrint('Loading client appointments failed: $e');
+    }
+    _loading = false;
     notifyListeners();
   }
 
-  void cancel(String id) =>
-      _replace(id, (b) => b.copyWith(status: ClientBookingStatus.cancelled));
-
-  void reschedule(String id, DateTime startsAt) =>
-      _replace(id, (b) => b.copyWith(startsAt: startsAt));
-
-  void setLate(String id, int minutes) =>
-      _replace(id, (b) => b.copyWith(lateMinutes: minutes));
-
-  void _replace(String id, ClientBooking Function(ClientBooking) transform) {
-    _bookings = _bookings.map((b) => b.id == id ? transform(b) : b).toList();
+  Future<void> loadMoreHistory() async {
+    final cursor = _historyCursor;
+    if (cursor == null || _loadingMore) return;
+    _loadingMore = true;
+    notifyListeners();
+    try {
+      final page = await _repository.appointments(scope: 'history', cursor: cursor);
+      _history = [..._history, ...page.items.map(ClientBooking.fromApi)];
+      _historyCursor = page.nextCursor;
+    } on ApiException catch (e) {
+      debugPrint('Loading more history failed: $e');
+    }
+    _loadingMore = false;
     notifyListeners();
   }
 
-  static final _seed = [
-    ClientBooking(
-      id: 'cb1',
-      masterName: 'Anna',
-      serviceName: 'Saç kesmek',
-      startsAt: DateTime(2026, 8, 15, 14, 30),
-      minutes: 45,
-      price: 60,
-    ),
-    ClientBooking(
-      id: 'cb2',
-      masterName: 'Aýgül',
-      serviceName: 'Manikýur',
-      startsAt: DateTime(2026, 8, 16, 11, 0),
-      minutes: 40,
-      price: 40,
-    ),
-    ClientBooking(
-      id: 'cb3',
-      masterName: 'Jemal',
-      serviceName: 'Massaž',
-      startsAt: DateTime(2026, 8, 18, 16, 0),
-      minutes: 60,
-      price: 120,
-    ),
-    ClientBooking(
-      id: 'cb4',
-      masterName: 'Selbi',
-      serviceName: 'Kirpik lamination',
-      startsAt: DateTime(2026, 8, 20, 10, 30),
-      minutes: 75,
-      price: 150,
-    ),
-    ClientBooking(
-      id: 'cb5',
-      masterName: 'Oguljahan',
-      serviceName: 'Pedikýur',
-      startsAt: DateTime(2026, 8, 9, 13, 0),
-      minutes: 50,
-      price: 55,
-      status: ClientBookingStatus.completed,
-    ),
-    ClientBooking(
-      id: 'cb6',
-      masterName: 'Anna',
-      serviceName: 'Saç boýamak',
-      startsAt: DateTime(2026, 8, 5, 15, 0),
-      minutes: 120,
-      price: 220,
-      status: ClientBookingStatus.completed,
-    ),
-    ClientBooking(
-      id: 'cb7',
-      masterName: 'Maral',
-      serviceName: 'Kaş dizaýn',
-      startsAt: DateTime(2026, 7, 29, 12, 30),
-      minutes: 30,
-      price: 35,
-      status: ClientBookingStatus.completed,
-    ),
-    ClientBooking(
-      id: 'cb8',
-      masterName: 'Aýgül',
-      serviceName: 'Gel lak',
-      startsAt: DateTime(2026, 8, 7, 17, 0),
-      minutes: 45,
-      price: 50,
-      status: ClientBookingStatus.cancelled,
-    ),
-    ClientBooking(
-      id: 'cb9',
-      masterName: 'Jemal',
-      serviceName: 'Ýüz masažy',
-      startsAt: DateTime(2026, 8, 25, 9, 30),
-      minutes: 55,
-      price: 90,
-    ),
-    ClientBooking(
-      id: 'cb10',
-      masterName: 'Dursun',
-      serviceName: 'Saç düzeltmek',
-      startsAt: DateTime(2026, 8, 2, 11, 30),
-      minutes: 35,
-      price: 45,
-      status: ClientBookingStatus.cancelled,
-    ),
-  ];
+  /// Books a slot. [idempotencyKey] makes a retry after a lost response safe.
+  /// Throws `SLOT_TAKEN` (with `suggestedSlots`), `NOT_CONNECTED`,
+  /// `SUBSCRIPTION_SUSPENDED`, `PAST_TIME`, …
+  Future<ClientBooking> book({
+    required int serviceId,
+    required DateTime startsAt,
+    String? note,
+    bool waitlistEarlier = false,
+    String? idempotencyKey,
+  }) async {
+    final created = await _repository.book(
+      serviceId: serviceId,
+      startsAt: startsAt,
+      note: note,
+      waitlistEarlier: waitlistEarlier,
+      idempotencyKey: idempotencyKey,
+    );
+    final booking = ClientBooking.fromApi(created);
+    _upcoming = [..._upcoming.where((b) => b.id != booking.id), booking];
+    notifyListeners();
+    return booking;
+  }
+
+  Future<void> cancel(String id) async {
+    await _repository.cancelAppointment(int.parse(id));
+    _moveToHistory(id, ClientBookingStatus.cancelled);
+  }
+
+  /// Throws `SLOT_TAKEN` (with suggested slots) when the new time is busy.
+  Future<void> reschedule(String id, DateTime startsAt) async {
+    await _repository.moveAppointment(int.parse(id), startsAt);
+    _upcoming = [
+      for (final b in _upcoming) b.id == id ? b.copyWith(startsAt: startsAt) : b,
+    ];
+    notifyListeners();
+  }
+
+  Future<void> setLate(String id, int minutes) async {
+    await _repository.reportLate(int.parse(id), minutes);
+    _upcoming = [
+      for (final b in _upcoming) b.id == id ? b.copyWith(lateMinutes: minutes) : b,
+    ];
+    notifyListeners();
+  }
+
+  /// Books the same service again (`POST /appointments/{id}/rebook`).
+  Future<ClientBooking> rebook(String id, {DateTime? startsAt}) async {
+    final created = await _repository.rebook(int.parse(id), startsAt: startsAt);
+    final booking = ClientBooking.fromApi(created);
+    _upcoming = [..._upcoming.where((b) => b.id != booking.id), booking];
+    notifyListeners();
+    return booking;
+  }
+
+  // ---- waitlist offers ---------------------------------------------------
+
+  /// Moves a booking to the earlier slot the master freed up.
+  Future<void> acceptWaitlistOffer(int offerId) async {
+    await _repository.acceptWaitlistOffer(offerId);
+    await load();
+  }
+
+  Future<void> declineWaitlistOffer(int offerId) =>
+      _repository.declineWaitlistOffer(offerId);
+
+  void _moveToHistory(String id, ClientBookingStatus status) {
+    final index = _upcoming.indexWhere((b) => b.id == id);
+    if (index == -1) return;
+    final moved = _upcoming[index].copyWith(status: status);
+    _upcoming = [..._upcoming]..removeAt(index);
+    _history = [moved, ..._history];
+    notifyListeners();
+  }
 }

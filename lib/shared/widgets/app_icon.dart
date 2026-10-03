@@ -93,6 +93,8 @@ class AppIcon extends StatelessWidget {
       Icons.person_search_outlined => HugeIcons.strokeRoundedUserSearch01,
       Icons.person_off_outlined => HugeIcons.strokeRoundedUserRemove01,
       Icons.task_alt_outlined => HugeIcons.strokeRoundedTaskDone01,
+      Icons.bookmark_border ||
+      Icons.bookmark => HugeIcons.strokeRoundedBookmark02,
       _ => HugeIcons.strokeRoundedCircle,
     },
     color: color,

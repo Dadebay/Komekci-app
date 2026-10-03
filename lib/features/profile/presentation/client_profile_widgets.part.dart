@@ -27,10 +27,11 @@ class _ClientProfileCard extends StatelessWidget {
             CircleAvatar(
               radius: 32,
               backgroundColor: const Color(0xffE6D2B1),
-              backgroundImage: profile.avatar != null
-                  ? FileImage(profile.avatar!)
-                  : null,
-              child: profile.avatar == null
+              backgroundImage: profileImage(
+                file: profile.avatar,
+                url: profile.avatarUrl,
+              ),
+              child: profile.avatar == null && profile.avatarUrl == null
                   ? AppIcon(
                       Icons.person_outline,
                       size: 28,
@@ -62,7 +63,7 @@ class _ClientProfileCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        profile.phone,
+                        displayPhone(profile.phone),
                         style: TextStyle(
                           fontSize: 12.5,
                           color: tokens.textSecondary,
@@ -194,10 +195,9 @@ class _ClientLogoutButton extends StatelessWidget {
       danger: true,
     );
     if (!confirmed || !context.mounted) return;
-    context.read<AuthProvider>().signOut();
-    Navigator.of(
-      context,
-    ).pushAndRemoveUntil(pageRoute(const RoleScreen()), (route) => false);
+    final navigator = Navigator.of(context);
+    await context.read<AuthProvider>().signOut();
+    navigator.pushAndRemoveUntil(pageRoute(const RoleScreen()), (route) => false);
   }
 
   @override

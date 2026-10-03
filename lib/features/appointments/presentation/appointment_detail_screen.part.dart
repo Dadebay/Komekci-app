@@ -1,6 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-
 /// Client's own booking, with mutation rules: change/cancel only apply
 /// before the appointment starts; a completed/cancelled booking renders as a
 /// read-only history record instead. "Running late" has no elapsed-time
@@ -14,8 +13,7 @@ class AppointmentDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
+    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tk = language == AppLanguage.tk;
     final tokens = context.appTokens;
 
@@ -25,8 +23,7 @@ class AppointmentDetailScreen extends StatelessWidget {
       if (b.id == booking.id) current = b;
     }
     final isUpcoming = current.status == ClientBookingStatus.expected;
-    final timeLabel =
-        '${current.startsAt.hour.toString().padLeft(2, '0')}:${current.startsAt.minute.toString().padLeft(2, '0')}';
+    final timeLabel = '${current.startsAt.hour.toString().padLeft(2, '0')}:${current.startsAt.minute.toString().padLeft(2, '0')}';
     final canPop = Navigator.of(context).canPop();
 
     return Scaffold(
@@ -55,30 +52,17 @@ class AppointmentDetailScreen extends StatelessWidget {
                       CircleAvatar(
                         radius: 22,
                         backgroundColor: const Color(0xffE6D2B1),
-                        child: AppIcon(
-                          Icons.person_outline,
-                          size: 19,
-                          color: tokens.textPrimary,
-                        ),
+                        child: AppIcon(Icons.person_outline, size: 19, color: tokens.textPrimary),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Text(current.masterName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                             Text(
-                              current.masterName,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              '${current.minutes} ${t(tk: "min", ru: "мин", en: "min")} · ${current.price.toStringAsFixed(0)} ${t(tk: "manat", ru: "манат", en: "TMT")}',
-                              style: TextStyle(
-                                color: tokens.textSecondary,
-                                fontSize: 12.5,
-                              ),
+                              '${current.minutes} ${t(tk: "min", ru: "мин", en: "min")} · ${current.price.toStringAsFixed(0)} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
+                              style: TextStyle(color: tokens.textSecondary, fontSize: 12.5),
                             ),
                           ],
                         ),
@@ -123,16 +107,10 @@ class AppointmentDetailScreen extends StatelessWidget {
                     const SizedBox(height: 14),
                     Text(
                       t(tk: 'Bellik', ru: 'Заметка', en: 'Note'),
-                      style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      current.note,
-                      style: TextStyle(color: tokens.textSecondary, height: 1.4),
-                    ),
+                    Text(current.note, style: TextStyle(color: tokens.textSecondary, height: 1.4)),
                   ],
                 ],
               ),
@@ -155,13 +133,7 @@ class AppointmentDetailScreen extends StatelessWidget {
                         shape: const StadiumBorder(),
                       ),
                       onPressed: () => _showLateSheet(context, current, t),
-                      child: Text(
-                        t(
-                          tk: 'Gijä galýaryn',
-                          ru: 'Я опаздываю',
-                          en: 'I’m running late',
-                        ),
-                      ),
+                      child: Text(t(tk: 'Gijä galýaryn', ru: 'Я опаздываю', en: 'I’m running late')),
                     ),
                     const SizedBox(height: 10),
                     OutlinedButton(
@@ -170,103 +142,114 @@ class AppointmentDetailScreen extends StatelessWidget {
                         side: BorderSide(color: tokens.border),
                         shape: const StadiumBorder(),
                       ),
-                      onPressed: () => Navigator.push(
-                        context,
-                        pageRoute(RescheduleScreen(booking: current)),
-                      ),
-                      child: Text(
-                        t(
-                          tk: 'Randevuny üýtget',
-                          ru: 'Изменить запись',
-                          en: 'Change appointment',
-                        ),
-                      ),
+                      onPressed: () => Navigator.push(context, pageRoute(RescheduleScreen(booking: current))),
+                      child: Text(t(tk: 'Randevuny üýtget', ru: 'Изменить запись', en: 'Change appointment')),
                     ),
                     const SizedBox(height: 6),
                     TextButton(
                       onPressed: () => _confirmCancel(context, current, t),
                       child: Text(
-                        t(
-                          tk: 'Randevuny ýatyr',
-                          ru: 'Отменить запись',
-                          en: 'Cancel appointment',
-                        ),
+                        t(tk: 'Randevuny ýatyr', ru: 'Отменить запись', en: 'Cancel appointment'),
                         style: TextStyle(color: tokens.danger),
                       ),
                     ),
                   ],
                 )
               : PrimaryButton(
-                  label: t(
-                    tk: 'Täzeden ýazyl',
-                    ru: 'Записаться снова',
-                    en: 'Book again',
-                  ),
-                  onTap: () => Navigator.push(
-                    context,
-                    pageRoute(
-                      BookingPage(
-                        masterName: current.masterName,
-                        preselectedServiceName: current.serviceName,
-                      ),
-                    ),
-                  ),
+                  label: t(tk: 'Täzeden ýazyl', ru: 'Записаться снова', en: 'Book again'),
+                  onTap: () => _rebook(context, current, t),
                 ),
         ),
       ),
     );
   }
 
-  Future<void> _confirmCancel(
-    BuildContext context,
-    ClientBooking current,
-    String Function({
-      required String tk,
-      required String ru,
-      required String en,
-    })
-    t,
-  ) async {
+  Future<void> _confirmCancel(BuildContext context, ClientBooking current, String Function({required String tk, required String ru, required String en}) t) async {
     final confirmed = await _showConfirmDialog(
       context,
       icon: Icons.event_busy_outlined,
       danger: true,
-      title: t(
-        tk: 'Randevuny ýatyrmaly?',
-        ru: 'Отменить запись?',
-        en: 'Cancel this booking?',
-      ),
-      message: t(
-        tk: 'Bu hereketi yzyna gaýtaryp bolmaz.',
-        ru: 'Это действие нельзя отменить.',
-        en: 'This action cannot be undone.',
-      ),
+      title: t(tk: 'Randevuny ýatyrmaly?', ru: 'Отменить запись?', en: 'Cancel this booking?'),
+      message: t(tk: 'Bu hereketi yzyna gaýtaryp bolmaz.', ru: 'Это действие нельзя отменить.', en: 'This action cannot be undone.'),
       confirmLabel: t(tk: 'Ýatyr', ru: 'Отменить', en: 'Cancel'),
       cancelLabel: t(tk: 'Ýapmak', ru: 'Закрыть', en: 'Close'),
     );
     if (confirmed && context.mounted) {
-      context.read<ClientBookingsProvider>().cancel(current.id);
-      Navigator.maybePop(context);
+      final navigator = Navigator.of(context);
+      final ok = await runApi(context, () => context.read<ClientBookingsProvider>().cancel(current.id));
+      if (ok) navigator.maybePop();
     }
   }
 
-  void _showLateSheet(
-    BuildContext context,
-    ClientBooking current,
-    String Function({
-      required String tk,
-      required String ru,
-      required String en,
-    })
-    t,
-  ) {
+  /// "Book again": the server looks for the same time in the coming days
+  /// (`POST /appointments/{id}/rebook`). If that is taken it answers
+  /// `SLOT_TAKEN` with alternatives, offered here to pick from.
+  Future<void> _rebook(BuildContext context, ClientBooking current, String Function({required String tk, required String ru, required String en}) t) async {
+    final bookings = context.read<ClientBookingsProvider>();
+    final language = context.read<LanguageProvider>().language;
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    Future<ClientBooking?> attempt(DateTime? startsAt) async {
+      try {
+        return await bookings.rebook(current.id, startsAt: startsAt);
+      } on ApiException catch (e) {
+        if (e.code == ApiErrors.slotTaken && context.mounted) {
+          final slots = [for (final s in e.suggestedSlots) ?parseApiTime(s)];
+          if (slots.isNotEmpty) {
+            final picked = await showModalBottomSheet<DateTime>(
+              context: context,
+              builder: (sheetContext) => SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        t(tk: 'Şol wagt eýýäm alnan. Ýakyn boş wagtlar:', ru: 'Это время занято. Ближайшее свободное:', en: 'That time is taken. Nearest free times:'),
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final slot in slots)
+                            ActionChip(
+                              label: Text('${formatDate(slot)} · ${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}'),
+                              onPressed: () => Navigator.pop(sheetContext, slot),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+            if (picked != null) return attempt(picked);
+            return null;
+          }
+        }
+        messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(e, language))));
+        return null;
+      } catch (error) {
+        messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
+        return null;
+      }
+    }
+
+    final booking = await attempt(null);
+    if (booking == null || !context.mounted) return;
+    navigator.push(pageRoute(BookingSuccessScreen(appointment: booking, masterName: booking.masterName)));
+  }
+
+  void _showLateSheet(BuildContext context, ClientBooking current, String Function({required String tk, required String ru, required String en}) t) {
     final tokens = context.appTokens;
     showModalBottomSheet(
       context: context,
       backgroundColor: tokens.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (sheetContext) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
@@ -275,15 +258,8 @@ class AppointmentDetailScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                t(
-                  tk: 'Näçe minut gijä galýarsyňyz?',
-                  ru: 'На сколько минут вы опаздываете?',
-                  en: 'How many minutes late?',
-                ),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+                t(tk: 'Näçe minut gijä galýarsyňyz?', ru: 'На сколько минут вы опаздываете?', en: 'How many minutes late?'),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 16),
               Row(
@@ -297,15 +273,10 @@ class AppointmentDetailScreen extends StatelessWidget {
                           side: BorderSide(color: tokens.border),
                         ),
                         onPressed: () {
-                          context.read<ClientBookingsProvider>().setLate(
-                            current.id,
-                            minutes,
-                          );
+                          runApi(context, () => context.read<ClientBookingsProvider>().setLate(current.id, minutes));
                           Navigator.pop(sheetContext);
                         },
-                        child: Text(
-                          '$minutes ${t(tk: "min", ru: "мин", en: "min")}',
-                        ),
+                        child: Text('$minutes ${t(tk: "min", ru: "мин", en: "min")}'),
                       ),
                     ),
                   );
@@ -318,4 +289,3 @@ class AppointmentDetailScreen extends StatelessWidget {
     );
   }
 }
-

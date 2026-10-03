@@ -5,12 +5,11 @@ part of '../../../app/komekci_app.dart';
 /// 3. profile details, 4. subscription payment.
 const _masterSetupSteps = 4;
 
-/// Balance top-ups are sent as an SMS to the operator short code. The message
-/// body carries the account number and the chosen amount: "+99362990344 30".
+/// Phone top-ups are a mobile-balance transfer: the app opens an SMS to this
+/// operator short code with "<receiver number> <amount>", where the receiver
+/// number is the one the server hands out (`POST /me/billing/topup`).
 const _topUpShortCode = '0804';
-const _topUpAccount = '+99362990344';
 const _topUpAmounts = [20, 30, 40, 50];
-const _monthlyFee = 20;
 
 
 /// Sits under the confirm button in payment dialogs, replacing a back arrow.

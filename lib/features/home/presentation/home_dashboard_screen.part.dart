@@ -1,6 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-
 /// Master's home dashboard — a live clock, at-a-glance queue stats, and
 /// today's appointment timeline. Mobile-first rebuild of a tablet mock:
 /// the wide multi-column layout became a 2×2 stat grid and a vertical card
@@ -42,11 +41,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final canPop = Navigator.of(context).canPop();
     final tokens = context.appTokens;
 
-    final today = DateTime(
-      dashboardToday.$1,
-      dashboardToday.$2,
-      dashboardToday.$3,
-    );
+    final today = appToday();
+    bookingProvider.prefetch(today);
 
     final todayAppointments = bookingProvider.onDay(today);
     final entries = _buildTimeline(todayAppointments, today);
@@ -83,12 +79,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         : activeToday.last.startsAt.add(
             Duration(minutes: activeToday.last.minutes),
           );
-
-    final upcomingDays = <DateTime>[];
-    for (var i = 1; i <= 4; i++) {
-      final day = today.add(Duration(days: i));
-      if (bookingProvider.onDay(day).isNotEmpty) upcomingDays.add(day);
-    }
 
     return Scaffold(
       backgroundColor: const Color(0xffFAFAF8),
@@ -193,50 +183,40 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               accent: freeSlotColorDark,
               accentBg: freeSlotBg,
               count: todayAppointments.length,
+              showHeader: false,
               child: entries.isEmpty
-                  ? EmptyState(
-                      icon: Icons.event_busy_outlined,
-                      title: t(
-                        tk: 'Şu gün ýazgy ýok',
-                        ru: 'На сегодня записей нет',
-                        en: 'No bookings today',
-                      ),
-                      text: t(
-                        tk: 'Boş gün — dynç alyň!',
-                        ru: 'Свободный день.',
-                        en: 'A free day — relax!',
+                  // The table itself is full-bleed inside the day card, so
+                  // only the empty state needs an inset of its own.
+                  ? Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                      child: EmptyState(
+                        icon: Icons.event_busy_outlined,
+                        title: t(
+                          tk: 'Şu gün ýazgy ýok',
+                          ru: 'На сегодня записей нет',
+                          en: 'No bookings today',
+                        ),
+                        text: t(
+                          tk: 'Boş gün — dynç alyň!',
+                          ru: 'Свободный день.',
+                          en: 'A free day — relax!',
+                        ),
                       ),
                     )
                   : _HomeApptTable(
                       entries: entries,
                       customers: customerProvider.customers,
                       language: language,
-                      onTap: () => widget.onViewSchedule(today),
+                      onTapAppointment: (appointment, customer) =>
+                          _openAppointmentActions(
+                            context,
+                            appointment,
+                            customer,
+                            language,
+                          ),
+                      onTapFree: () => widget.onViewSchedule(today),
                     ),
             ),
-            if (upcomingDays.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Text(
-                t(
-                  tk: 'Öňümizdäki günler',
-                  ru: 'Ближайшие дни',
-                  en: 'Upcoming days',
-                ),
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 10),
-              ...upcomingDays.map(
-                (day) => _UpcomingDayRow(
-                  day: day,
-                  count: bookingProvider.onDay(day).length,
-                  tk: tk,
-                  onTap: () => Navigator.push(context, pageRoute(DayTimelineScreen(day: day))),
-                ),
-              ),
-            ],
             const SizedBox(height: 6),
             _OutlineActionButton(
               icon: Icons.calendar_month_outlined,
@@ -253,4 +233,3 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     );
   }
 }
-

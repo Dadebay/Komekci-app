@@ -152,8 +152,9 @@ class _ClientNotifyScreenState extends State<ClientNotifyScreen> {
                         options: const [3, 5, 7, 10, 14, 21, 30],
                         unit: t(tk: 'gün', ru: 'дн.', en: 'days'),
                       );
-                      if (picked != null)
+                      if (picked != null) {
                         setState(() => _reminderDays = picked);
+                      }
                     },
                     child: Container(
                       width: double.infinity,
@@ -238,10 +239,8 @@ class _ClientNotifyScreenState extends State<ClientNotifyScreen> {
                 en: 'Send message',
               ),
               showChevron: true,
-              onTap: () => Navigator.push(
-                context,
-                pageRoute(const SendMessageScreen()),
-              ),
+              onTap: () =>
+                  Navigator.push(context, pageRoute(const SendMessageScreen())),
             ),
             const SizedBox(height: 10),
             _InfoBanner(

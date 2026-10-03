@@ -167,13 +167,30 @@ Future<DateTime?> _pickAppointmentDateTime(
                   month: month,
                   selected: selectedDate,
                   language: language,
-                  onSelect: (d) => setSheetState(() => selectedDate = d),
-                  onPrevMonth: () => setSheetState(
-                    () => month = DateTime(month.year, month.month - 1),
-                  ),
-                  onNextMonth: () => setSheetState(
-                    () => month = DateTime(month.year, month.month + 1),
-                  ),
+                  onSelect: (d) {
+                    setSheetState(() => selectedDate = d);
+                    // Busy slots are drawn from the cached calendar; make
+                    // sure that month has been fetched.
+                    bookingProvider.ensureLoaded(d).then((_) {
+                      if (sheetContext.mounted) setSheetState(() {});
+                    });
+                  },
+                  onPrevMonth: () {
+                    setSheetState(
+                      () => month = DateTime(month.year, month.month - 1),
+                    );
+                    bookingProvider.ensureLoaded(month).then((_) {
+                      if (sheetContext.mounted) setSheetState(() {});
+                    });
+                  },
+                  onNextMonth: () {
+                    setSheetState(
+                      () => month = DateTime(month.year, month.month + 1),
+                    );
+                    bookingProvider.ensureLoaded(month).then((_) {
+                      if (sheetContext.mounted) setSheetState(() {});
+                    });
+                  },
                 ),
                 const SizedBox(height: 18),
                 Text(

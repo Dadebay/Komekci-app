@@ -4,6 +4,26 @@ const _supportPhone = '+993 12 345678';
 const _supportTelegram = 'https://t.me/komekci_support';
 const _supportEmail = 'support@komekci.app';
 
+/// Opens the support contact configured on the server
+/// (`support_contact` of `GET /settings/public`): a link, an e-mail address
+/// or a phone number.
+Future<void> _openSupportContact(String contact) {
+  final value = contact.trim();
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    return launchUrl(Uri.parse(value), mode: LaunchMode.externalApplication);
+  }
+  if (value.startsWith('t.me/')) {
+    return launchUrl(Uri.parse('https://$value'), mode: LaunchMode.externalApplication);
+  }
+  if (value.contains('@') && !value.startsWith('@') && !value.contains(' ')) {
+    return launchUrl(Uri(scheme: 'mailto', path: value));
+  }
+  if (value.startsWith('@')) {
+    return launchUrl(Uri.parse('https://t.me/${value.substring(1)}'), mode: LaunchMode.externalApplication);
+  }
+  return launchUrl(Uri(scheme: 'tel', path: value.replaceAll(' ', '')));
+}
+
 /// Real support content — an FAQ accordion plus tappable contact rows —
 /// replacing the old generic `SettingsScreen` stub that had no actual
 /// answers or contact info.
@@ -16,6 +36,7 @@ class ClientSupportScreen extends StatelessWidget {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
+    final supportContact = context.watch<AppSettingsProvider>().supportContact;
 
     final faqs = <(String, String)>[
       (
@@ -94,6 +115,14 @@ class ClientSupportScreen extends StatelessWidget {
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 10),
+            if (supportContact.isNotEmpty)
+              _ContactRow(
+                icon: Icons.support_agent_outlined,
+                title: t(tk: 'Goldaw', ru: 'Поддержка', en: 'Support'),
+                value: supportContact,
+                onTap: () => _openSupportContact(supportContact),
+              )
+            else ...[
             _ContactRow(
               icon: Icons.phone_outlined,
               title: t(tk: 'Jaň ediň', ru: 'Позвонить', en: 'Call us'),
@@ -117,6 +146,7 @@ class ClientSupportScreen extends StatelessWidget {
               value: _supportEmail,
               onTap: () => launchUrl(Uri(scheme: 'mailto', path: _supportEmail)),
             ),
+            ],
           ],
         ),
       ),

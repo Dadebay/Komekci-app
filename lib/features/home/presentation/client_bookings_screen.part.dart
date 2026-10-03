@@ -32,12 +32,17 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
     String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final canPop = _canPop;
-    final allBookings = context.watch<ClientBookingsProvider>().bookings;
+    final provider = context.watch<ClientBookingsProvider>();
+    final allBookings = provider.bookings;
     final masters = allBookings.map((b) => b.masterName).toSet().toList()..sort();
 
     final filtered = allBookings.where((b) {
       if (_filterMaster != null && b.masterName != _filterMaster) return false;
-      if (_filterStatus != null && b.status != _filterStatus) return false;
+      if (_filterStatus != null &&
+          b.status != _filterStatus &&
+          !(_filterStatus == ClientBookingStatus.cancelled && b.status == ClientBookingStatus.noShow)) {
+        return false;
+      }
       return true;
     }).toList()..sort((a, b) => b.startsAt.compareTo(a.startsAt));
     final visible = filtered.take(_visibleCount).toList();
@@ -60,8 +65,10 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
       ),
       body: SafeArea(
         bottom: false,
-        child: filtered.isEmpty
-            ? Center(
+        child: RefreshIndicator(
+          onRefresh: provider.load,
+          child: filtered.isEmpty
+            ? ListView(children: [Center(
                 child: SizedBox(
                   width: double.infinity,
                   child: Padding(
@@ -73,12 +80,12 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
                     ),
                   ),
                 ),
-              )
+              )])
             : ListView(
                 padding: EdgeInsets.fromLTRB(20, 8, 20, canPop ? 20 : 110),
                 children: [
                   ...visible.map((b) => _ClientBookingCard(booking: b, tk: tk)),
-                  if (visible.length < filtered.length)
+                  if (visible.length < filtered.length || provider.hasMoreHistory)
                     Padding(
                       padding: const EdgeInsets.only(top: 4, bottom: 10),
                       child: OutlinedButton(
@@ -86,18 +93,22 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
                           side: BorderSide(color: tokens.border),
                           minimumSize: const Size.fromHeight(48),
                         ),
-                        onPressed: () => setState(() => _visibleCount += _pageSize),
+                        onPressed: () {
+                          if (visible.length >= filtered.length) provider.loadMoreHistory();
+                          setState(() => _visibleCount += _pageSize);
+                        },
                         child: Text(
                           t(
-                            tk: 'Has köp görkez (${filtered.length - visible.length})',
-                            ru: 'Показать ещё (${filtered.length - visible.length})',
-                            en: 'Show more (${filtered.length - visible.length})',
+                            tk: 'Has köp görkez',
+                            ru: 'Показать ещё',
+                            en: 'Show more',
                           ),
                         ),
                       ),
                     ),
                 ],
               ),
+        ),
       ),
     );
   }
@@ -269,6 +280,33 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+class _FilterChipButton extends StatelessWidget {
+  const _FilterChipButton({required this.label, required this.selected, required this.onTap});
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? tokens.textPrimary : tokens.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: selected ? tokens.textPrimary : tokens.border),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: selected ? tokens.surface : tokens.textPrimary),
+        ),
       ),
     );
   }

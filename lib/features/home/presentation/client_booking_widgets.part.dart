@@ -26,7 +26,7 @@ class _ClientBookingRow extends StatelessWidget {
     final statusColor = switch (booking.status) {
       ClientBookingStatus.expected => freeSlotColorDark,
       ClientBookingStatus.completed => const Color(0xff2A5DB0),
-      ClientBookingStatus.cancelled => Colors.deepOrange,
+      ClientBookingStatus.cancelled || ClientBookingStatus.noShow => Colors.deepOrange,
     };
     return InkWell(
       borderRadius: BorderRadius.circular(18),
@@ -95,7 +95,7 @@ class _ClientBookingRow extends StatelessWidget {
                               ),
                               const Spacer(),
                               Text(
-                                '${booking.price.toStringAsFixed(0)} ${tk ? 'manat' : 'манат'}',
+                                '${booking.price.toStringAsFixed(0)} ${context.watch<AppSettingsProvider>().currencyLabel(tk ? AppLanguage.tk : AppLanguage.ru)}',
                                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: tokens.textPrimary),
                               ),
                               const SizedBox(width: 4),
@@ -129,6 +129,7 @@ class _ClientBookingStatusChip extends StatelessWidget {
       ClientBookingStatus.expected => (freeSlotBg, freeSlotColorDark, t(tk: 'Tassyklanan', ru: 'Подтверждено', en: 'Confirmed')),
       ClientBookingStatus.completed => (const Color(0xffE6EEFB), const Color(0xff2A5DB0), t(tk: 'Tamamlandy', ru: 'Завершено', en: 'Completed')),
       ClientBookingStatus.cancelled => (const Color(0xffFBE3E0), Colors.deepOrange, t(tk: 'Ýatyryldy', ru: 'Отменено', en: 'Cancelled')),
+      ClientBookingStatus.noShow => (const Color(0xffFBE3E0), Colors.deepOrange, t(tk: 'Gelmedi', ru: 'Не пришёл', en: 'No-show')),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),

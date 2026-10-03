@@ -1,14 +1,7 @@
 part of '../../../app/komekci_app.dart';
 
 class RoleCard extends StatelessWidget {
-  const RoleCard({
-    super.key,
-    required this.selected,
-    required this.imageAsset,
-    required this.title,
-    required this.text,
-    required this.onTap,
-  });
+  const RoleCard({super.key, required this.selected, required this.imageAsset, required this.title, required this.text, required this.onTap});
   final bool selected;
   final String imageAsset;
   final String title;
@@ -26,18 +19,9 @@ class RoleCard extends StatelessWidget {
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: selected ? const Color(0xffFFFCF6) : tokens.surfaceElevated,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected ? tokens.accent : tokens.border,
-            width: selected ? 1.6 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: .025),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: selected ? tokens.accent : tokens.border, width: selected ? 1.6 : 1),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .025), blurRadius: 8, offset: const Offset(0, 3))],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -49,39 +33,25 @@ class RoleCard extends StatelessWidget {
               height: 110,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(28),
 
-                border: Border.all(
-                  color: selected ? tokens.accent : const Color(0xffF8F3E9),
-                  width: selected ? 2.5 : 1,
-                ),
+                border: Border.all(color: selected ? tokens.accent : const Color(0xffF8F3E9), width: selected ? 2.5 : 1),
               ),
-              child: Image.asset(
-                imageAsset,
-                fit: BoxFit.cover,
-                alignment: const Alignment(0, -.45),
-                filterQuality: FilterQuality.medium,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(26),
+                child: Image.asset(imageAsset, fit: BoxFit.cover, alignment: const Alignment(0, -.45), filterQuality: FilterQuality.medium),
               ),
             ),
             const SizedBox(height: 22),
             Text(
               title,
-              style: TextStyle(
-                color: tokens.textPrimary,
-                letterSpacing: .5,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(color: tokens.textPrimary, letterSpacing: .5, fontSize: 13, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             Text(
               text,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                height: 1.5,
-                color: tokens.textSecondary,
-              ),
+              style: TextStyle(fontSize: 11, height: 1.5, color: tokens.textSecondary),
             ),
           ],
         ),
@@ -91,13 +61,7 @@ class RoleCard extends StatelessWidget {
 }
 
 class RoleContinueButton extends StatefulWidget {
-  const RoleContinueButton({
-    super.key,
-    required this.label,
-    required this.onTap,
-    this.fillFraction = .70,
-    this.enabled = true,
-  });
+  const RoleContinueButton({super.key, required this.label, required this.onTap, this.fillFraction = .70, this.enabled = true});
   final String label;
   final VoidCallback onTap;
   final double fillFraction;
@@ -106,12 +70,8 @@ class RoleContinueButton extends StatefulWidget {
   State<RoleContinueButton> createState() => _RoleContinueButtonState();
 }
 
-class _RoleContinueButtonState extends State<RoleContinueButton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 720),
-  )..repeat(reverse: true);
+class _RoleContinueButtonState extends State<RoleContinueButton> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 720))..repeat(reverse: true);
   @override
   void dispose() {
     _controller.dispose();
@@ -131,10 +91,7 @@ class _RoleContinueButtonState extends State<RoleContinueButton>
       borderRadius: BorderRadius.circular(32),
       child: Container(
         height: 58,
-        decoration: BoxDecoration(
-          color: tokens.textPrimary,
-          borderRadius: BorderRadius.circular(32),
-        ),
+        decoration: BoxDecoration(color: tokens.textPrimary, borderRadius: BorderRadius.circular(32)),
         child: LayoutBuilder(
           builder: (context, constraints) => Stack(
             children: [
@@ -145,26 +102,15 @@ class _RoleContinueButtonState extends State<RoleContinueButton>
                 builder: (_, value, _) => AnimatedBuilder(
                   animation: _controller,
                   builder: (_, _) => SizedBox(
-                    width:
-                        constraints.maxWidth *
-                        (value - .025 + (.025 * _controller.value)),
+                    width: constraints.maxWidth * (value - .025 + (.025 * _controller.value)),
                     height: 58,
                     child: Container(
                       margin: const EdgeInsets.all(2),
                       alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: tokens.surface,
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(30),
-                        ),
-                      ),
+                      decoration: BoxDecoration(color: tokens.surface, borderRadius: const BorderRadius.all(Radius.circular(30))),
                       child: Text(
                         widget.label,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: tokens.textPrimary,
-                        ),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: tokens.textPrimary),
                       ),
                     ),
                   ),
@@ -178,26 +124,10 @@ class _RoleContinueButtonState extends State<RoleContinueButton>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        AppIcon(
-                          Icons.chevron_right,
-                          color: Color(0xffF7E4BE),
-                          size: 16,
-                        ),
-                        AppIcon(
-                          Icons.chevron_right,
-                          color: Color(0xffF7E4BE),
-                          size: 16,
-                        ),
-                        AppIcon(
-                          Icons.chevron_right,
-                          color: Color(0xffF7E4BE),
-                          size: 16,
-                        ),
-                        AppIcon(
-                          Icons.chevron_right,
-                          color: Color(0xffF7E4BE),
-                          size: 16,
-                        ),
+                        AppIcon(Icons.chevron_right, color: Color(0xffF7E4BE), size: 16),
+                        AppIcon(Icons.chevron_right, color: Color(0xffF7E4BE), size: 16),
+                        AppIcon(Icons.chevron_right, color: Color(0xffF7E4BE), size: 16),
+                        AppIcon(Icons.chevron_right, color: Color(0xffF7E4BE), size: 16),
                       ],
                     ),
                   ),

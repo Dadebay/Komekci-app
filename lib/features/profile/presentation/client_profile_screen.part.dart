@@ -16,9 +16,10 @@ class ClientProfile extends StatelessWidget {
     final tokens = context.appTokens;
     final theme = context.watch<ThemeProvider>().selected;
 
-    return ValueListenableBuilder<ClientNotificationPrefs>(
-      valueListenable: _clientNotificationPrefs,
-      builder: (context, prefs, _) {
+    final notificationPrefs = context.watch<AuthProvider>().me?.notificationPrefs ?? const <String, bool>{};
+    final notificationsOn = notificationPrefs.isEmpty || notificationPrefs.values.any((v) => v);
+    return Builder(
+      builder: (context) {
         final entries = <(IconData, String, String, VoidCallback)>[
           (
             Icons.groups_outlined,
@@ -33,7 +34,7 @@ class ClientProfile extends StatelessWidget {
           (
             Icons.notifications_none,
             t(tk: 'Bildirişler', ru: 'Уведомления', en: 'Notifications'),
-            prefs.pushEnabled
+            notificationsOn
                 ? t(tk: 'Işjeň', ru: 'Включены', en: 'Enabled')
                 : t(tk: 'Öçürilen', ru: 'Отключены', en: 'Disabled'),
             () => Navigator.push(
@@ -90,6 +91,15 @@ class ClientProfile extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             _ClientLogoutButton(t: t),
+            Center(
+              child: TextButton(
+                onPressed: () => _confirmDeleteAccount(context),
+                child: Text(
+                  t(tk: 'Hasaby poz', ru: 'Удалить аккаунт', en: 'Delete account'),
+                  style: TextStyle(color: tokens.textSecondary, fontSize: 12),
+                ),
+              ),
+            ),
             const SizedBox(height: 18),
             Center(
               child: Text(
@@ -122,6 +132,7 @@ String _languageName(AppLanguage language) => switch (language) {
 /// since picking a language is a single tap with nothing else to configure.
 void _showLanguageSheet(BuildContext context) {
   final languageProvider = context.read<LanguageProvider>();
+  final authProvider = context.read<AuthProvider>();
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.white,
@@ -130,6 +141,7 @@ void _showLanguageSheet(BuildContext context) {
     ),
     builder: (sheetContext) {
       final language = sheetContext.watch<LanguageProvider>().language;
+      final locales = sheetContext.watch<AppSettingsProvider>().locales;
       String t({required String tk, required String ru, required String en}) =>
           pickTr(language, tk: tk, ru: ru, en: en);
       return SafeArea(
@@ -144,38 +156,23 @@ void _showLanguageSheet(BuildContext context) {
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 14),
-              LanguageOptionCard(
-                flag: '🇹🇲',
-                primary: 'Türkmençe',
-                secondary: 'Türkmen dili',
-                selected: language == AppLanguage.tk,
-                onTap: () {
-                  languageProvider.select(AppLanguage.tk);
-                  Navigator.maybePop(sheetContext);
-                },
-              ),
-              const SizedBox(height: 10),
-              LanguageOptionCard(
-                flag: '🇷🇺',
-                primary: 'Русский',
-                secondary: 'Русский язык',
-                selected: language == AppLanguage.ru,
-                onTap: () {
-                  languageProvider.select(AppLanguage.ru);
-                  Navigator.maybePop(sheetContext);
-                },
-              ),
-              const SizedBox(height: 10),
-              LanguageOptionCard(
-                flag: '🇬🇧',
-                primary: 'English',
-                secondary: 'English language',
-                selected: language == AppLanguage.en,
-                onTap: () {
-                  languageProvider.select(AppLanguage.en);
-                  Navigator.maybePop(sheetContext);
-                },
-              ),
+              for (final option in _languageOptions.where(
+                (o) => locales.contains(o.language),
+              ))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: LanguageOptionCard(
+                    flag: option.flag,
+                    primary: option.primary,
+                    secondary: option.secondary,
+                    selected: language == option.language,
+                    onTap: () {
+                      languageProvider.select(option.language);
+                      authProvider.savePreferences(locale: option.language.name);
+                      Navigator.maybePop(sheetContext);
+                    },
+                  ),
+                ),
             ],
           ),
         ),
@@ -189,6 +186,7 @@ void _showLanguageSheet(BuildContext context) {
 /// tap with nothing else to configure.
 void _showThemeSheet(BuildContext context) {
   final themeProvider = context.read<ThemeProvider>();
+  final authProvider = context.read<AuthProvider>();
   showModalBottomSheet(
     context: context,
     backgroundColor: Colors.white,
@@ -247,6 +245,7 @@ void _showThemeSheet(BuildContext context) {
                   child: InkWell(
                     onTap: () {
                       themeProvider.select(swatch.$4);
+                      authProvider.savePreferences(theme: swatch.$4.name);
                       Navigator.maybePop(sheetContext);
                     },
                     borderRadius: BorderRadius.circular(17),

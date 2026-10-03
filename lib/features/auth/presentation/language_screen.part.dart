@@ -1,5 +1,26 @@
 part of '../../../app/komekci_app.dart';
 
+const _languageOptions = [
+  (
+    language: AppLanguage.tk,
+    flag: '🇹🇲',
+    primary: 'Türkmençe',
+    secondary: 'Türkmen dili',
+  ),
+  (
+    language: AppLanguage.ru,
+    flag: '🇷🇺',
+    primary: 'Русский',
+    secondary: 'Русский язык',
+  ),
+  (
+    language: AppLanguage.en,
+    flag: '🇬🇧',
+    primary: 'English',
+    secondary: 'English language',
+  ),
+];
+
 class LanguageScreen extends StatelessWidget {
   const LanguageScreen({super.key, this.standalone = false});
 
@@ -11,6 +32,7 @@ class LanguageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>();
+    final settings = context.watch<AppSettingsProvider>();
     final tr = Tr(language.language);
     final tokens = context.appTokens;
     return Scaffold(
@@ -73,29 +95,19 @@ class LanguageScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 38),
-                LanguageOptionCard(
-                  flag: '🇹🇲',
-                  primary: 'Türkmençe',
-                  secondary: 'Türkmen dili',
-                  selected: language.language == AppLanguage.tk,
-                  onTap: () => language.select(AppLanguage.tk),
-                ),
-                const SizedBox(height: 12),
-                LanguageOptionCard(
-                  flag: '🇷🇺',
-                  primary: 'Русский',
-                  secondary: 'Русский язык',
-                  selected: language.language == AppLanguage.ru,
-                  onTap: () => language.select(AppLanguage.ru),
-                ),
-                const SizedBox(height: 12),
-                LanguageOptionCard(
-                  flag: '🇬🇧',
-                  primary: 'English',
-                  secondary: 'English language',
-                  selected: language.language == AppLanguage.en,
-                  onTap: () => language.select(AppLanguage.en),
-                ),
+                for (final option in _languageOptions.where(
+                  (o) => settings.locales.contains(o.language),
+                ))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: LanguageOptionCard(
+                      flag: option.flag,
+                      primary: option.primary,
+                      secondary: option.secondary,
+                      selected: language.language == option.language,
+                      onTap: () => language.select(option.language),
+                    ),
+                  ),
                 const Spacer(),
                 PrimaryButton(
                   label: standalone
@@ -107,7 +119,12 @@ class LanguageScreen extends StatelessWidget {
                         )
                       : tr.continueText,
                   onTap: () => standalone
-                      ? Navigator.maybePop(context)
+                      ? (() {
+                          context.read<AuthProvider>().savePreferences(
+                            locale: language.language.name,
+                          );
+                          Navigator.maybePop(context);
+                        })()
                       : Navigator.push(
                           context,
                           pageRoute(const RoleScreen()),

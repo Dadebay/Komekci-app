@@ -1,29 +1,27 @@
 part of '../../../app/komekci_app.dart';
 
-/// A master the client has linked their account to — 'connected' once the
-/// master accepts, 'pending' while awaiting their response.
-enum _MyMasterStatus { connected, pending }
-
-/// Mock "my masters" list — the first two entries of [_clientMasters] read
-/// as connected, the third as still pending, so both states have something
-/// real to show without a backend.
-final _myMasters = [
-  (_clientMasters[0], _MyMasterStatus.connected),
-  (_clientMasters[1], _MyMasterStatus.connected),
-  (_clientMasters[2], _MyMasterStatus.pending),
-];
-
+/// The client's "Ussalar" tab and "My masters" menu page: accepted and
+/// pending connections (`GET /connections`) with the main-master switch and
+/// removal, and the entry point for connecting to a new master.
 class MyMastersScreen extends StatelessWidget {
   const MyMastersScreen({super.key});
 
   @override
+  Widget build(BuildContext context) => const ClientMastersScreen();
+}
+
+class ClientMastersScreen extends StatelessWidget {
+  const ClientMastersScreen({super.key});
+
+  @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    final tk = language == AppLanguage.tk;
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
+    final masters = context.watch<ClientMastersProvider>();
     final canPop = Navigator.of(context).canPop();
+    final connections = [...masters.accepted, ...masters.pending];
 
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -32,41 +30,57 @@ class MyMastersScreen extends StatelessWidget {
       ),
       body: SafeArea(
         bottom: false,
-        child: _myMasters.isEmpty
-            ? Center(
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(20, 10, 20, canPop ? 20 : 110),
-                    child: EmptyState(
-                      icon: Icons.groups_outlined,
-                      title: t(
-                        tk: 'Baglanan ussaňyz ýok',
-                        ru: 'Связанных мастеров нет',
-                        en: 'No connected masters yet',
-                      ),
-                      text: t(
-                        tk: 'Ussa goşup, bir näçe minutda baglanyşyň.',
-                        ru: 'Добавьте мастера, чтобы связаться с ним.',
-                        en: 'Add a master to connect with them.',
-                      ),
+        child: RefreshIndicator(
+          onRefresh: masters.load,
+          child: masters.error != null && connections.isEmpty
+              ? ListView(
+                  padding: EdgeInsets.fromLTRB(20, 30, 20, canPop ? 20 : 110),
+                  children: [
+                    RetryErrorState(
+                      title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
+                      text: apiErrorMessage(masters.error!, language),
+                      retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                      onRetry: masters.load,
                     ),
-                  ),
+                  ],
+                )
+              : connections.isEmpty
+              ? ListView(
+                  padding: EdgeInsets.fromLTRB(20, 30, 20, canPop ? 20 : 110),
+                  children: [
+                    if (masters.loading)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 40),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else
+                      EmptyState(
+                        icon: Icons.groups_outlined,
+                        title: t(
+                          tk: 'Baglanan ussaňyz ýok',
+                          ru: 'Связанных мастеров нет',
+                          en: 'No connected masters yet',
+                        ),
+                        text: t(
+                          tk: 'Ussa goşup, bir näçe minutda baglanyşyň.',
+                          ru: 'Добавьте мастера, чтобы связаться с ним.',
+                          en: 'Add a master to connect with them.',
+                        ),
+                      ),
+                  ],
+                )
+              : ListView(
+                  padding: EdgeInsets.fromLTRB(20, 12, 20, canPop ? 20 : 110),
+                  children: [
+                    for (final c in connections) _MyMasterCard(connection: c),
+                  ],
                 ),
-              )
-            : ListView(
-                padding: EdgeInsets.fromLTRB(20, 12, 20, canPop ? 20 : 24),
-                children: [
-                  ..._myMasters.map(
-                    (entry) => _MyMasterCard(master: entry.$1, status: entry.$2, tk: tk),
-                  ),
-                ],
-              ),
+        ),
       ),
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          padding: EdgeInsets.fromLTRB(20, 8, 20, canPop ? 16 : 96),
           child: PrimaryButton(
             label: t(tk: 'Usta goş', ru: 'Добавить мастера', en: 'Add master'),
             onTap: () => Navigator.push(context, pageRoute(const ConnectMasterScreen())),
@@ -78,10 +92,47 @@ class MyMastersScreen extends StatelessWidget {
 }
 
 class _MyMasterCard extends StatelessWidget {
-  const _MyMasterCard({required this.master, required this.status, required this.tk});
-  final _ClientMaster master;
-  final _MyMasterStatus status;
-  final bool tk;
+  const _MyMasterCard({required this.connection});
+  final ClientConnection connection;
+
+  Future<void> _menu(BuildContext context) async {
+    final language = context.read<LanguageProvider>().language;
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
+    final masters = context.read<ClientMastersProvider>();
+    final connected = connection.status == ConnectionStatus.accepted;
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (connected && !connection.active)
+              ListTile(
+                leading: const AppIcon(Icons.star_outline),
+                title: Text(t(tk: 'Esasy usta et', ru: 'Сделать основным', en: 'Make main master')),
+                onTap: () => Navigator.pop(sheetContext, 'active'),
+              ),
+            ListTile(
+              leading: const AppIcon(Icons.link_off),
+              title: Text(
+                connected
+                    ? t(tk: 'Baglanyşygy aýyr', ru: 'Удалить связь', en: 'Remove connection')
+                    : t(tk: 'Haýyşy yzyna al', ru: 'Отозвать запрос', en: 'Cancel request'),
+              ),
+              onTap: () => Navigator.pop(sheetContext, 'remove'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (action == null || !context.mounted) return;
+    if (action == 'active') {
+      await runApi(context, () => masters.setActive(connection.id));
+    } else {
+      await runApi(context, () => masters.remove(connection.id));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,9 +140,16 @@ class _MyMasterCard extends StatelessWidget {
     final language = context.watch<LanguageProvider>().language;
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
-    final connected = status == _MyMasterStatus.connected;
+    final master = connection.master;
+    final connected = connection.status == ConnectionStatus.accepted;
     final (statusBg, statusFg, statusLabel) = connected
-        ? (freeSlotBg, freeSlotColorDark, t(tk: 'Baglanan', ru: 'Подключено', en: 'Connected'))
+        ? (
+            freeSlotBg,
+            freeSlotColorDark,
+            connection.active
+                ? t(tk: 'Esasy', ru: 'Основной', en: 'Main')
+                : t(tk: 'Baglanan', ru: 'Подключено', en: 'Connected'),
+          )
         : (const Color(0xffFBF1D8), const Color(0xff77540E), t(tk: 'Garaşylýar', ru: 'Ожидание', en: 'Pending'));
 
     return Container(
@@ -106,17 +164,16 @@ class _MyMasterCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master))),
-          child: Container(
+          onTap: connected
+              ? () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master)))
+              : null,
+          onLongPress: () => _menu(context),
+          child: Padding(
             padding: const EdgeInsets.all(13),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: const Color(0xffE6D2B1),
-                  child: AppIcon(Icons.person_outline, size: 21, color: tokens.textPrimary),
-                ),
+                MasterAvatar(url: master.photoUrl, radius: 24),
                 const SizedBox(width: 13),
                 Expanded(
                   child: Column(
@@ -126,7 +183,7 @@ class _MyMasterCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              tk ? master.nameTk : master.nameRu,
+                              master.name,
                               style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -144,7 +201,7 @@ class _MyMasterCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        tk ? master.specialtyTk : master.specialtyRu,
+                        '@${master.nickname}',
                         style: TextStyle(fontSize: 12, color: tokens.textSecondary),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -156,13 +213,16 @@ class _MyMasterCard extends StatelessWidget {
                           const SizedBox(width: 3),
                           Expanded(
                             child: Text(
-                              tk ? master.locationTk : master.locationRu,
+                              master.address.isEmpty ? '—' : master.address,
                               style: TextStyle(fontSize: 11, color: tokens.textSecondary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          AppIcon(Icons.chevron_right, size: 15, color: tokens.disabled),
+                          GestureDetector(
+                            onTap: () => _menu(context),
+                            child: AppIcon(Icons.more_horiz, size: 18, color: tokens.disabled),
+                          ),
                         ],
                       ),
                     ],
@@ -176,4 +236,3 @@ class _MyMasterCard extends StatelessWidget {
     );
   }
 }
-

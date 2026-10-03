@@ -1,5 +1,8 @@
 part of '../../../app/komekci_app.dart';
 
+/// The shell that matches an account's role.
+Widget homeForAccount(Me me) => me.isMaster ? const MasterHome() : const ClientHome();
+
 class ClientHome extends StatefulWidget {
   const ClientHome({super.key, this.initialTab = 0});
   final int initialTab;
@@ -16,7 +19,6 @@ class _ClientHomeState extends State<ClientHome> {
       const ClientHomeDashboard(),
       const ClientMastersScreen(),
       const ClientBookingsScreen(),
-      const ClientFavoritesScreen(),
       const ClientProfile(),
     ];
     return Scaffold(
@@ -30,7 +32,6 @@ class _ClientHomeState extends State<ClientHome> {
           HugeIcons.strokeRoundedHome01,
           HugeIcons.strokeRoundedUserGroup,
           HugeIcons.strokeRoundedCalendar01,
-          HugeIcons.strokeRoundedFavourite,
           HugeIcons.strokeRoundedUser,
         ],
       ),

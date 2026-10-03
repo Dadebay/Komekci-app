@@ -1,5 +1,7 @@
-/// A service the master offers. [imagePath] is an asset path for seeded mock
-/// rows and a local file path for anything the master adds from the picker.
+import 'api/master_models.dart';
+
+/// A service the master offers. [imagePath] is the photo URL served by the
+/// API (or, for bundled sample art, an asset path).
 class SalonService {
   const SalonService({
     required this.id,
@@ -20,6 +22,19 @@ class SalonService {
   final String imagePath;
   final bool imageIsAsset;
   final bool active;
+
+  /// True for a photo that lives on the server.
+  bool get imageIsNetwork => imagePath.startsWith('http');
+
+  factory SalonService.fromApi(ApiService service) => SalonService(
+    id: '${service.id}',
+    name: service.name,
+    description: service.description,
+    price: service.price.round(),
+    minutes: service.durationMin,
+    imagePath: service.photoUrl ?? '',
+    active: !service.isHidden,
+  );
 
   SalonService copyWith({
     String? name,

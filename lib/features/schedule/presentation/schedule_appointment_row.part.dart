@@ -206,7 +206,10 @@ class _FreeSlotRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: _timeColumnWidth + 10, bottom: 10),
+    // No left time-column reserve here, unlike [_AppointmentRow] — the free
+    // slot's time range is printed inside the card itself, so reserving
+    // that column would just leave an empty gap to its left.
+    padding: const EdgeInsets.only(bottom: 10),
     child: InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
@@ -259,4 +262,3 @@ class _FreeSlotRow extends StatelessWidget {
     ),
   );
 }
-

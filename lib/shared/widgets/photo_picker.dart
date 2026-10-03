@@ -83,6 +83,13 @@ Future<File?> pickCompressedImage(
   return picked == null ? null : File(picked.path);
 }
 
+/// A just-picked local file wins over the photo stored on the server.
+ImageProvider? profileImage({File? file, String? url}) {
+  if (file != null) return FileImage(file);
+  if (url != null) return NetworkImage(url);
+  return null;
+}
+
 /// Round avatar with a camera badge, used on profile screens.
 class AvatarPicker extends StatelessWidget {
   const AvatarPicker({
@@ -91,12 +98,16 @@ class AvatarPicker extends StatelessWidget {
     required this.onPicked,
     this.radius = 44,
     this.fallback,
+    this.networkUrl,
   });
 
   final File? file;
   final ValueChanged<File> onPicked;
   final double radius;
   final ImageProvider? fallback;
+
+  /// Photo already stored on the server; shown until a new [file] is picked.
+  final String? networkUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -111,8 +122,10 @@ class AvatarPicker extends StatelessWidget {
           CircleAvatar(
             radius: radius,
             backgroundColor: const Color(0xffF1EDE4),
-            backgroundImage: file != null ? FileImage(file!) : fallback,
-            child: file == null && fallback == null
+            backgroundImage: file != null
+                ? FileImage(file!)
+                : (networkUrl != null ? NetworkImage(networkUrl!) : fallback),
+            child: file == null && fallback == null && networkUrl == null
                 ? AppIcon(
                     Icons.person_outline,
                     color: tokens.textPrimary,
@@ -155,6 +168,7 @@ class PhotoUploadBox extends StatelessWidget {
     this.hint,
     this.height = 150,
     this.radius = 18,
+    this.networkUrl,
   });
 
   final File? file;
@@ -163,6 +177,11 @@ class PhotoUploadBox extends StatelessWidget {
   final String? hint;
   final double height;
   final double radius;
+
+  /// Image already stored on the server; shown until a new [file] is picked.
+  final String? networkUrl;
+
+  bool get _hasImage => file != null || networkUrl != null;
 
   @override
   Widget build(BuildContext context) {
@@ -181,15 +200,17 @@ class PhotoUploadBox extends StatelessWidget {
           color: const Color(0xffFAF8F4),
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
-            color: file == null ? tokens.border : tokens.accent,
-            width: file == null ? 1 : 1.5,
+            color: _hasImage ? tokens.accent : tokens.border,
+            width: _hasImage ? 1.5 : 1,
           ),
         ),
-        child: file != null
+        child: _hasImage
             ? Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.file(file!, fit: BoxFit.cover),
+                  file != null
+                      ? Image.file(file!, fit: BoxFit.cover)
+                      : Image.network(networkUrl!, fit: BoxFit.cover),
                   Positioned(
                     right: 10,
                     bottom: 10,

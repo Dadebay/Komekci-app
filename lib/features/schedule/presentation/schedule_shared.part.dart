@@ -1,6 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-
 const _weekdaysTk = ['Du', 'Si', 'Ça', 'Pe', 'An', 'Şe', 'Ýe'];
 const _weekdaysRu = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 const _weekdaysFullTk = [
@@ -216,6 +215,307 @@ String _apptStatusLabel(AppointmentStatus status, AppLanguage language) =>
       ),
     };
 
+Future<void> _rescheduleAppointment(
+  BuildContext context,
+  Appointment appointment,
+) async {
+  final language = context.read<LanguageProvider>().language;
+  String t({required String tk, required String ru, required String en}) =>
+      pickTr(language, tk: tk, ru: ru, en: en);
+  final bookingProvider = context.read<BookingProvider>();
+  final picked = await _pickAppointmentDateTime(
+    context,
+    language: language,
+    initial: appointment.startsAt,
+    minutes: appointment.minutes,
+    excludeId: appointment.id,
+    bookingProvider: bookingProvider,
+  );
+  if (picked == null || !context.mounted) return;
+  // Re-checked here, not just in the picker's chip state, in case the
+  // slot stopped being free between opening the sheet and confirming.
+  if (bookingProvider.hasConflict(
+    picked,
+    appointment.minutes,
+    excludeId: appointment.id,
+  )) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          t(
+            tk: 'Bu wagt eýýäm alyndy.',
+            ru: 'Это время уже занято.',
+            en: 'This time is already taken.',
+          ),
+        ),
+      ),
+    );
+    return;
+  }
+  await runApi(context, () => bookingProvider.reschedule(appointment.id, picked));
+}
+
+Future<void> _confirmCancelAppointment(
+  BuildContext context,
+  Appointment appointment,
+) async {
+  final language = context.read<LanguageProvider>().language;
+  String t({required String tk, required String ru, required String en}) =>
+      pickTr(language, tk: tk, ru: ru, en: en);
+  final confirmed = await _showConfirmDialog(
+    context,
+    icon: Icons.event_busy_outlined,
+    danger: true,
+    title: t(
+      tk: 'Ýazgyny ýatyrmaly?',
+      ru: 'Отменить запись?',
+      en: 'Cancel this booking?',
+    ),
+    message: t(
+      tk: '${appointment.clientName} üçin bu ýazgy ýatyrylar.',
+      ru: 'Запись для ${appointment.clientName} будет отменена.',
+      en: 'The booking for ${appointment.clientName} will be cancelled.',
+    ),
+    confirmLabel: t(tk: 'Ýatyr', ru: 'Отменить', en: 'Cancel'),
+    cancelLabel: t(tk: 'Ýok', ru: 'Нет', en: 'No'),
+  );
+  if (confirmed && context.mounted) {
+    await runApi(context, () => context.read<BookingProvider>().cancel(appointment.id));
+  }
+}
+
+/// Opens the bottom-sheet of actions (mark arrived, reschedule, cancel,
+/// go to profile, call) for an appointment. Shared between the schedule
+/// screen's timeline and the home dashboard's today table so tapping a
+/// customer row always surfaces the same actions instead of navigating away.
+void _openAppointmentActions(
+  BuildContext context,
+  Appointment appointment,
+  Customer? customer,
+  AppLanguage language,
+) {
+  String t({required String tk, required String ru, required String en}) =>
+      pickTr(language, tk: tk, ru: ru, en: en);
+  final tokens = context.appTokens;
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: tokens.surface,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (sheetContext) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: tokens.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                customer == null
+                    ? CircleAvatar(
+                        radius: 20,
+                        backgroundColor: const Color(0xffE6D2B1),
+                        child: AppIcon(
+                          Icons.person_outline,
+                          size: 18,
+                          color: tokens.textPrimary,
+                        ),
+                      )
+                    : _CustomerAvatar(customer: customer, radius: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        appointment.clientName,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (customer != null)
+                        Text(
+                          _handleFor(customer),
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: Colors.black45,
+                          ),
+                        ),
+                      Text(
+                        appointment.serviceName,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (customer != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: _StatusBadge2(
+                      label: _scheduleCustomerLabel(customer.status, language),
+                      color: _statusColor(customer.status),
+                      bg: _statusBg(customer.status),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            if (appointment.status == AppointmentStatus.expected) ...[
+              _SheetAction(
+                icon: Icons.check_circle_outline,
+                title: t(
+                  tk: 'Geldi diýip belle',
+                  ru: 'Отметить «Пришёл»',
+                  en: 'Mark as arrived',
+                ),
+                subtitle: t(
+                  tk: 'Müşderi geldi',
+                  ru: 'Клиент пришёл',
+                  en: 'Customer arrived',
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  context.read<BookingProvider>().arrive(appointment.id);
+                },
+              ),
+              _SheetAction(
+                icon: Icons.person_off_outlined,
+                danger: true,
+                title: t(
+                  tk: 'Gelmedi diýip belle',
+                  ru: 'Отметить «Не пришёл»',
+                  en: 'Mark as no-show',
+                ),
+                subtitle: t(
+                  tk: 'Müşderi gelmedi',
+                  ru: 'Клиент не пришёл',
+                  en: 'Customer did not show up',
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  runApi(context, () => context.read<BookingProvider>().markNoShow(appointment.id));
+                },
+              ),
+            ],
+            if (appointment.status == AppointmentStatus.arrived ||
+                appointment.status == AppointmentStatus.expected)
+              _SheetAction(
+                icon: Icons.task_alt_outlined,
+                title: t(
+                  tk: 'Tamamlandy diýip belle',
+                  ru: 'Отметить «Завершено»',
+                  en: 'Mark as completed',
+                ),
+                subtitle: t(
+                  tk: 'Hyzmat tamamlandy',
+                  ru: 'Услуга завершена',
+                  en: 'Service completed',
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  runApi(context, () => context.read<BookingProvider>().complete(appointment.id));
+                },
+              ),
+            if (appointment.status == AppointmentStatus.expected ||
+                appointment.status == AppointmentStatus.arrived) ...[
+              _SheetAction(
+                icon: Icons.calendar_month_outlined,
+                title: t(
+                  tk: 'Wagty üýtgetmek',
+                  ru: 'Изменить время',
+                  en: 'Change time',
+                ),
+                subtitle: t(
+                  tk: 'Bu ýazgyny başga wagtga geçirmek',
+                  ru: 'Перенести эту запись',
+                  en: 'Move this booking to another time',
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _rescheduleAppointment(context, appointment);
+                },
+              ),
+              _SheetAction(
+                icon: Icons.close,
+                danger: true,
+                title: t(
+                  tk: 'Ýazgyny ýatyrmak',
+                  ru: 'Отменить запись',
+                  en: 'Cancel booking',
+                ),
+                subtitle: t(
+                  tk: 'Bu ýazgyny ýatyrmak',
+                  ru: 'Отменить эту запись',
+                  en: 'Cancel this booking',
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _confirmCancelAppointment(context, appointment);
+                },
+              ),
+            ],
+            if (customer != null)
+              _SheetAction(
+                icon: Icons.person_outline,
+                title: t(
+                  tk: 'Müşderi profiline geçmek',
+                  ru: 'Перейти в профиль клиента',
+                  en: 'Go to customer profile',
+                ),
+                subtitle: t(
+                  tk: 'Müşderiniň maglumatlaryny görmek',
+                  ru: 'Посмотреть данные клиента',
+                  en: 'View customer details',
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  Navigator.push(
+                    context,
+                    pageRoute(CustomerDetailScreen(customerId: customer.id)),
+                  );
+                },
+              ),
+            _SheetAction(
+              icon: Icons.phone_outlined,
+              callAction: true,
+              title: t(tk: 'Jaň etmek', ru: 'Позвонить', en: 'Call'),
+              subtitle: t(
+                tk: 'Müşdere jaň etmek',
+                ru: 'Позвонить клиенту',
+                en: 'Call the customer',
+              ),
+              onTap: () => launchUrl(
+                Uri(
+                  scheme: 'tel',
+                  path: (customer?.phone ?? '').replaceAll(' ', ''),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 sealed class _TimelineEntry {}
 
 class _ApptEntry extends _TimelineEntry {
@@ -230,7 +530,9 @@ class _FreeEntry extends _TimelineEntry {
 }
 
 /// Fills the gaps between [appointments] (already sorted, same day) with
-/// free-time blocks across the 09:00–19:00 working window.
+/// free-time blocks across the 09:00–19:00 working window, broken into
+/// 1-hour chunks (a trailing shorter chunk for whatever's left over) rather
+/// than one long block, so each hour can be booked on its own.
 List<_TimelineEntry> _buildTimeline(
   List<Appointment> appointments,
   DateTime day,
@@ -238,16 +540,27 @@ List<_TimelineEntry> _buildTimeline(
   final workStart = DateTime(day.year, day.month, day.day, 9);
   final workEnd = DateTime(day.year, day.month, day.day, 19);
   final entries = <_TimelineEntry>[];
+
+  void addFreeChunks(DateTime start, DateTime end) {
+    var chunkStart = start;
+    while (chunkStart.isBefore(end)) {
+      final chunkEnd = chunkStart.add(const Duration(hours: 1));
+      entries.add(
+        _FreeEntry(chunkStart, chunkEnd.isBefore(end) ? chunkEnd : end),
+      );
+      chunkStart = chunkEnd;
+    }
+  }
+
   var cursor = workStart;
   for (final appt in appointments) {
     if (appt.startsAt.isAfter(cursor)) {
-      entries.add(_FreeEntry(cursor, appt.startsAt));
+      addFreeChunks(cursor, appt.startsAt);
     }
     entries.add(_ApptEntry(appt));
     final apptEnd = appt.startsAt.add(const Duration(minutes: 30));
     if (apptEnd.isAfter(cursor)) cursor = apptEnd;
   }
-  if (workEnd.isAfter(cursor)) entries.add(_FreeEntry(cursor, workEnd));
+  if (workEnd.isAfter(cursor)) addFreeChunks(cursor, workEnd);
   return entries;
 }
-

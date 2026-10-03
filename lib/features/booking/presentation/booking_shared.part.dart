@@ -16,13 +16,6 @@ const _monthsEn = [
   'December',
 ];
 
-/// Working hours applied to every day the salon is open. No real weekly
-/// schedule provider exists yet (see `MasterSchedule` — static, unwired), so
-/// this mirrors the same Mon–Sat 09:00–19:00 hours shown there. Sunday is closed.
-const _bookingOpenHour = 9;
-const _bookingCloseHour = 19;
-const _bookingSlotStepMinutes = 15;
-
 /// Translator shorthand shared by every screen in this flow.
 typedef _Tr =
     String Function({

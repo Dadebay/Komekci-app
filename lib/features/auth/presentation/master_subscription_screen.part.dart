@@ -12,27 +12,29 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
   int _amount = _topUpAmounts.first;
   bool _payByPhone = true;
 
-  /// How long the chosen top-up keeps the 20 manat / month subscription running.
+  /// How long the chosen top-up keeps the monthly subscription running.
   String _coverageText(AppLanguage language) {
-    final months = _amount ~/ _monthlyFee;
-    final remainder = _amount % _monthlyFee;
+    final settings = context.watch<AppSettingsProvider>();
+    final fee = settings.monthlyFee;
+    final cur = settings.currencyLabel(language);
+    final months = _amount ~/ fee;
+    final remainder = _amount % fee;
     switch (language) {
       case AppLanguage.tk:
-        final base = '$months aýlyk abuna (aýda $_monthlyFee manat)';
+        final base = '$months aýlyk abuna (aýda $fee $cur)';
         return remainder == 0
             ? base
-            : '$base · $remainder manat balansda galýar';
+            : '$base · $remainder $cur balansda galýar';
       case AppLanguage.ru:
-        final base = 'Подписка на $months мес. (по $_monthlyFee манат)';
+        final base = 'Подписка на $months мес. (по $fee $cur)';
         return remainder == 0
             ? base
-            : '$base · $remainder манат останется на балансе';
+            : '$base · $remainder $cur останется на балансе';
       case AppLanguage.en:
-        final base =
-            '$months month(s) of subscription (at $_monthlyFee TMT/mo)';
+        final base = '$months month(s) of subscription (at $fee $cur/mo)';
         return remainder == 0
             ? base
-            : '$base · $remainder TMT stays on your balance';
+            : '$base · $remainder $cur stays on your balance';
     }
   }
 
@@ -42,6 +44,11 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
+    final settings = context.watch<AppSettingsProvider>();
+    final cur = settings.currencyLabel(language);
+    final fee = settings.monthlyFee;
+    final example = fee * 2 + fee ~/ 2;
+    final left = example - fee * 2;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: _MasterSetupHeader(
@@ -136,11 +143,7 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                                     ),
                                   ),
                                   TextSpan(
-                                    text: t(
-                                      tk: ' manat',
-                                      ru: ' манат',
-                                      en: ' TMT',
-                                    ),
+                                    text: ' $cur',
                                     style: const TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w500,
@@ -258,7 +261,7 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        t(tk: 'manat', ru: 'манат', en: 'TMT'),
+                                        cur,
                                         style: TextStyle(
                                           fontSize: 11,
                                           color: selected
@@ -345,7 +348,7 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                         ru: 'Банковская карта',
                         en: 'Bank card',
                       ),
-                      subtitle: 'Halkbank, Rysgal, Senagat bank',
+                      subtitle: 'Halkbank, Rysgal, Senagat',
                       selected: !_payByPhone,
                       onTap: () => setState(() => _payByPhone = false),
                     ),
@@ -384,9 +387,9 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                                 const SizedBox(height: 6),
                                 Text(
                                   t(
-                                    tk: 'Goýan puluňyz balansyňyzda saklanýar. Her aý abuna üçin 20 manat awtomatiki tutulýar. Mysal üçin, balansyňyza 50 manat doldursaňyz, birinji aý 20 manat, indiki aý ýene 20 manat tutulýar. Galan 10 manat balansyňyzda saklanýar.',
-                                    ru: 'Внесённые деньги хранятся на балансе. Каждый месяц за подписку автоматически списывается 20 манат. Например, при пополнении на 50 манат: 20 манат спишется в первый месяц, ещё 20 — во второй, оставшиеся 10 останутся на балансе.',
-                                    en: 'Money you add is kept on your balance. Each month, 20 TMT is automatically deducted for the subscription. For example, if you top up 50 TMT, 20 TMT is deducted the first month, another 20 TMT the next, and the remaining 10 TMT stays on your balance.',
+                                    tk: 'Goýan puluňyz balansyňyzda saklanýar. Her aý abuna üçin $fee $cur awtomatiki tutulýar. Mysal üçin, balansyňyza $example $cur doldursaňyz, birinji aý $fee $cur, indiki aý ýene $fee $cur tutulýar. Galan $left $cur balansyňyzda saklanýar.',
+                                    ru: 'Внесённые деньги хранятся на балансе. Каждый месяц за подписку автоматически списывается $fee $cur. Например, при пополнении на $example $cur: $fee $cur спишется в первый месяц, ещё $fee — во второй, оставшиеся $left останутся на балансе.',
+                                    en: 'Money you add is kept on your balance. Each month, $fee $cur is automatically deducted for the subscription. For example, if you top up $example $cur, $fee $cur is deducted the first month, another $fee $cur the next, and the remaining $left $cur stays on your balance.',
                                   ),
                                   style: TextStyle(
                                     color: tokens.textSecondary,
@@ -427,7 +430,7 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
     } else {
       await showDialog<void>(
         context: context,
-        builder: (_) => _BankPickerDialog(amount: _amount),
+        builder: (_) => _CardPaymentDialog(amount: _amount),
       );
     }
   }

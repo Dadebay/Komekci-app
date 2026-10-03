@@ -27,22 +27,46 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _bootstrap() async {
-    final result = await Future.wait([
+    final settings = context.read<AppSettingsProvider>();
+    final language = context.read<LanguageProvider>();
+    final theme = context.read<ThemeProvider>();
+    final auth = context.read<AuthProvider>();
+    final result = await Future.wait<Object?>([
       Connectivity().checkConnectivity(),
       _minimumDuration(),
+      settings.load(),
+      auth.restoreSession(),
     ]);
+    final restore = result[3] as SessionRestore;
+    // The backend decides which languages exist; don't leave the app on one
+    // it has switched off.
+    if (!settings.locales.contains(language.language)) {
+      language.select(settings.locales.first);
+    }
     final networks = result.first as List<ConnectivityResult>;
     _isOnline = networks.any((value) => value != ConnectivityResult.none);
     if (_isOnline) await _initializeFirebase();
+    final me = restore == SessionRestore.signedIn ? auth.me : null;
+    if (me != null) {
+      // Signed in already: take the account's saved language and theme.
+      for (final candidate in settings.locales) {
+        if (candidate.name == me.locale) language.select(candidate);
+      }
+      for (final candidate in KomekciTheme.values) {
+        if (candidate.name == me.theme) theme.select(candidate);
+      }
+    }
     if (mounted) {
       setState(
         () => _status = _isOnline ? 'Taýýar' : 'Internet ýok - offline režim',
       );
     }
     await Future<void>.delayed(const Duration(milliseconds: 450));
-    if (mounted) {
-      Navigator.pushReplacement(context, pageRoute(const LanguageScreen()));
-    }
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      pageRoute(me == null ? const LanguageScreen() : homeForAccount(me)),
+    );
   }
 
   Future<void> _initializeFirebase() async {
@@ -56,6 +80,7 @@ class _SplashScreenState extends State<SplashScreen>
       await FirebaseMessagingService(
         onToken: (token) async {
           debugPrint('KOMEKCI FCM TOKEN: $token');
+          if (mounted) context.read<DeviceRegistrar>().onToken(token);
         },
         onMessage: (message) {
           final notification = message.notification;

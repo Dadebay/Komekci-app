@@ -22,12 +22,33 @@ class ClientHomeDashboard extends StatelessWidget {
           children: [
             const _ClientHomeHeader(),
             const SizedBox(height: 18),
-            Field(
-              label: t(tk: 'Ussany ýa-da hyzmaty gözle', ru: 'Найти мастера или услугу', en: 'Search for a master or service'),
-              icon: Icons.search,
+            InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () => Navigator.push(context, pageRoute(const ConnectMasterScreen())),
+              child: Container(
+                height: 54,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: tokens.surfaceElevated,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: tokens.border),
+                ),
+                child: Row(
+                  children: [
+                    AppIcon(Icons.search, size: 22, color: tokens.textSecondary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        t(tk: 'Ussany lakamy ýa-da telefony boýunça tap', ru: 'Найти мастера по никнейму или телефону', en: 'Find a master by nickname or phone'),
+                        style: TextStyle(color: tokens.textSecondary, fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
-            _ClientCategoryRow(tk: tk),
             const SizedBox(height: 26),
             _SectionHeader(
               title: t(tk: 'Meniň ýazgylarym', ru: 'Мои записи', en: 'My bookings'),
@@ -72,8 +93,8 @@ class _ClientHomeHeader extends StatelessWidget {
         CircleAvatar(
           radius: 26,
           backgroundColor: const Color(0xffE6D2B1),
-          backgroundImage: profile.avatar != null ? FileImage(profile.avatar!) : null,
-          child: profile.avatar == null ? AppIcon(Icons.person_outline, size: 24, color: tokens.textPrimary) : null,
+          backgroundImage: profileImage(file: profile.avatar, url: profile.avatarUrl),
+          child: profile.avatar == null && profile.avatarUrl == null ? AppIcon(Icons.person_outline, size: 24, color: tokens.textPrimary) : null,
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -87,7 +108,7 @@ class _ClientHomeHeader extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
-              Text(profile.phone, style: TextStyle(fontSize: 12.5, color: tokens.textSecondary)),
+              Text(displayPhone(profile.phone), style: TextStyle(fontSize: 12.5, color: tokens.textSecondary)),
             ],
           ),
         ),
@@ -122,57 +143,6 @@ class _ClientHomeHeader extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ClientCategoryRow extends StatelessWidget {
-  const _ClientCategoryRow({required this.tk});
-  final bool tk;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.appTokens;
-    final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
-    final items = [
-      (t(tk: 'Saç', ru: 'Волосы', en: 'Hair'), Icons.content_cut),
-      (t(tk: 'Manikýur', ru: 'Маникюр', en: 'Manicure'), Icons.brush_outlined),
-      (t(tk: 'Kosmetolog', ru: 'Косметолог', en: 'Cosmetology'), Icons.face_retouching_natural),
-      (t(tk: 'Göz', ru: 'Глаза', en: 'Eyes'), Icons.remove_red_eye_outlined),
-      (t(tk: 'Massaž', ru: 'Массаж', en: 'Massage'), Icons.bed_outlined),
-      (t(tk: 'Beýleki', ru: 'Другое', en: 'Other'), Icons.grid_view_outlined),
-    ];
-    return Row(
-      children: items
-          .map(
-            (item) => Expanded(
-              child: InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () => Navigator.push(context, pageRoute(const CategoryScreen())),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(color: tokens.surfaceElevated, borderRadius: BorderRadius.circular(16)),
-                        child: AppIcon(item.$2, size: 20, color: tokens.textPrimary),
-                      ),
-                      const SizedBox(height: 6),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(item.$1, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600), maxLines: 1),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          )
-          .toList(),
     );
   }
 }

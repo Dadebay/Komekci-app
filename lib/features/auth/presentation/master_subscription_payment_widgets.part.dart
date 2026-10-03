@@ -90,13 +90,8 @@ class _PaymentMethodTile extends StatelessWidget {
   }
 }
 
-/// Outcome of a simulated top-up attempt — there's no real payment provider,
-/// so the dialogs roll [_rollPaymentSucceeded] themselves and report it here.
+/// How a top-up attempt ended, as reported by the payment system.
 enum _PaymentOutcome { success, pending, failed }
-
-/// ~90% of attempts succeed immediately; the rest are simulated as pending
-/// (a mock stand-in for "still waiting on the operator/bank").
-bool _rollPaymentSucceeded() => Random().nextDouble() < 0.9;
 
 /// Success/pending/failed screen shown inside a payment dialog after the
 /// user confirms. Pending and failed both offer a retry, per the same rule.
@@ -108,13 +103,15 @@ class _PaymentResultPanel extends StatelessWidget {
     required this.onRetry,
   });
   final _PaymentOutcome outcome;
-  final int amount;
+  final String amount;
   final VoidCallback onContinue;
   final VoidCallback onRetry;
+
 
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
+    final cur = context.watch<AppSettingsProvider>().currencyLabel(language);
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
@@ -128,9 +125,9 @@ class _PaymentResultPanel extends StatelessWidget {
           en: 'Payment successful!',
         ),
         t(
-          tk: 'Balansyňyza $amount manat goşuldy.',
-          ru: 'На ваш баланс зачислено $amount манат.',
-          en: '$amount TMT has been added to your balance.',
+          tk: 'Balansyňyza $amount $cur goşuldy.',
+          ru: 'На ваш баланс зачислено $amount $cur.',
+          en: '$amount $cur has been added to your balance.',
         ),
       ),
       _PaymentOutcome.pending => (
@@ -198,6 +195,8 @@ class _PaymentResultPanel extends StatelessWidget {
           _MasterActionButton(
             label: isSuccess
                 ? t(tk: 'Dowam et', ru: 'Продолжить', en: 'Continue')
+                : outcome == _PaymentOutcome.pending
+                ? t(tk: 'Täzeden barla', ru: 'Проверить снова', en: 'Check again')
                 : t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
             enabled: true,
             onTap: isSuccess ? onContinue : onRetry,

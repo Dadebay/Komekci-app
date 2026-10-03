@@ -236,10 +236,10 @@ class _CustomerAvatar extends StatelessWidget {
   Widget build(BuildContext context) => CircleAvatar(
     radius: radius,
     backgroundColor: const Color(0xffE6D2B1),
-    backgroundImage: customer.photoPath.isEmpty
+    backgroundImage: customer.photoUrl == null
         ? null
-        : FileImage(File(customer.photoPath)),
-    child: customer.photoPath.isEmpty
+        : NetworkImage(customer.photoUrl!),
+    child: customer.photoUrl == null
         ? AppIcon(
             Icons.person_outline,
             size: radius * .75,

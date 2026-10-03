@@ -72,7 +72,7 @@ class _BalanceChip extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            '$balance ${pickTr(language, tk: "manat", ru: "манат", en: "TMT")}',
+            '$balance ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
           ),
         ],

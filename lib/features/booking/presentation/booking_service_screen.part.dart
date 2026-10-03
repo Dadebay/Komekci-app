@@ -3,21 +3,50 @@ part of '../../../app/komekci_app.dart';
 // ── Step 1 — service selection ──────────────────────────────────────────────
 
 class BookingPage extends StatefulWidget {
-  const BookingPage({
-    super.key,
-    this.masterName = 'Aida Saparova',
-    this.preselectedServiceName,
-  });
-  final String masterName;
-  final String? preselectedServiceName;
+  const BookingPage({super.key, required this.master, this.preselectedServiceId});
+
+  /// The connected master being booked.
+  final MasterBrief master;
+  final int? preselectedServiceId;
 
   @override
   State<BookingPage> createState() => _BookingPageState();
 }
 
 class _BookingPageState extends State<BookingPage> {
-  String? _selectedId;
-  bool _preselectApplied = false;
+  List<ApiService>? _services;
+  bool _acceptingBookings = true;
+  Object? _error;
+  int? _selectedId;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _services = null;
+      _error = null;
+    });
+    try {
+      final result = await context.read<ClientRepository>().masterServices(widget.master.id);
+      if (!mounted) return;
+      setState(() {
+        _services = [
+          for (final s in result.services)
+            if (!s.isHidden) s,
+        ];
+        _acceptingBookings = result.acceptingBookings;
+        _selectedId = _services!.any((s) => s.id == widget.preselectedServiceId)
+            ? widget.preselectedServiceId
+            : null;
+      });
+    } catch (error) {
+      if (mounted) setState(() => _error = error);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,22 +54,9 @@ class _BookingPageState extends State<BookingPage> {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
-    final services = context
-        .watch<ServiceProvider>()
-        .services
-        .where((s) => s.active)
-        .toList();
-    if (!_preselectApplied && widget.preselectedServiceName != null) {
-      _preselectApplied = true;
-      for (final s in services) {
-        if (s.name == widget.preselectedServiceName) {
-          _selectedId = s.id;
-          break;
-        }
-      }
-    }
-    SalonService? selected;
-    for (final s in services) {
+    final services = _services;
+    ApiService? selected;
+    for (final s in services ?? const <ApiService>[]) {
       if (s.id == _selectedId) selected = s;
     }
 
@@ -82,11 +98,37 @@ class _BookingPageState extends State<BookingPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    widget.masterName,
+                    widget.master.name,
                     style: TextStyle(color: tokens.textSecondary),
                   ),
                   const SizedBox(height: 20),
-                  if (services.isEmpty)
+                  if (_error != null)
+                    RetryErrorState(
+                      title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
+                      text: apiErrorMessage(_error!, language),
+                      retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                      onRetry: _load,
+                    )
+                  else if (services == null)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (!_acceptingBookings)
+                    EmptyState(
+                      icon: Icons.event_busy_outlined,
+                      title: t(
+                        tk: 'Ýazgy wagtlaýyn ýapyk',
+                        ru: 'Запись временно закрыта',
+                        en: 'Bookings are paused',
+                      ),
+                      text: t(
+                        tk: 'Usta häzirlikçe täze ýazgylary kabul etmeýär.',
+                        ru: 'Мастер временно не принимает новые записи.',
+                        en: 'This master is not accepting new bookings right now.',
+                      ),
+                    )
+                  else if (services.isEmpty)
                     EmptyState(
                       icon: Icons.content_cut,
                       title: t(
@@ -103,7 +145,7 @@ class _BookingPageState extends State<BookingPage> {
                   else
                     ...services.map(
                       (s) => _ServiceOption(
-                        service: s,
+                        service: SalonService.fromApi(s),
                         selected: s.id == _selectedId,
                         tk: language == AppLanguage.tk,
                         onTap: () => setState(() => _selectedId = s.id),
@@ -133,7 +175,7 @@ class _BookingPageState extends State<BookingPage> {
                       pageRoute(
                         BookingDateTimeScreen(
                           service: selected!,
-                          masterName: widget.masterName,
+                          master: widget.master,
                         ),
                       ),
                     ),
@@ -231,7 +273,7 @@ class _ServiceOption extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        '${service.price} ${pickTr(context.watch<LanguageProvider>().language, tk: "manat", ru: "манат", en: "TMT")}',
+                        '${service.price} ${context.watch<AppSettingsProvider>().currencyLabel(context.watch<LanguageProvider>().language)}',
                         style: const TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w700,

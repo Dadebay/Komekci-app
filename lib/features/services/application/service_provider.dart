@@ -1,84 +1,124 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/network/api_exception.dart';
+import '../../../core/session/session_scoped.dart';
+import '../../../data/models/api/user_models.dart';
 import '../../../data/models/salon_service.dart';
+import '../../../data/repositories/master_repository.dart';
 
-/// In-memory service catalogue. Seeded with mock rows until the backend lands —
-/// swap [_seed] for a repository call and the UI stays as is.
-class ServiceProvider extends ChangeNotifier {
-  final List<SalonService> _services = List.of(_seed);
+/// The master's own service catalogue (`/me/services`). The server is the
+/// source of truth: every change goes there first and the list is updated
+/// from its answer (a hide/show toggle is applied at once and rolled back if
+/// the call fails).
+class ServiceProvider extends SessionScoped {
+  ServiceProvider(this._repository);
+
+  final MasterRepository _repository;
+
+  List<SalonService> _services = const [];
+  bool _loading = false;
+  ApiException? _error;
 
   List<SalonService> get services => List.unmodifiable(_services);
   int get activeCount => _services.where((service) => service.active).length;
+  bool get loading => _loading;
+  ApiException? get error => _error;
 
-  void add(SalonService service) {
-    _services.add(service);
+  @override
+  void reset() {
+    _services = const [];
+    _loading = false;
+    _error = null;
+  }
+
+  @override
+  Future<void> onSignedIn(Me me) async {
+    if (me.isMaster) await load();
+  }
+
+  Future<void> load() async {
+    _loading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      final list = await _repository.services();
+      _services = [for (final s in list) SalonService.fromApi(s)];
+    } on ApiException catch (e) {
+      _error = e;
+      debugPrint('Loading services failed: $e');
+    }
+    _loading = false;
     notifyListeners();
   }
 
-  void update(SalonService service) {
-    final index = _services.indexWhere((existing) => existing.id == service.id);
-    if (index == -1) return;
-    _services[index] = service;
+  /// Creates a service; the server requires a photo. Throws `ApiException`.
+  Future<void> add({
+    required String name,
+    required String description,
+    required int price,
+    required int minutes,
+    required String photoPath,
+  }) async {
+    final created = await _repository.createService(
+      name: name,
+      description: description,
+      price: price.toDouble(),
+      durationMin: minutes,
+      photoPath: photoPath,
+    );
+    _services = [..._services, SalonService.fromApi(created)];
     notifyListeners();
   }
 
-  void remove(String id) {
-    _services.removeWhere((service) => service.id == id);
+  /// Saves edits; pass [photoPath] only when the photo was replaced.
+  Future<void> update(SalonService service, {String? photoPath}) async {
+    final saved = await _repository.updateService(
+      int.parse(service.id),
+      name: service.name,
+      description: service.description,
+      price: service.price.toDouble(),
+      durationMin: service.minutes,
+      photoPath: photoPath,
+    );
+    _replace(SalonService.fromApi(saved));
+  }
+
+  Future<void> remove(String id) async {
+    await _repository.deleteService(int.parse(id));
+    _services = [
+      for (final s in _services)
+        if (s.id != id) s,
+    ];
     notifyListeners();
   }
 
-  void toggleActive(String id) {
+  /// Hides/shows the service for clients (`is_hidden`).
+  Future<void> toggleActive(String id) async {
     final index = _services.indexWhere((service) => service.id == id);
     if (index == -1) return;
-    _services[index] = _services[index].copyWith(active: !_services[index].active);
+    final before = _services[index];
+    _services = [..._services]..[index] = before.copyWith(active: !before.active);
     notifyListeners();
+    try {
+      final saved = await _repository.updateService(
+        int.parse(id),
+        isHidden: before.active,
+      );
+      _replace(SalonService.fromApi(saved));
+    } catch (_) {
+      final i = _services.indexWhere((service) => service.id == id);
+      if (i != -1) {
+        _services = [..._services]..[i] = before;
+        notifyListeners();
+      }
+      rethrow;
+    }
   }
 
-  static const _seed = [
-    SalonService(
-      id: 's1',
-      name: 'Zenanlar üçin saç kesmek',
-      description: 'Saçyň görnüşine we uzynlygyna görä kesmek.',
-      price: 80,
-      minutes: 45,
-      imagePath: 'assets/images/v1.png',
-      imageIsAsset: true,
-    ),
-    SalonService(
-      id: 's2',
-      name: 'Saç boýamak',
-      description: 'Ýokary hilli harytlar bilen boýag hyzmaty.',
-      price: 150,
-      minutes: 90,
-      imagePath: 'assets/images/v2.png',
-      imageIsAsset: true,
-    ),
-    SalonService(
-      id: 's3',
-      name: 'Saç ukalaryny etmek',
-      description: 'Dürli görnüşli ukalar we ýörite stiller.',
-      price: 70,
-      minutes: 40,
-      imagePath: 'assets/images/v3.png',
-      imageIsAsset: true,
-    ),
-    SalonService(
-      id: 's4',
-      name: 'Gaş düzeltmek',
-      description: 'Gaşyňyza laýyk şekil bermek we arassalamak.',
-      price: 30,
-      minutes: 20,
-      imagePath: 'assets/images/v4.png',
-      imageIsAsset: true,
-    ),
-    SalonService(
-      id: 's5',
-      name: 'Manikýur',
-      description: 'Elleriň arassalanmagy we timarlanmagy.',
-      price: 40,
-      minutes: 30,
-      imagePath: 'assets/images/v1.png',
-      imageIsAsset: true,
-    ),
-  ];
+  void _replace(SalonService service) {
+    final index = _services.indexWhere((existing) => existing.id == service.id);
+    if (index == -1) return;
+    _services = [..._services]..[index] = service;
+    notifyListeners();
+  }
 }

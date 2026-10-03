@@ -23,6 +23,8 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
   late int? _minutes = widget.service?.minutes;
   File? _photo;
   bool _showErrors = false;
+  bool _saving = false;
+  String? _error;
 
   bool get _isEditing => widget.service != null;
   bool get _hasImage =>
@@ -39,26 +41,48 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (!_complete) {
       setState(() => _showErrors = true);
       return;
     }
     final provider = context.read<ServiceProvider>();
+    final language = context.read<LanguageProvider>().language;
+    final navigator = Navigator.of(context);
     final service = SalonService(
-      id:
-          widget.service?.id ??
-          DateTime.now().microsecondsSinceEpoch.toString(),
+      id: widget.service?.id ?? '0',
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
       price: int.parse(_priceController.text.trim()),
       minutes: _minutes!,
-      imagePath: _photo?.path ?? widget.service!.imagePath,
-      imageIsAsset: _photo == null && (widget.service?.imageIsAsset ?? false),
+      imagePath: widget.service?.imagePath ?? '',
       active: widget.service?.active ?? true,
     );
-    _isEditing ? provider.update(service) : provider.add(service);
-    Navigator.pop(context);
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      if (_isEditing) {
+        await provider.update(service, photoPath: _photo?.path);
+      } else {
+        await provider.add(
+          name: service.name,
+          description: service.description,
+          price: service.price,
+          minutes: service.minutes,
+          photoPath: _photo!.path,
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _error = apiErrorMessage(error, language);
+      });
+      return;
+    }
+    navigator.pop();
   }
 
   @override
@@ -290,11 +314,21 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
-              child: _MasterActionButton(
-                label: t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save'),
-                enabled: _complete,
-                leading: Icons.save_outlined,
-                onTap: _save,
+              child: Column(
+                children: [
+                  if (_error != null) ...[
+                    _FieldError(_error!),
+                    const SizedBox(height: 10),
+                  ],
+                  _MasterActionButton(
+                    label: _saving
+                        ? t(tk: 'Saklanýar...', ru: 'Сохранение...', en: 'Saving...')
+                        : t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save'),
+                    enabled: _complete && !_saving,
+                    leading: Icons.save_outlined,
+                    onTap: _save,
+                  ),
+                ],
               ),
             ),
           ],
@@ -368,6 +402,7 @@ class _FormField extends StatelessWidget {
     this.maxLength,
     this.keyboardType,
     this.invalid = false,
+    this.enabled = true,
   });
 
   final TextEditingController controller;
@@ -377,6 +412,7 @@ class _FormField extends StatelessWidget {
   final int? maxLength;
   final TextInputType? keyboardType;
   final bool invalid;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -384,6 +420,7 @@ class _FormField extends StatelessWidget {
     final tokens = context.appTokens;
     return TextField(
       controller: controller,
+      enabled: enabled,
       maxLines: maxLines,
       maxLength: maxLength,
       keyboardType: keyboardType,

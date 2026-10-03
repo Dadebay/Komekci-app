@@ -144,7 +144,7 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
                       ),
                     ),
                     subtitle: Text(
-                      '${s.price} ${t(tk: "manat", ru: "манат", en: "TMT")}',
+                      '${s.price} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.black54,
@@ -164,34 +164,44 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
     if (picked != null) setState(() => _selectedService = picked);
   }
 
-  void _save() {
+  bool _saving = false;
+
+  Future<void> _save() async {
     if (!_complete) {
       setState(() => _showErrors = true);
       return;
     }
-    final customerProvider = context.read<CustomerProvider>();
-    final Customer customer;
+    if (_saving) return;
+    final customers = context.read<CustomerProvider>();
+    final bookings = context.read<BookingProvider>();
+    final navigator = Navigator.of(context);
+    final String name;
+    final String? phone;
     if (_mode == _NewSlotCustomerMode.existing) {
-      customer = _selectedCustomer!;
+      name = _selectedCustomer!.name;
+      phone = _selectedCustomer!.phone.isEmpty ? null : _selectedCustomer!.phone;
     } else {
-      customer = Customer(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        name: _newNameController.text.trim(),
-        phone: _newPhoneController.text.trim(),
-        status: CustomerStatus.newClient,
-      );
-      customerProvider.add(customer);
+      name = _newNameController.text.trim();
+      phone = toApiPhone(_newPhoneController.text);
     }
-    context.read<BookingProvider>().create(
-      service: _selectedService!.name,
-      startsAt: widget.start,
-      price: _selectedService!.price.toDouble(),
-      minutes: _selectedService!.minutes,
-      clientName: customer.name,
-      customerId: customer.id,
-    );
-    customerProvider.update(customer.copyWith(nextVisit: widget.start));
-    Navigator.pop(context);
+    final service = _selectedService!;
+    setState(() => _saving = true);
+    final ok = await runApi(context, () async {
+      await bookings.create(
+        serviceId: int.parse(service.id),
+        clientName: name,
+        phone: phone,
+        startsAt: widget.start,
+      );
+    });
+    if (!mounted) return;
+    if (!ok) {
+      setState(() => _saving = false);
+      return;
+    }
+    // A new client only exists on the server from now on.
+    customers.load();
+    navigator.pop();
   }
 
   @override

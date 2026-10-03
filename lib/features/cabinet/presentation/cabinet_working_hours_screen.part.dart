@@ -8,28 +8,80 @@ class WorkingHoursScreen extends StatefulWidget {
 }
 
 class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
-  // Mock weekly schedule: open flag plus start and end hour per weekday.
+  // Weekly schedule from the server, Monday (0) to Sunday (6).
   var _days = List.generate(
     7,
-    (index) => (
-      open: index != 6,
-      start: index == 5 ? '10:00' : '09:00',
-      end: index == 5 ? '17:00' : '19:00',
-    ),
+    (index) => (open: index != 6, start: '09:00', end: '19:00'),
   );
 
   String _breakStart = '13:00';
   String _breakEnd = '14:00';
+  bool _breakEnabled = false;
 
-  DateTime? _vacationStart = DateTime(2024, 6, 10);
-  DateTime? _vacationEnd = DateTime(2024, 6, 20);
-  String _vacationNote = '';
-  bool _vacationEnabled = true;
+  bool _initialized = false;
+  bool _saving = false;
 
-  bool _bufferEnabled = true;
-  int _bufferMinutes = 10;
+  /// Copies the saved schedule into the editable fields, once it is loaded.
+  void _adopt(ScheduleProvider schedule) {
+    if (_initialized || !schedule.loaded) return;
+    _initialized = true;
+    final saved = schedule.days;
+    if (saved.length == 7) {
+      _days = [
+        for (final d in saved)
+          (
+            open: d.isWorking,
+            start: d.startTime ?? '09:00',
+            end: d.endTime ?? '19:00',
+          ),
+      ];
+      final withBreak = saved.where(
+        (d) => d.isWorking && d.breakStart != null && d.breakEnd != null,
+      );
+      if (withBreak.isNotEmpty) {
+        _breakEnabled = true;
+        _breakStart = withBreak.first.breakStart!;
+        _breakEnd = withBreak.first.breakEnd!;
+      }
+    }
+  }
 
-  var _specialDays = <DateTime>[];
+  Future<void> _save(AppLanguage language) async {
+    if (_saving) return;
+    final schedule = context.read<ScheduleProvider>();
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _saving = true);
+    final ok = await runApi(context, () async {
+      await schedule.saveWeek([
+        for (var i = 0; i < 7; i++)
+          ScheduleDay(
+            weekday: i,
+            isWorking: _days[i].open,
+            startTime: _days[i].start,
+            endTime: _days[i].end,
+            breakStart: _breakEnabled ? _breakStart : null,
+            breakEnd: _breakEnabled ? _breakEnd : null,
+          ),
+      ]);
+    });
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (!ok) return;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          pickTr(
+            language,
+            tk: 'Iş wagty ýatda saklandy.',
+            ru: 'График сохранён.',
+            en: 'Working hours saved.',
+          ),
+        ),
+      ),
+    );
+    navigator.pop();
+  }
 
   Future<void> _applyToAllDays(AppLanguage language) async {
     final result = await _pickTimeRange(
@@ -80,6 +132,8 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
+    final schedule = context.watch<ScheduleProvider>();
+    _adopt(schedule);
     final names = switch (language) {
       AppLanguage.tk => [
         'Duşenbe',
@@ -109,8 +163,9 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
         'Sunday',
       ],
     };
-    final vacationValue = _vacationStart != null && _vacationEnd != null
-        ? '${formatDate(_vacationStart!)} - ${formatDate(_vacationEnd!)}'
+    final nextVacation = schedule.nextVacation;
+    final vacationValue = nextVacation != null
+        ? '${formatDate(nextVacation.start)} - ${formatDate(nextVacation.end)}'
         : t(tk: 'Bellenmedik', ru: 'Не задано', en: 'Not set');
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -280,8 +335,11 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                       ru: 'Время перерыва',
                       en: 'Break time',
                     ),
-                    value: '$_breakStart - $_breakEnd',
-                    showChevron: true,
+                    value: _breakEnabled
+                        ? '$_breakStart - $_breakEnd'
+                        : t(tk: 'Ýok', ru: 'Нет', en: 'None'),
+                    switchValue: _breakEnabled,
+                    onSwitchChanged: (v) => setState(() => _breakEnabled = v),
                     onTap: () async {
                       final result = await _pickTimeRange(
                         context,
@@ -298,6 +356,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                         setState(() {
                           _breakStart = result.$1;
                           _breakEnd = result.$2;
+                          _breakEnabled = true;
                         });
                       }
                     },
@@ -305,61 +364,15 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                   _SettingRow(
                     icon: Icons.event_busy_outlined,
                     title: t(tk: 'Dynç alyş ', ru: 'Отпуск', en: 'Vacation'),
+                    subtitle: schedule.vacations.length > 1
+                        ? '${schedule.vacations.length} ${t(tk: "döwür", ru: "периодов", en: "periods")}'
+                        : null,
                     value: vacationValue,
-                    switchValue: _vacationEnabled,
-                    onSwitchChanged: (v) =>
-                        setState(() => _vacationEnabled = v),
-                    onTap: () async {
-                      final result =
-                          await Navigator.push<
-                            ({DateTime start, DateTime end, String note})?
-                          >(
-                            context,
-                            pageRoute(
-                              VacationScreen(
-                                initialStart: _vacationStart,
-                                initialEnd: _vacationEnd,
-                                initialNote: _vacationNote,
-                              ),
-                            ),
-                          );
-                      if (result != null) {
-                        setState(() {
-                          _vacationStart = result.start;
-                          _vacationEnd = result.end;
-                          _vacationNote = result.note;
-                          _vacationEnabled = true;
-                        });
-                      }
-                    },
-                  ),
-                  _SettingRow(
-                    icon: Icons.timer_outlined,
-                    title: t(
-                      tk: 'Müşderileriň arasyndaky arakesme',
-                      ru: 'Перерыв между клиентами',
-                      en: 'Break between customers',
+                    showChevron: true,
+                    onTap: () => Navigator.push(
+                      context,
+                      pageRoute(const VacationScreen()),
                     ),
-                    subtitle: t(
-                      tk: 'Her bir müşderiden soň goşmaça wagt',
-                      ru: 'Дополнительное время после каждого клиента',
-                      en: 'Extra time after each customer',
-                    ),
-                    value:
-                        '$_bufferMinutes ${t(tk: "min", ru: "мин", en: "min")}',
-                    switchValue: _bufferEnabled,
-                    onSwitchChanged: (v) => setState(() => _bufferEnabled = v),
-                    onTap: () async {
-                      final picked = await _pickDuration(
-                        context,
-                        language: language,
-                        current: _bufferMinutes,
-                        options: const [5, 10, 15, 20, 30, 45, 60],
-                        unit: t(tk: 'min', ru: 'мин', en: 'min'),
-                      );
-                      if (picked != null)
-                        setState(() => _bufferMinutes = picked);
-                    },
                   ),
                   _SettingRow(
                     icon: Icons.event_busy_outlined,
@@ -374,17 +387,12 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                       en: 'Mark additional days or changes',
                     ),
                     value:
-                        '${_specialDays.length} ${t(tk: "gün", ru: "дн.", en: "days")}',
+                        '${schedule.overrides.length} ${t(tk: "gün", ru: "дн.", en: "days")}',
                     showChevron: true,
-                    onTap: () async {
-                      final result = await Navigator.push<List<DateTime>?>(
-                        context,
-                        pageRoute(
-                          SpecialDaysScreen(initialDays: _specialDays),
-                        ),
-                      );
-                      if (result != null) setState(() => _specialDays = result);
-                    },
+                    onTap: () => Navigator.push(
+                      context,
+                      pageRoute(const SpecialDaysScreen()),
+                    ),
                   ),
                 ],
               ),
@@ -397,22 +405,9 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                   ru: 'Сохранить изменения',
                   en: 'Save changes',
                 ),
-                enabled: true,
+                enabled: schedule.loaded && !_saving,
                 leading: Icons.save_outlined,
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        t(
-                          tk: 'Iş wagty ýatda saklandy.',
-                          ru: 'График сохранён.',
-                          en: 'Working hours saved.',
-                        ),
-                      ),
-                    ),
-                  );
-                  Navigator.pop(context);
-                },
+                onTap: () => _save(language),
               ),
             ),
           ],

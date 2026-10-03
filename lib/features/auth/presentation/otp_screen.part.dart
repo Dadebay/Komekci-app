@@ -1,25 +1,36 @@
 part of '../../../app/komekci_app.dart';
 
-/// The mock "correct" code — no SMS backend exists, so the flow needs a
-/// fixed value to validate against for the wrong-code error path to be real.
-const _demoOtpCode = '123456';
-
+/// Six-digit SMS code entry, shared by sign-in and the client sign-up.
+///
+/// [phone] is the API form (`+993XXXXXXXX`). On success the account is loaded
+/// and [nextBuilder] decides where to go; the whole stack is replaced so back
+/// can't return to the code screen.
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key, required this.next, this.phone = '+993 61 123456'});
-  final Widget next;
+  const OtpScreen({
+    super.key,
+    required this.phone,
+    required this.nextBuilder,
+    this.onResend,
+  });
   final String phone;
+  final Widget Function(Me me) nextBuilder;
+
+  /// Custom resend (used while registering); defaults to a sign-in code.
+  final Future<void> Function()? onResend;
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final _codeControllers = List.generate(6, (_) => TextEditingController());
-  final _codeNodes = List.generate(6, (_) => FocusNode());
+  static const _length = 6;
+  final _codeControllers = List.generate(_length, (_) => TextEditingController());
+  final _codeNodes = List.generate(_length, (_) => FocusNode());
   int _secondsLeft = 60;
   Timer? _timer;
   String? _error;
   bool _verifying = false;
+  bool _resending = false;
 
   @override
   void initState() {
@@ -42,8 +53,8 @@ class _OtpScreenState extends State<OtpScreen> {
 
   bool get _codeReady => _codeControllers.every((c) => c.text.isNotEmpty);
 
-  void _startCountdown() {
-    setState(() => _secondsLeft = 60);
+  void _startCountdown([int seconds = 60]) {
+    setState(() => _secondsLeft = seconds);
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsLeft == 0) {
@@ -54,38 +65,64 @@ class _OtpScreenState extends State<OtpScreen> {
     });
   }
 
-  void _resend() {
-    for (final c in _codeControllers) {
-      c.clear();
+  Future<void> _resend() async {
+    if (_resending) return;
+    final language = context.read<LanguageProvider>().language;
+    final auth = context.read<AuthProvider>();
+    setState(() {
+      _resending = true;
+      _error = null;
+    });
+    try {
+      await (widget.onResend ?? () => auth.requestOtp(widget.phone))();
+      if (!mounted) return;
+      for (final c in _codeControllers) {
+        c.clear();
+      }
+      _codeNodes.first.requestFocus();
+      setState(() => _resending = false);
+      _startCountdown();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _resending = false;
+        _error = apiErrorMessage(error, language);
+      });
+      // The server may say how long to wait before another code.
+      if (error is ApiException && error.retryAfterSeconds != null) {
+        _startCountdown(error.retryAfterSeconds!);
+      }
     }
-    setState(() => _error = null);
-    _codeNodes.first.requestFocus();
-    _startCountdown();
   }
 
   void _changeNumber() => Navigator.maybePop(context);
 
-  Future<void> _verify(String Function({required String tk, required String ru, required String en}) t) async {
+  Future<void> _verify() async {
     if (!_codeReady || _verifying) return;
     final code = _codeControllers.map((c) => c.text).join();
-    if (code != _demoOtpCode) {
-      setState(() => _error = t(tk: 'Kod nädogry. Täzeden synanyşyň.', ru: 'Неверный код. Попробуйте снова.', en: 'Incorrect code. Please try again.'));
-      return;
-    }
+    final language = context.read<LanguageProvider>().language;
+    final auth = context.read<AuthProvider>();
     setState(() {
       _error = null;
       _verifying = true;
     });
-    await Future<void>.delayed(const Duration(milliseconds: 350));
+    final Me me;
+    try {
+      me = await auth.verifyOtp(widget.phone, code);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _verifying = false;
+        _error = apiErrorMessage(error, language);
+      });
+      return;
+    }
     if (!mounted) return;
-    context.read<AuthProvider>().verifyOtp();
     // Clears the splash/language/role/login/otp stack instead of pushing on
     // top of it, so the signed-in home's tabs correctly report canPop()
     // false (no stray back button) and swiping back can't land on the OTP
     // screen.
-    Navigator.of(
-      context,
-    ).pushAndRemoveUntil(pageRoute(widget.next), (route) => false);
+    Navigator.of(context).pushAndRemoveUntil(pageRoute(widget.nextBuilder(me)), (route) => false);
   }
 
   @override
@@ -94,15 +131,16 @@ class _OtpScreenState extends State<OtpScreen> {
     String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final countdown = '00:${_secondsLeft.toString().padLeft(2, '0')}';
     final tokens = context.appTokens;
+    final shownPhone = displayPhone(widget.phone);
 
     return AppScaffold(
       title: t(tk: 'Belgiňizi tassyklaň', ru: 'Подтвердите номер', en: 'Verify your number'),
-      subtitle: t(tk: '${widget.phone} belgisine 6 sanly kod iberdik', ru: 'Мы отправили 6-значный код на ${widget.phone}', en: 'We sent a 6-digit code to ${widget.phone}'),
+      subtitle: t(tk: '$shownPhone belgisine 6 sanly kod iberdik', ru: 'Мы отправили 6-значный код на $shownPhone', en: 'We sent a 6-digit code to $shownPhone'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 30),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: List.generate(6, (index) => _codeBox(index, tokens))),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: List.generate(_length, (index) => _codeBox(index, tokens))),
           if (_error != null) ...[const SizedBox(height: 10), _FieldError(_error!)],
           const SizedBox(height: 16),
           Row(
@@ -134,7 +172,8 @@ class _OtpScreenState extends State<OtpScreen> {
           const Spacer(),
           PrimaryButton(
             label: _verifying ? t(tk: 'Barlanýar...', ru: 'Проверка...', en: 'Verifying...') : t(tk: 'Tassykla', ru: 'Подтвердить', en: 'Verify'),
-            onTap: () => _verify(t),
+            loading: _verifying,
+            onTap: _verify,
           ),
         ],
       ),
@@ -149,16 +188,18 @@ class _OtpScreenState extends State<OtpScreen> {
       focusNode: _codeNodes[index],
       textAlign: TextAlign.center,
       keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       maxLength: 1,
       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
       onChanged: (value) {
         if (_error != null) setState(() => _error = null);
-        if (value.isNotEmpty && index < 5) {
+        if (value.isNotEmpty && index < _length - 1) {
           _codeNodes[index + 1].requestFocus();
         } else if (value.isEmpty && index > 0) {
           _codeNodes[index - 1].requestFocus();
         }
         setState(() {});
+        if (_codeReady) _verify();
       },
       decoration: InputDecoration(
         counterText: '',
@@ -175,4 +216,3 @@ class _OtpScreenState extends State<OtpScreen> {
     ),
   );
 }
-

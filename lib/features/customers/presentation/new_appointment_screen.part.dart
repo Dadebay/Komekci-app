@@ -45,11 +45,14 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
     }
   }
 
-  void _confirm(List<SalonService> services) {
+  bool _saving = false;
+
+  Future<void> _confirm(List<SalonService> services) async {
     if (_serviceIndex == null) {
       setState(() => _showErrors = true);
       return;
     }
+    if (_saving) return;
     final tk = context.read<LanguageProvider>().isTurkmen;
     final service = services[_serviceIndex!];
     final startsAt = DateTime(
@@ -59,18 +62,25 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
       _time.hour,
       _time.minute,
     );
-    context.read<BookingProvider>().create(
-      service: service.name,
-      startsAt: startsAt,
-      price: service.price.toDouble(),
-      minutes: service.minutes,
-      clientName: widget.customer.name,
-      customerId: widget.customer.id,
-    );
-    context.read<CustomerProvider>().update(
-      widget.customer.copyWith(nextVisit: startsAt),
-    );
-    _finish(tk, service, startsAt);
+    final bookings = context.read<BookingProvider>();
+    final customers = context.read<CustomerProvider>();
+    setState(() => _saving = true);
+    final ok = await runApi(context, () async {
+      await bookings.create(
+        serviceId: int.parse(service.id),
+        clientName: widget.customer.name,
+        phone: widget.customer.phone.isEmpty ? null : widget.customer.phone,
+        startsAt: startsAt,
+      );
+    });
+    if (!mounted) return;
+    if (!ok) {
+      setState(() => _saving = false);
+      return;
+    }
+    // A brand-new client only exists on the server from this moment.
+    customers.load();
+    await _finish(tk, service, startsAt);
   }
 
   Future<void> _finish(bool tk, SalonService service, DateTime startsAt) async {
@@ -126,7 +136,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
                                 ),
                               ),
                               Text(
-                                widget.customer.phone,
+                                displayPhone(widget.customer.phone),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: tokens.textSecondary,
@@ -189,7 +199,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
                                 ),
                               ),
                               Text(
-                                '${entry.value.price} ${tk ? "manat" : "манат"}',
+                                '${entry.value.price} ${context.watch<AppSettingsProvider>().currencyLabel(tk ? AppLanguage.tk : AppLanguage.ru)}',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: tokens.textSecondary,

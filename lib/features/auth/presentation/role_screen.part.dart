@@ -1,6 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-
 class RoleScreen extends StatefulWidget {
   const RoleScreen({super.key});
   @override
@@ -22,22 +21,9 @@ class _RoleScreenState extends State<RoleScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Spacer(flex: 2),
-              const Text(
-                'KÖMEKÇI',
-                style: TextStyle(
-                  fontSize: 39,
-                  letterSpacing: 4,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              const Text('KÖMEKÇI', style: TextStyle(fontSize: 39, letterSpacing: 4, fontWeight: FontWeight.w500)),
               const Spacer(flex: 2),
-              Text(
-                tr.chooseRole,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              Text(tr.chooseRole, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500)),
               const SizedBox(height: 36),
               Row(
                 children: [
@@ -48,9 +34,7 @@ class _RoleScreenState extends State<RoleScreen> {
                       title: tr.master,
                       text: tr.masterText,
                       onTap: () {
-                        context.read<AuthProvider>().chooseRole(
-                          UserRole.master,
-                        );
+                        context.read<AuthProvider>().chooseRole(UserRole.master);
                         setState(() => isMaster = true);
                       },
                     ),
@@ -63,9 +47,7 @@ class _RoleScreenState extends State<RoleScreen> {
                       title: tr.client,
                       text: tr.clientText,
                       onTap: () {
-                        context.read<AuthProvider>().chooseRole(
-                          UserRole.client,
-                        );
+                        context.read<AuthProvider>().chooseRole(UserRole.client);
                         setState(() => isMaster = false);
                       },
                     ),
@@ -76,23 +58,13 @@ class _RoleScreenState extends State<RoleScreen> {
               RoleContinueButton(
                 label: tr.continueText,
                 onTap: () {
-                  context.read<AuthProvider>().chooseRole(
-                    isMaster ? UserRole.master : UserRole.client,
-                  );
-                  Navigator.push(
-                    context,
-                    pageRoute(
-                      isMaster
-                          ? const MasterPhoneScreen()
-                          : const RoleOnboardingScreen(isMaster: false),
-                    ),
-                  );
+                  context.read<AuthProvider>().chooseRole(isMaster ? UserRole.master : UserRole.client);
+                  Navigator.push(context, pageRoute(isMaster ? const MasterPhoneScreen() : const RoleOnboardingScreen(isMaster: false)));
                 },
               ),
               const SizedBox(height: 9),
               TextButton(
-                onPressed: () =>
-                    Navigator.push(context, pageRoute(const LoginScreen())),
+                onPressed: () => Navigator.push(context, pageRoute(const LoginScreen())),
                 child: Center(child: Text(tr.haveAccount)),
               ),
             ],

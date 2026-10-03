@@ -45,9 +45,14 @@ class _CabinetScreenState extends State<CabinetScreen> {
         const BillingScreen(),
       ),
       (
-        Icons.switch_account_outlined,
-        t(tk: 'Rejimi üýtgetmek', ru: 'Изменить режим', en: 'Change mode'),
-        const ChangeModeScreen(),
+        Icons.person_add_alt_1_outlined,
+        t(tk: 'Baglanyşyk haýyşlary', ru: 'Запросы на связь', en: 'Connection requests'),
+        const RequestsScreen(),
+      ),
+      (
+        Icons.inbox_outlined,
+        t(tk: 'Bildirişler', ru: 'Уведомления', en: 'Notifications'),
+        const ClientNotificationSettingsScreen(),
       ),
     ];
     return Scaffold(
@@ -102,10 +107,46 @@ class _CabinetScreenState extends State<CabinetScreen> {
               onTap: () =>
                   Navigator.push(context, pageRoute(const SupportScreen())),
             ),
+            const SizedBox(height: 14),
+            _SubscriptionNotice(),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton.icon(
+                onPressed: () => _confirmSignOut(context),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: tokens.danger,
+                  side: BorderSide.none,
+                  shape: const StadiumBorder(),
+                ),
+                icon: const AppIcon(Icons.logout, size: 18),
+                label: Text(t(tk: 'Ulgamdan çyk', ru: 'Выйти', en: 'Sign out')),
+              ),
+            ),
+            Center(
+              child: TextButton(
+                onPressed: () => _confirmDeleteAccount(context),
+                child: Text(
+                  t(tk: 'Hasaby poz', ru: 'Удалить аккаунт', en: 'Delete account'),
+                  style: TextStyle(color: tokens.textSecondary, fontSize: 12),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+}
+
+/// Uploads the master's new profile photo, surfacing a failure as a snackbar.
+Future<void> _uploadAvatar(BuildContext context, File file) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final language = context.read<LanguageProvider>().language;
+  try {
+    await context.read<MasterProfileProvider>().setAvatar(file);
+  } catch (error) {
+    messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
   }
 }
 
@@ -144,8 +185,8 @@ class _MasterCard extends StatelessWidget {
               children: [
                 AvatarPicker(
                   file: profile.avatar,
-                  onPicked: (file) =>
-                      context.read<MasterProfileProvider>().setAvatar(file),
+                  networkUrl: profile.avatarUrl,
+                  onPicked: (file) => _uploadAvatar(context, file),
                   radius: 36,
                 ),
                 const SizedBox(width: 14),
@@ -171,7 +212,7 @@ class _MasterCard extends StatelessWidget {
                       const SizedBox(height: 10),
                       _MetaLine(
                         icon: Icons.phone_outlined,
-                        text: profile.phone,
+                        text: displayPhone(profile.phone),
                       ),
                       const SizedBox(height: 5),
                       _MetaLine(
@@ -221,7 +262,7 @@ class _MasterCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '$balance ${t(tk: "manat", ru: "манат", en: "TMT")}',
+                        '$balance ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -378,6 +419,59 @@ class _HelpCard extends StatelessWidget {
             ),
             const AppIcon(Icons.chevron_right, color: Colors.black26, size: 18),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Tells a master whose subscription is not active that new bookings are
+/// closed, with a shortcut to top up. Renders nothing when all is well.
+class _SubscriptionNotice extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final billing = context.watch<BillingProvider>();
+    if (!billing.loaded || billing.status == SubscriptionStatus.active) {
+      return const SizedBox.shrink();
+    }
+    final language = context.watch<LanguageProvider>().language;
+    final tokens = context.appTokens;
+    final suspended = billing.status == SubscriptionStatus.suspended;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: GestureDetector(
+        onTap: () => Navigator.push(context, pageRoute(const BillingScreen())),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: (suspended ? tokens.danger : tokens.warning).withValues(alpha: .1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              AppIcon(Icons.info_outline, color: suspended ? tokens.danger : tokens.warning, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  suspended
+                      ? pickTr(
+                          language,
+                          tk: 'Abuna işjeň däl: täze ýazgylar ýapyk. Açmak üçin balansy dolduryň.',
+                          ru: 'Подписка не активна: новые записи закрыты. Пополните баланс, чтобы открыть.',
+                          en: 'Subscription is not active: new bookings are closed. Top up to reopen.',
+                        )
+                      : pickTr(
+                          language,
+                          tk: 'Tölegiň wagty ýakynlaşdy. Balansy dolduryň.',
+                          ru: 'Скоро нужно оплатить подписку. Пополните баланс.',
+                          en: 'Your subscription payment is due soon. Please top up.',
+                        ),
+                  style: const TextStyle(fontSize: 12.5, height: 1.4),
+                ),
+              ),
+              const AppIcon(Icons.chevron_right, size: 18),
+            ],
+          ),
         ),
       ),
     );

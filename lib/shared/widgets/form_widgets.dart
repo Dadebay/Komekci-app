@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
+import '../../data/models/api/user_models.dart';
 import 'app_icon.dart';
 import 'primary_button.dart';
 
@@ -137,7 +138,8 @@ class SelectRow extends StatelessWidget {
 }
 
 class MasterPreviewCard extends StatelessWidget {
-  const MasterPreviewCard({super.key});
+  const MasterPreviewCard({super.key, required this.master});
+  final MasterBrief master;
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
@@ -150,25 +152,43 @@ class MasterPreviewCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 27,
-            backgroundColor: const Color(0xffE6D2B1),
-            child: AppIcon(Icons.face_2_outlined, color: tokens.textPrimary),
-          ),
+          MasterAvatar(url: master.photoUrl, radius: 27),
           const SizedBox(width: 13),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Aida Saparova', style: TextStyle(fontSize: 17)),
-                SizedBox(height: 3),
-                Text('@aida_style · Ashgabat', style: TextStyle(color: Colors.black54)),
+                Text(master.name, style: const TextStyle(fontSize: 17)),
+                const SizedBox(height: 3),
+                Text(
+                  '@${master.nickname}${master.address.isEmpty ? '' : ' · ${master.address}'}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: tokens.textSecondary, fontSize: 13),
+                ),
               ],
             ),
           ),
-          AppIcon(Icons.chevron_right),
+          AppIcon(Icons.chevron_right, color: tokens.disabled),
         ],
       ),
+    );
+  }
+}
+
+/// A master's round photo from the server, or a neutral placeholder.
+class MasterAvatar extends StatelessWidget {
+  const MasterAvatar({super.key, this.url, this.radius = 27});
+  final String? url;
+  final double radius;
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: const Color(0xffE6D2B1),
+      backgroundImage: url == null ? null : NetworkImage(url!),
+      child: url == null ? AppIcon(Icons.face_2_outlined, color: tokens.textPrimary, size: radius * .9) : null,
     );
   }
 }

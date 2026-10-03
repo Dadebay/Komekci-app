@@ -87,8 +87,6 @@ class _ServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final provider = context.read<ServiceProvider>();
     final tokens = context.appTokens;
     return AnimatedOpacity(
@@ -146,7 +144,7 @@ class _ServiceCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '${service.price} ${t(tk: "manat", ru: "манат", en: "TMT")}',
+                        '${service.price} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -181,7 +179,7 @@ class _ServiceCard extends StatelessWidget {
                       value: service.active,
                       activeThumbColor: tokens.surface,
                       activeTrackColor: tokens.textPrimary,
-                      onChanged: (_) => provider.toggleActive(service.id),
+                      onChanged: (_) => _toggle(context, provider),
                     ),
                   ),
                 ),
@@ -215,6 +213,7 @@ class _ServiceCard extends StatelessWidget {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final provider = context.read<ServiceProvider>();
+    final messenger = ScaffoldMessenger.of(context);
     final confirmed = await _showConfirmDialog(
       context,
       icon: Icons.delete_outline,
@@ -232,7 +231,22 @@ class _ServiceCard extends StatelessWidget {
       confirmLabel: t(tk: 'Poz', ru: 'Удалить', en: 'Delete'),
       cancelLabel: t(tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
     );
-    if (confirmed) provider.remove(service.id);
+    if (!confirmed) return;
+    try {
+      await provider.remove(service.id);
+    } catch (error) {
+      messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
+    }
+  }
+
+  Future<void> _toggle(BuildContext context, ServiceProvider provider) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final language = context.read<LanguageProvider>().language;
+    try {
+      await provider.toggleActive(service.id);
+    } catch (error) {
+      messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
+    }
   }
 }
 
@@ -243,19 +257,39 @@ class ServiceThumb extends StatelessWidget {
   final double size;
 
   @override
-  Widget build(BuildContext context) => service.imageIsAsset
-      ? Image.asset(
-          service.imagePath,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-        )
-      : Image.file(
-          File(service.imagePath),
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-        );
+  Widget build(BuildContext context) {
+    if (service.imageIsNetwork) {
+      return Image.network(
+        service.imagePath,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholder(context),
+      );
+    }
+    if (service.imageIsAsset) {
+      return Image.asset(
+        service.imagePath,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+      );
+    }
+    if (service.imagePath.isEmpty) return _placeholder(context);
+    return Image.file(
+      File(service.imagePath),
+      width: size,
+      height: size,
+      fit: BoxFit.cover,
+    );
+  }
+
+  Widget _placeholder(BuildContext context) => Container(
+    width: size,
+    height: size,
+    color: context.appTokens.surfaceElevated,
+    child: AppIcon(Icons.image_outlined, color: context.appTokens.disabled),
+  );
 }
 
 class _SquareIconButton extends StatelessWidget {

@@ -65,6 +65,47 @@ class _NotificationCard extends StatelessWidget {
                     _formatNotificationTime(notification.receivedAt),
                     style: TextStyle(fontSize: 11, color: tokens.textSecondary),
                   ),
+                  if (_waitlistOfferId(notification) case final offerId?) ...[
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: tokens.textPrimary,
+                            shape: const StadiumBorder(),
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                          ),
+                          onPressed: () => runApi(
+                            context,
+                            () => context.read<ClientBookingsProvider>().acceptWaitlistOffer(offerId),
+                          ),
+                          child: Text(pickTr(
+                            context.read<LanguageProvider>().language,
+                            tk: 'Kabul et',
+                            ru: 'Принять',
+                            en: 'Accept',
+                          )),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            shape: const StadiumBorder(),
+                            side: BorderSide(color: tokens.border),
+                          ),
+                          onPressed: () => runApi(
+                            context,
+                            () => context.read<ClientBookingsProvider>().declineWaitlistOffer(offerId),
+                          ),
+                          child: Text(pickTr(
+                            context.read<LanguageProvider>().language,
+                            tk: 'Ret et',
+                            ru: 'Отказаться',
+                            en: 'Decline',
+                          )),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -89,4 +130,17 @@ String _formatNotificationTime(DateTime time) {
   final hh = time.hour.toString().padLeft(2, '0');
   final mm = time.minute.toString().padLeft(2, '0');
   return '${formatDate(time)} · $hh:$mm';
+}
+
+/// Id of a "better time freed up" offer carried by a notification, if any.
+/// The API documents `POST /waitlist/{id}/accept|decline` but not the
+/// notification payload; `waitlist_id` / `waitlist_offer_id` are the keys
+/// expected there.
+int? _waitlistOfferId(AppNotification n) {
+  for (final key in const ['waitlist_id', 'waitlist_offer_id']) {
+    final raw = n.data[key];
+    final id = raw is num ? raw.toInt() : int.tryParse('$raw');
+    if (id != null) return id;
+  }
+  return null;
 }

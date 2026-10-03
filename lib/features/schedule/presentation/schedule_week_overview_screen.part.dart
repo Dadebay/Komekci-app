@@ -50,6 +50,9 @@ class _WeekOverviewScreenState extends State<WeekOverviewScreen> {
     final tokens = context.appTokens;
     final bookingProvider = context.watch<BookingProvider>();
     final days = List.generate(7, (i) => _weekStart.add(Duration(days: i)));
+    bookingProvider
+      ..prefetch(days.first)
+      ..prefetch(days.last);
     final counts = [for (final d in days) bookingProvider.onDay(d).length];
     final maxCount = counts.fold(0, (m, c) => c > m ? c : m);
 
@@ -94,7 +97,7 @@ class _WeekOverviewScreenState extends State<WeekOverviewScreen> {
             ...List.generate(7, (i) {
               final day = days[i];
               final count = counts[i];
-              final isToday = _sameDay(day, DateTime(2026, 8, 13));
+              final isToday = _sameDay(day, appToday());
               final density = maxCount == 0 ? 0.0 : count / maxCount;
               return InkWell(
                 onTap: () {

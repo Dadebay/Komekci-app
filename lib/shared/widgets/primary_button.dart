@@ -4,9 +4,17 @@ import '../../core/theme/app_theme_tokens.dart';
 import 'app_icon.dart';
 
 class PrimaryButton extends StatelessWidget {
-  const PrimaryButton({super.key, required this.label, required this.onTap});
+  const PrimaryButton({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.loading = false,
+  });
   final String label;
   final VoidCallback onTap;
+
+  /// Disables the button and swaps the arrow for a spinner while a request runs.
+  final bool loading;
   @override
   Widget build(BuildContext context) {
     final t = context.appTokens;
@@ -19,7 +27,7 @@ class PrimaryButton extends StatelessWidget {
           shape: const StadiumBorder(),
           padding: const EdgeInsets.only(left: 22, right: 10),
         ),
-        onPressed: onTap,
+        onPressed: loading ? null : onTap,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -35,7 +43,16 @@ class PrimaryButton extends StatelessWidget {
             ),
             CircleAvatar(
               backgroundColor: t.accent,
-              child: AppIcon(Icons.arrow_forward, color: t.accentOn, size: 20),
+              child: loading
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: t.accentOn,
+                      ),
+                    )
+                  : AppIcon(Icons.arrow_forward, color: t.accentOn, size: 20),
             ),
           ],
         ),

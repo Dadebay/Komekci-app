@@ -15,24 +15,45 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
   late final _nameController = TextEditingController(
     text: context.read<ClientProfileProvider>().name,
   );
-  late final _phoneController = TextEditingController(
-    text: context.read<ClientProfileProvider>().phone,
-  );
+  bool _saving = false;
+  String? _error;
 
   @override
   void dispose() {
     _nameController.dispose();
-    _phoneController.dispose();
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     final name = _nameController.text.trim();
-    final phone = _phoneController.text.trim();
-    if (name.isEmpty || phone.isEmpty) return;
-    context.read<ClientProfileProvider>().update(name: name, phone: phone);
+    if (name.length < 2 || name.length > 50) {
+      setState(() => _error = pickTr(
+        context.read<LanguageProvider>().language,
+        tk: 'Ady 2-50 harp aralygynda giriziň',
+        ru: 'Имя должно быть от 2 до 50 символов',
+        en: 'Name must be 2-50 characters',
+      ));
+      return;
+    }
     final language = context.read<LanguageProvider>().language;
-    ScaffoldMessenger.of(context).showSnackBar(
+    final profile = context.read<ClientProfileProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await profile.save(name: name);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        _error = apiErrorMessage(error, language);
+      });
+      return;
+    }
+    messenger.showSnackBar(
       SnackBar(
         content: Text(
           pickTr(
@@ -44,7 +65,36 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
         ),
       ),
     );
-    Navigator.pop(context);
+    navigator.pop();
+  }
+
+  Future<void> _changeAvatar(File file) async {
+    final language = context.read<LanguageProvider>().language;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await context.read<ClientProfileProvider>().setAvatar(file);
+    } catch (error) {
+      messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
+    }
+  }
+
+  Future<void> _changePhone() async {
+    final language = context.read<LanguageProvider>().language;
+    final messenger = ScaffoldMessenger.of(context);
+    if (await showChangePhoneDialog(context)) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            pickTr(
+              language,
+              tk: 'Telefon belgisi üýtgedildi.',
+              ru: 'Номер телефона изменён.',
+              en: 'Phone number updated.',
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -70,8 +120,8 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
                   Center(
                     child: AvatarPicker(
                       file: profile.avatar,
-                      onPicked: (file) =>
-                          context.read<ClientProfileProvider>().setAvatar(file),
+                      networkUrl: profile.avatarUrl,
+                      onPicked: _changeAvatar,
                       radius: 46,
                     ),
                   ),
@@ -82,16 +132,41 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
                     controller: _nameController,
                   ),
                   const SizedBox(height: 14),
-                  _EditField(
-                    label: t(
-                      tk: 'Telefon belgiňiz',
-                      ru: 'Номер телефона',
-                      en: 'Phone number',
-                    ),
-                    icon: Icons.phone_outlined,
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
+                  Text(
+                    t(tk: 'Telefon belgiňiz', ru: 'Номер телефона', en: 'Phone number'),
+                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
                   ),
+                  const SizedBox(height: 7),
+                  InkWell(
+                    onTap: _changePhone,
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      height: 52,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: tokens.surfaceElevated,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: tokens.border),
+                      ),
+                      child: Row(
+                        children: [
+                          AppIcon(Icons.phone_outlined, color: tokens.textPrimary, size: 18),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              displayPhone(profile.phone),
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          Text(
+                            t(tk: 'Üýtget', ru: 'Изменить', en: 'Change'),
+                            style: TextStyle(color: tokens.accent, fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_error != null) _FieldError(_error!),
                 ],
               ),
             ),
@@ -99,6 +174,7 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: PrimaryButton(
                 label: t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save'),
+                loading: _saving,
                 onTap: _save,
               ),
             ),
@@ -114,12 +190,10 @@ class _EditField extends StatelessWidget {
     required this.label,
     required this.icon,
     required this.controller,
-    this.keyboardType,
   });
   final String label;
   final IconData icon;
   final TextEditingController controller;
-  final TextInputType? keyboardType;
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +208,6 @@ class _EditField extends StatelessWidget {
         const SizedBox(height: 7),
         TextField(
           controller: controller,
-          keyboardType: keyboardType,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           decoration: InputDecoration(
             prefixIconConstraints: const BoxConstraints.tightFor(

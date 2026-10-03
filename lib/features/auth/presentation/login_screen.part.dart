@@ -9,6 +9,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
   bool _showPhoneError = false;
+  bool _busy = false;
+  String? _serverError;
 
   @override
   void dispose() {
@@ -124,8 +126,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         keyboardType: TextInputType.phone,
                         inputFormatters: const [_TurkmenPhoneFormatter()],
                         onChanged: (_) {
-                          if (_showPhoneError) {
-                            setState(() => _showPhoneError = false);
+                          if (_showPhoneError || _serverError != null) {
+                            setState(() {
+                              _showPhoneError = false;
+                              _serverError = null;
+                            });
                           }
                         },
                         style: const TextStyle(
@@ -149,7 +154,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? (isTurkmen
                                     ? '8 sanly telefon belgisini ýazyň'
                                     : 'Введите 8-значный номер')
-                              : null,
+                              : _serverError,
+                          errorMaxLines: 3,
                           filled: true,
                           fillColor: tokens.surfaceElevated,
                           enabledBorder: OutlineInputBorder(
@@ -168,6 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 14),
                       PrimaryButton(
                         label: isTurkmen ? 'OTP iber' : 'Отправить код',
+                        loading: _busy,
                         onTap: _continueToOtp,
                       ),
                       const SizedBox(height: 15),
@@ -195,22 +202,34 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _continueToOtp() {
+  Future<void> _continueToOtp() async {
     final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
     if (digits.length != 8) {
       setState(() => _showPhoneError = true);
       return;
     }
     final auth = context.read<AuthProvider>();
-    auth.sendOtp();
+    final language = context.read<LanguageProvider>().language;
+    final phone = toApiPhone(digits);
+    setState(() {
+      _busy = true;
+      _serverError = null;
+    });
+    try {
+      await auth.requestOtp(phone);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _serverError = apiErrorMessage(error, language);
+      });
+      return;
+    }
+    if (!mounted) return;
+    setState(() => _busy = false);
     Navigator.push(
       context,
-      pageRoute(
-        OtpScreen(
-          phone: '+993 ${_phoneController.text}',
-          next: auth.isMaster ? const MasterHome() : const ClientHome(),
-        ),
-      ),
+      pageRoute(OtpScreen(phone: phone, nextBuilder: homeForAccount)),
     );
   }
 }

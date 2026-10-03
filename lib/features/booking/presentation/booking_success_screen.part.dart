@@ -8,7 +8,7 @@ class BookingSuccessScreen extends StatefulWidget {
     required this.appointment,
     required this.masterName,
   });
-  final Appointment appointment;
+  final ClientBooking appointment;
   final String masterName;
 
   @override

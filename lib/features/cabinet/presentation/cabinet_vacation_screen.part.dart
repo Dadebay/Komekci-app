@@ -1,37 +1,39 @@
 part of '../../../app/komekci_app.dart';
 
+/// Makes sure every month between [from] and [to] is in the calendar cache,
+/// so "bookings in this period" is counted from real data.
+Future<void> _loadMonthsBetween(
+  BookingProvider bookings,
+  DateTime from,
+  DateTime to,
+) async {
+  var cursor = DateTime(from.year, from.month);
+  final last = DateTime(to.year, to.month);
+  while (!cursor.isAfter(last)) {
+    await bookings.ensureLoaded(cursor);
+    cursor = DateTime(cursor.year, cursor.month + 1);
+  }
+}
+
+/// The master's vacations (`/me/vacations`): the list on top, and a form to
+/// add another period. Each add/remove is sent to the server immediately.
 class VacationScreen extends StatefulWidget {
-  const VacationScreen({
-    super.key,
-    this.initialStart,
-    this.initialEnd,
-    this.initialNote = '',
-  });
-  final DateTime? initialStart;
-  final DateTime? initialEnd;
-  final String initialNote;
+  const VacationScreen({super.key});
 
   @override
   State<VacationScreen> createState() => _VacationScreenState();
 }
 
 class _VacationScreenState extends State<VacationScreen> {
-  late DateTime _start = widget.initialStart ?? DateTime.now();
-  late DateTime _end =
-      widget.initialEnd ?? DateTime.now().add(const Duration(days: 7));
-  late final _noteController = TextEditingController(text: widget.initialNote);
-
-  @override
-  void dispose() {
-    _noteController.dispose();
-    super.dispose();
-  }
+  late DateTime _start = appToday();
+  late DateTime _end = appToday().add(const Duration(days: 7));
+  bool _saving = false;
 
   Future<void> _pickDate({required bool isStart}) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: isStart ? _start : _end,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      firstDate: DateTime.now().subtract(const Duration(days: 1)),
       lastDate: DateTime.now().add(const Duration(days: 730)),
     );
     if (picked == null) return;
@@ -46,16 +48,24 @@ class _VacationScreenState extends State<VacationScreen> {
     });
   }
 
-  Future<void> _save() async {
+  Future<void> _add() async {
+    if (_saving) return;
+    final bookings = context.read<BookingProvider>();
+    final schedule = context.read<ScheduleProvider>();
+    setState(() => _saving = true);
+    try {
+      await _loadMonthsBetween(bookings, _start, _end);
+    } catch (_) {
+      // Counting affected bookings is advisory; the server decides.
+    }
+    if (!mounted) return;
     final rangeEnd = DateTime(_end.year, _end.month, _end.day, 23, 59);
-    final affected = context
-        .read<BookingProvider>()
-        .appointments
+    final affected = bookings.appointments
         .where(
           (a) =>
               !a.startsAt.isBefore(_start) &&
               !a.startsAt.isAfter(rangeEnd) &&
-              a.status != AppointmentStatus.cancelled,
+              a.status == AppointmentStatus.expected,
         )
         .toList();
     if (affected.isNotEmpty) {
@@ -65,21 +75,26 @@ class _VacationScreenState extends State<VacationScreen> {
         dateLabel: rangeLabel,
         count: affected.length,
       );
-      if (proceed == null || !mounted) return;
+      if (!mounted) return;
+      if (proceed == null) {
+        setState(() => _saving = false);
+        return;
+      }
       if (!proceed) {
-        Navigator.push(
-          context,
-          pageRoute(ScheduleScreen(initialDate: _start)),
-        );
+        setState(() => _saving = false);
+        Navigator.push(context, pageRoute(ScheduleScreen(initialDate: _start)));
         return;
       }
     }
+    final ok = await runApi(context, () => schedule.addVacation(_start, _end));
     if (!mounted) return;
-    Navigator.pop(context, (
-      start: _start,
-      end: _end,
-      note: _noteController.text.trim(),
-    ));
+    setState(() => _saving = false);
+    if (ok) {
+      setState(() {
+        _start = appToday();
+        _end = appToday().add(const Duration(days: 7));
+      });
+    }
   }
 
   @override
@@ -88,6 +103,7 @@ class _VacationScreenState extends State<VacationScreen> {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
+    final vacations = context.watch<ScheduleProvider>().vacations;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
@@ -112,12 +128,49 @@ class _VacationScreenState extends State<VacationScreen> {
                       en: 'During this time you will not accept bookings. Clients will not be able to book these days.',
                     ),
                   ),
+                  if (vacations.isNotEmpty) ...[
+                    const SizedBox(height: 22),
+                    Text(
+                      t(tk: 'Goşulan döwürler', ru: 'Добавленные периоды', en: 'Added periods'),
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 12),
+                    for (final v in vacations)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                        decoration: BoxDecoration(
+                          color: tokens.surfaceElevated,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: _softLine(tokens)),
+                        ),
+                        child: Row(
+                          children: [
+                            AppIcon(Icons.event_busy_outlined, color: tokens.accent, size: 18),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                '${formatDate(v.start)} – ${formatDate(v.end)}',
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => runApi(
+                                context,
+                                () => context.read<ScheduleProvider>().removeVacation(v.id),
+                              ),
+                              child: const AppIcon(Icons.close, color: Colors.black38, size: 18),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                   const SizedBox(height: 22),
                   Text(
                     t(
-                      tk: 'Dynç alyş döwri',
-                      ru: 'Период отпуска',
-                      en: 'Vacation period',
+                      tk: 'Täze dynç alyş döwri',
+                      ru: 'Новый период отпуска',
+                      en: 'New vacation period',
                     ),
                     style: const TextStyle(
                       fontSize: 15,
@@ -146,36 +199,18 @@ class _VacationScreenState extends State<VacationScreen> {
                     icon: Icons.calendar_today_outlined,
                     onTap: () => _pickDate(isStart: false),
                   ),
-                  const SizedBox(height: 22),
-                  _FieldLabel(
-                    text: t(
-                      tk: 'Düşündiriş (islege görä)',
-                      ru: 'Комментарий (необязательно)',
-                      en: 'Comment (optional)',
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _FormField(
-                    controller: _noteController,
-                    hint: t(
-                      tk: 'Mysal: Tomusky dynç alyş',
-                      ru: 'Например: летний отпуск',
-                      en: 'Example: summer vacation',
-                    ),
-                    maxLines: 4,
-                    maxLength: 200,
-                    onChanged: () => setState(() {}),
-                  ),
                 ],
               ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: _MasterActionButton(
-                label: t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save'),
-                enabled: true,
-                leading: Icons.save_outlined,
-                onTap: _save,
+                label: _saving
+                    ? t(tk: 'Saklanýar...', ru: 'Сохранение...', en: 'Saving...')
+                    : t(tk: 'Dynç alyş goş', ru: 'Добавить отпуск', en: 'Add vacation'),
+                enabled: !_saving,
+                leading: Icons.add,
+                onTap: _add,
               ),
             ),
           ],

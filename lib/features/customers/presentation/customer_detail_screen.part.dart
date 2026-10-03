@@ -1,14 +1,33 @@
 part of '../../../app/komekci_app.dart';
 
-class CustomerDetailScreen extends StatelessWidget {
+class CustomerDetailScreen extends StatefulWidget {
   const CustomerDetailScreen({super.key, required this.customerId});
   final String customerId;
+
+  @override
+  State<CustomerDetailScreen> createState() => _CustomerDetailScreenState();
+}
+
+class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // The list only carries totals; the visit history and note come with
+    // the full card.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        runApi(context, () async {
+          await context.read<CustomerProvider>().loadCard(widget.customerId);
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final tk = context.watch<LanguageProvider>().isTurkmen;
     final provider = context.watch<CustomerProvider>();
-    final customer = _findCustomer(provider.customers, customerId);
+    final customer = _findCustomer(provider.customers, widget.customerId);
     if (customer == null) {
       Future.microtask(() {
         if (context.mounted) Navigator.maybePop(context);
@@ -89,7 +108,9 @@ class CustomerDetailScreen extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        customer.phone,
+                                        customer.phone.isEmpty
+                                            ? '—'
+                                            : displayPhone(customer.phone),
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: tokens.textSecondary,
@@ -98,25 +119,9 @@ class CustomerDetailScreen extends StatelessWidget {
                                     ],
                                   ),
                                   const SizedBox(height: 10),
-                                  GestureDetector(
-                                    onTap: () async {
-                                      final picked = await _pickCustomerStatus(
-                                        context,
-                                        tk: tk,
-                                        current: customer.status,
-                                      );
-                                      if (picked != null &&
-                                          picked != customer.status &&
-                                          context.mounted) {
-                                        context
-                                            .read<CustomerProvider>()
-                                            .updateStatus(customer.id, picked);
-                                      }
-                                    },
-                                    child: _StatusPill(
-                                      status: customer.status,
-                                      tk: tk,
-                                    ),
+                                  _StatusPill(
+                                    status: customer.status,
+                                    tk: tk,
                                   ),
                                 ],
                               ),
@@ -187,9 +192,9 @@ class CustomerDetailScreen extends StatelessWidget {
                           icon: Icons.content_cut,
                           accent: tokens.accent,
                           label: tk ? 'Şodny hyzmat' : 'Последняя услуга',
-                          value: customer.lastVisit == null
+                          value: customer.lastCompletedVisit == null
                               ? '—'
-                              : customer.lastVisit!.serviceName,
+                              : customer.lastCompletedVisit!.serviceName,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -562,7 +567,7 @@ class _VisitRow extends StatelessWidget {
             ),
           ),
           Text(
-            '${visit.price} ${tk ? "manat" : "манат"}',
+            '${visit.price} ${context.watch<AppSettingsProvider>().currencyLabel(tk ? AppLanguage.tk : AppLanguage.ru)}',
             style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
           ),
         ],

@@ -71,7 +71,9 @@ class _DashboardHero extends StatelessWidget {
                       child: _HeroBalanceChip(
                         label: t(tk: 'Balans', ru: 'Баланс', en: 'Balance'),
                         amount: balance,
-                        currency: t(tk: 'manat', ru: 'манат', en: 'TMT'),
+                        currency: context
+                            .watch<AppSettingsProvider>()
+                            .currencyLabel(language),
                       ),
                     ),
                   ),
@@ -191,7 +193,7 @@ class _HeroBalanceChip extends StatelessWidget {
     required this.currency,
   });
   final String label;
-  final int amount;
+  final String amount;
   final String currency;
 
   @override
@@ -216,7 +218,7 @@ class _HeroBalanceChip extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
-                '$amount.00 $currency',
+                '$amount $currency',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
@@ -339,6 +341,7 @@ class _DayTimelineCard extends StatefulWidget {
     required this.accentBg,
     required this.count,
     required this.child,
+    this.showHeader = true,
   });
   final bool tk;
   final String title;
@@ -347,6 +350,11 @@ class _DayTimelineCard extends StatefulWidget {
   final Color accentBg;
   final int count;
   final Widget child;
+
+  /// Whether to show the collapsible "TITLE · date, N people" band above the
+  /// table. The home dashboard's "today" card hides it — the day is already
+  /// implied by the screen, so the band would just repeat "today".
+  final bool showHeader;
 
   @override
   State<_DayTimelineCard> createState() => _DayTimelineCardState();
@@ -357,8 +365,12 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
 
   @override
   Widget build(BuildContext context) => Container(
+    clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
-      color: context.appTokens.surfaceElevated,
+      // Explicit white, not the theme's surfaceElevated token — the header
+      // band above (explicit `cream`) needs a color it visibly differs from
+      // in every theme, not just the ones where surfaceElevated isn't cream.
+      color: Colors.white,
       borderRadius: BorderRadius.circular(18),
       border: Border.all(color: context.appTokens.border),
       boxShadow: [
@@ -371,113 +383,58 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
     ),
     child: Column(
       children: [
-        InkWell(
-          onTap: () => setState(() => _expanded = !_expanded),
-          borderRadius: BorderRadius.circular(18),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            decoration: BoxDecoration(
-              color: widget.accentBg,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Row(
-              children: [
-                AppIcon(
-                  Icons.calendar_month_outlined,
-                  size: 15,
-                  color: widget.accent,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '${widget.title} · ${widget.dateLabel}',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: widget.accent,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  '${widget.count} ${pickTr(context.watch<LanguageProvider>().language, tk: "adam", ru: "человек", en: "people")}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+        if (widget.showHeader)
+          InkWell(
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(18),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: widget.accentBg,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Row(
+                children: [
+                  AppIcon(
+                    Icons.calendar_month_outlined,
+                    size: 15,
                     color: widget.accent,
                   ),
-                ),
-                const SizedBox(width: 6),
-                AppIcon(
-                  _expanded ? Icons.expand_less : Icons.expand_more,
-                  size: 16,
-                  color: widget.accent,
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${widget.title} · ${widget.dateLabel}',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: widget.accent,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    '${widget.count} ${pickTr(context.watch<LanguageProvider>().language, tk: "adam", ru: "человек", en: "people")}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: widget.accent,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  AppIcon(
+                    _expanded ? Icons.expand_less : Icons.expand_more,
+                    size: 16,
+                    color: widget.accent,
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        if (_expanded)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-            child: widget.child,
-          ),
+        // No inset around the table: the header band and the rows run
+        // edge to edge inside the day card, like a real table.
+        if (!widget.showHeader || _expanded) widget.child,
       ],
-    ),
-  );
-}
-
-class _UpcomingDayRow extends StatelessWidget {
-  const _UpcomingDayRow({
-    required this.day,
-    required this.count,
-    required this.tk,
-    required this.onTap,
-  });
-  final DateTime day;
-  final int count;
-  final bool tk;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(14),
-    child: Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: context.appTokens.surfaceElevated,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.appTokens.border),
-      ),
-      child: Row(
-        children: [
-          const AppIcon(
-            Icons.calendar_today_outlined,
-            size: 15,
-            color: Colors.black45,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              '${formatDate(day)}, ${_weekdayFullName(day.weekday, context.watch<LanguageProvider>().language)}',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-            ),
-          ),
-          Text(
-            '$count ${pickTr(context.watch<LanguageProvider>().language, tk: "adam", ru: "человек", en: "people")}',
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.black54,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(width: 6),
-          const AppIcon(Icons.chevron_right, size: 15, color: Colors.black26),
-        ],
-      ),
     ),
   );
 }
@@ -489,158 +446,190 @@ String _weekdayFullName(int weekday, AppLanguage language) =>
       AppLanguage.en => _weekdaysFullEn[weekday - 1],
     };
 
-/// One row of the home dashboard's "today" list — numbered, with the
-/// client's avatar/nickname, service + note, time and a colored status
-/// pill+icon, mirroring the columns of the reference table design.
-// Column widths shared by the header and every data row so they line up
-// while the table scrolls horizontally as one piece — a real "№ / Müşderi
-// we nik / Hyzmat / Bellik / Wagt / Status" table instead of stacked cards,
-// matching the original tablet mock this dashboard was adapted from.
-const _apptColGap = 10.0;
-const _apptColIndexWidth = 24.0;
-const _apptColCustomerWidth = 146.0;
-const _apptColServiceWidth = 96.0;
-const _apptColNoteWidth = 112.0;
-const _apptColTimeWidth = 56.0;
-const _apptColStatusWidth = 108.0;
-const _apptTableWidth =
-    _apptColIndexWidth +
-    _apptColCustomerWidth +
-    _apptColServiceWidth +
-    _apptColNoteWidth +
-    _apptColTimeWidth +
-    _apptColStatusWidth +
-    _apptColGap * 5;
+/// Today's queue as a plain vertical list — one full-width row per entry.
+///
+/// This used to be a literal six-column table ("№ / Müşderi we nik / Hyzmat /
+/// Bellik / Wagt / Status") that had to scroll sideways on a phone, with
+/// every cell squeezed into ~90px. Nothing was dropped in the rewrite: the
+/// order number, customer + handle, service, note, time and status are all
+/// still here — stacked into one card-like row that fits a phone's width, so
+/// the master can scan the queue top-to-bottom with a thumb instead of
+/// dragging the table left and right.
 
-/// Today's timeline as a real multi-column table — scrolls horizontally so
-/// every column keeps a fixed, readable width on a phone instead of
-/// squeezing everything into a stacked card.
+/// Left rail width — holds the order chip with the start time under it, so
+/// the numbers and times line up straight down the list.
+const _apptRailWidth = 46.0;
+
+/// Horizontal inset every row (and the list's head band) applies, so the
+/// content keeps a little air from the day card's edge.
+const _apptRowInset = 14.0;
+
 class _HomeApptTable extends StatelessWidget {
   const _HomeApptTable({
     required this.entries,
     required this.customers,
     required this.language,
-    required this.onTap,
+    required this.onTapAppointment,
+    required this.onTapFree,
   });
 
   final List<_TimelineEntry> entries;
   final List<Customer> customers;
   final AppLanguage language;
-  final VoidCallback onTap;
+
+  /// Tapping a customer row opens the same actions sheet the Senenama
+  /// (schedule) screen uses — it no longer navigates away from home.
+  final void Function(Appointment appointment, Customer? customer)
+  onTapAppointment;
+  final VoidCallback onTapFree;
 
   @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    child: SizedBox(
-      width: _apptTableWidth,
-      child: Column(
-        children: [
-          _ApptTableHeader(language: language),
-          ...entries.asMap().entries.map((e) {
-            final index = e.key + 1;
-            final entry = e.value;
-            final isLast = index == entries.length;
-            if (entry is _ApptEntry) {
-              final customer = entry.appointment.customerId == null
-                  ? null
-                  : _findCustomer(customers, entry.appointment.customerId!);
-              return _HomeApptRow(
-                index: index,
-                appointment: entry.appointment,
-                customer: customer,
-                language: language,
-                onTap: onTap,
-                showDivider: !isLast,
-              );
-            }
-            final free = entry as _FreeEntry;
-            return _HomeFreeRow(
+  Widget build(BuildContext context) {
+    final busy = entries.whereType<_ApptEntry>().length;
+    final free = entries.length - busy;
+    return Column(
+      children: [
+        _ApptListHead(language: language, people: busy, freeSlots: free),
+        ...entries.asMap().entries.map((e) {
+          final index = e.key + 1;
+          final entry = e.value;
+          final isLast = index == entries.length;
+          if (entry is _ApptEntry) {
+            final customer = entry.appointment.customerId == null
+                ? null
+                : _findCustomer(customers, entry.appointment.customerId!);
+            return _HomeApptRow(
               index: index,
-              start: free.start,
-              end: free.end,
+              appointment: entry.appointment,
+              customer: customer,
               language: language,
-              onTap: onTap,
+              onTap: () => onTapAppointment(entry.appointment, customer),
               showDivider: !isLast,
             );
-          }),
-        ],
-      ),
-    ),
-  );
+          }
+          final gap = entry as _FreeEntry;
+          return _HomeFreeRow(
+            index: index,
+            start: gap.start,
+            end: gap.end,
+            language: language,
+            onTap: onTapFree,
+            showDivider: !isLast,
+          );
+        }),
+      ],
+    );
+  }
 }
 
-class _ApptTableHeader extends StatelessWidget {
-  const _ApptTableHeader({required this.language});
+/// Slim cream band above the queue — replaces the old 64px six-column header
+/// row. There are no columns left to label, so it carries the one thing a
+/// label row can't: how the day actually looks (N clients, M free gaps).
+class _ApptListHead extends StatelessWidget {
+  const _ApptListHead({
+    required this.language,
+    required this.people,
+    required this.freeSlots,
+  });
   final AppLanguage language;
+  final int people;
+  final int freeSlots;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    Widget cell(double width, String label, [IconData? icon]) => SizedBox(
-      width: width,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            AppIcon(icon, size: 12, color: tokens.textSecondary),
-            const SizedBox(width: 4),
-          ],
-          Flexible(
-            child: Text(
-              label,
+    return Semantics(
+      container: true,
+      header: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: _apptRowInset,
+          vertical: 9,
+        ),
+        decoration: BoxDecoration(
+          color: cream,
+          border: Border(
+            bottom: BorderSide(
+              color: tokens.accent.withValues(alpha: .55),
+              width: 2,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            AppIcon(Icons.format_list_numbered, size: 14, color: tokens.accent),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Text(
+                pickTr(
+                  language,
+                  tk: 'NOBAT TERTIBI',
+                  ru: 'ПОРЯДОК ОЧЕРЕДИ',
+                  en: 'QUEUE ORDER',
+                ).toUpperCase(),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: .3,
+                  color: tokens.textPrimary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              '$people ${pickTr(language, tk: 'adam', ru: 'чел.', en: 'people')}'
+              '${freeSlots == 0 ? '' : ' · $freeSlots ${pickTr(language, tk: 'boş', ru: 'своб.', en: 'free')}'}',
               style: TextStyle(
-                fontSize: 10.5,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: tokens.textSecondary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ],
-      ),
-    );
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: tokens.border)),
-      ),
-      child: Row(
-        children: [
-          cell(_apptColIndexWidth, '№'),
-          const SizedBox(width: _apptColGap),
-          cell(
-            _apptColCustomerWidth,
-            pickTr(language, tk: 'Müşderi we nik', ru: 'Клиент и ник', en: 'Customer & handle'),
-            Icons.person_outline,
-          ),
-          const SizedBox(width: _apptColGap),
-          cell(
-            _apptColServiceWidth,
-            pickTr(language, tk: 'Hyzmat', ru: 'Услуга', en: 'Service'),
-            Icons.content_cut,
-          ),
-          const SizedBox(width: _apptColGap),
-          cell(
-            _apptColNoteWidth,
-            pickTr(language, tk: 'Bellik', ru: 'Заметка', en: 'Note'),
-            Icons.sticky_note_2_outlined,
-          ),
-          const SizedBox(width: _apptColGap),
-          cell(
-            _apptColTimeWidth,
-            pickTr(language, tk: 'Wagt', ru: 'Время', en: 'Time'),
-            Icons.schedule_outlined,
-          ),
-          const SizedBox(width: _apptColGap),
-          cell(_apptColStatusWidth, pickTr(language, tk: 'Status', ru: 'Статус', en: 'Status')),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
+/// The numbered badge at the head of every row — a soft, tinted chip rather
+/// than a bare digit. Rows tint it with their own status colours, so the
+/// number doubles as a status cue you can scan straight down the queue.
+class _ApptIndexChip extends StatelessWidget {
+  const _ApptIndexChip({
+    required this.label,
+    required this.color,
+    required this.background,
+  });
+
+  final String label;
+  final Color color;
+  final Color background;
+
+  static const _size = 28.0;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: _size,
+    height: _size,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: background,
+      borderRadius: BorderRadius.circular(9),
+    ),
+    child: Text(
+      label,
+      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
+    ),
+  );
+}
+
+/// One booked slot: order chip + start time in the left rail, then the
+/// customer, the service and (only when there is one) the note, with the
+/// status pill on the right.
 class _HomeApptRow extends StatelessWidget {
   const _HomeApptRow({
     required this.index,
@@ -676,146 +665,247 @@ class _HomeApptRow extends StatelessWidget {
         const Color(0xffFCEDD9),
         Icons.schedule_outlined,
       ),
-      AppointmentStatus.cancelled ||
-      AppointmentStatus.noShow => (
+      AppointmentStatus.cancelled || AppointmentStatus.noShow => (
         const Color(0xffC0392B),
         const Color(0xffFBE3E0),
         Icons.close,
       ),
     };
-    // Mirrors the reference table's single highlighted "in progress" row —
+    // Mirrors the reference design's single highlighted "in progress" row —
     // the client is on-site right now, so it's the one row worth calling out.
     final highlighted = appointment.status == AppointmentStatus.arrived;
+    final minutesLabel = pickTr(language, tk: 'min', ru: 'мин', en: 'min');
 
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: _apptRowInset,
+        ),
         decoration: BoxDecoration(
           color: highlighted ? statusBg.withValues(alpha: .5) : null,
           border: showDivider
               ? Border(bottom: BorderSide(color: tokens.border))
               : null,
         ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: _apptColIndexWidth,
-                child: Text(
-                  '$index',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: tokens.textSecondary,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Left rail: the queue position, with the slot's start and end
+            // time under it — the two things the master scans for first.
+            SizedBox(
+              width: _apptRailWidth,
+              child: Column(
+                children: [
+                  _ApptIndexChip(
+                    label: '$index',
+                    color: statusColor,
+                    background: statusBg,
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  Text(
+                    formatTime(TimeOfDay.fromDateTime(appointment.startsAt)),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                      color: tokens.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    formatTime(TimeOfDay.fromDateTime(appointment.endsAt)),
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      color: tokens.textSecondary,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: _apptColGap),
-              SizedBox(
-                width: _apptColCustomerWidth,
-                child: Row(
-                  children: [
-                    customer == null
-                        ? CircleAvatar(
-                            radius: 15,
-                            backgroundColor: const Color(0xffE6D2B1),
-                            child: AppIcon(
-                              Icons.person_outline,
-                              size: 14,
-                              color: tokens.textPrimary,
-                            ),
-                          )
-                        : _CustomerAvatar(customer: customer!, radius: 15),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            appointment.clientName,
-                            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (customer != null)
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      customer == null
+                          ? CircleAvatar(
+                              radius: 16,
+                              backgroundColor: const Color(0xffE6D2B1),
+                              child: AppIcon(
+                                Icons.person_outline,
+                                size: 15,
+                                color: tokens.textPrimary,
+                              ),
+                            )
+                          : _CustomerAvatar(customer: customer!, radius: 16),
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
                             Text(
-                              '@${_handleFor(customer!)}',
-                              style: TextStyle(fontSize: 10, color: tokens.textSecondary),
+                              appointment.clientName,
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                        ],
+                            if (customer != null)
+                              Text(
+                                _handleFor(customer!),
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  color: tokens.textSecondary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: _apptColGap),
-              SizedBox(
-                width: _apptColServiceWidth,
-                child: Text(
-                  appointment.serviceName,
-                  style: TextStyle(fontSize: 11.5, color: tokens.textPrimary),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: _apptColGap),
-              SizedBox(
-                width: _apptColNoteWidth,
-                child: Text(
-                  appointment.note.isEmpty ? '—' : appointment.note,
-                  style: TextStyle(fontSize: 11, color: tokens.textSecondary),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: _apptColGap),
-              SizedBox(
-                width: _apptColTimeWidth,
-                child: Text(
-                  formatTime(TimeOfDay.fromDateTime(appointment.startsAt)),
-                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: tokens.textPrimary),
-                ),
-              ),
-              const SizedBox(width: _apptColGap),
-              SizedBox(
-                width: _apptColStatusWidth,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusBg,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _apptStatusLabel(appointment.status, language),
-                        style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: statusColor),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      const SizedBox(width: 8),
+                      _ApptStatusPill(
+                        label: _apptStatusLabel(appointment.status, language),
+                        icon: statusIcon,
+                        color: statusColor,
+                        background: statusBg,
                       ),
-                      const SizedBox(width: 5),
-                      AppIcon(statusIcon, size: 12, color: statusColor),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  // The service is what the master is actually about to do,
+                  // so it gets its own tinted chip instead of a narrow column
+                  // that used to clip after two lines.
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: tokens.accent.withValues(alpha: .10),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        AppIcon(
+                          Icons.content_cut,
+                          size: 13,
+                          color: tokens.accent,
+                        ),
+                        const SizedBox(width: 7),
+                        Flexible(
+                          child: Text(
+                            appointment.serviceName,
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: tokens.accent,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 7),
+                        Text(
+                          '${appointment.minutes} $minutesLabel',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: tokens.accent.withValues(alpha: .75),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (appointment.note.isNotEmpty) ...[
+                    const SizedBox(height: 7),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 1),
+                          child: AppIcon(
+                            Icons.sticky_note_2_outlined,
+                            size: 13,
+                            color: tokens.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            appointment.note,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: tokens.textSecondary,
+                              height: 1.25,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-/// A free-slot row on the home dashboard's table — same column layout as
-/// [_HomeApptRow], with the "Boş aralyk" label spanning the customer/service
-/// /note columns and an "Üýtgetmek" (edit) action in the status column.
+/// Status pill — label plus its icon, sized to its text so it can sit beside
+/// the customer's name on any phone width.
+class _ApptStatusPill extends StatelessWidget {
+  const _ApptStatusPill({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.background,
+  });
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: background,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AppIcon(icon, size: 11, color: color),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    ),
+  );
+}
+
+/// A free gap between two bookings — same left rail as [_HomeApptRow] so the
+/// numbering and times stay in one line down the list, with the "Üýtgetmek"
+/// action that opens the day in Senenama.
 class _HomeFreeRow extends StatelessWidget {
   const _HomeFreeRow({
     required this.index,
@@ -836,73 +926,109 @@ class _HomeFreeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     const freeColor = Color(0xff2A5DB0);
+    final minutes = end.difference(start).inMinutes;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(
+        vertical: 10,
+        horizontal: _apptRowInset,
+      ),
       decoration: BoxDecoration(
         color: freeSlotBg.withValues(alpha: .5),
-        border: showDivider ? Border(bottom: BorderSide(color: tokens.border)) : null,
+        border: showDivider
+            ? Border(bottom: BorderSide(color: tokens.border))
+            : null,
       ),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: _apptColIndexWidth,
-              child: Text(
-                '$index',
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: freeColor),
-              ),
-            ),
-            const SizedBox(width: _apptColGap),
-            SizedBox(
-              width: _apptColCustomerWidth + _apptColGap + _apptColServiceWidth + _apptColGap + _apptColNoteWidth,
-              child: Row(
-                children: [
-                  const AppIcon(Icons.schedule_outlined, size: 14, color: freeColor),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      pickTr(language, tk: 'Boş aralyk', ru: 'Свободно', en: 'Free slot'),
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: freeColor),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: _apptColGap),
-            SizedBox(
-              width: _apptColTimeWidth,
-              child: Text(
-                formatTime(TimeOfDay.fromDateTime(start)),
-                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: freeColor),
-              ),
-            ),
-            const SizedBox(width: _apptColGap),
-            SizedBox(
-              width: _apptColStatusWidth,
-              child: OutlinedButton.icon(
-                onPressed: onTap,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: freeColor,
-                  side: const BorderSide(color: freeColor),
-                  backgroundColor: Colors.white,
-                  shape: const StadiumBorder(),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  visualDensity: VisualDensity.compact,
+      child: Row(
+        children: [
+          SizedBox(
+            width: _apptRailWidth,
+            child: Column(
+              children: [
+                _ApptIndexChip(
+                  label: '$index',
+                  color: freeColor,
+                  background: freeColor.withValues(alpha: .12),
                 ),
-                icon: const AppIcon(Icons.edit_outlined, size: 12),
-                label: Text(
-                  pickTr(language, tk: 'Üýtgetmek', ru: 'Изменить', en: 'Edit'),
-                  style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600),
+                const SizedBox(height: 6),
+                Text(
+                  formatTime(TimeOfDay.fromDateTime(start)),
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: freeColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const AppIcon(
+                      Icons.schedule_outlined,
+                      size: 14,
+                      color: freeColor,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        pickTr(
+                          language,
+                          tk: 'Boş aralyk',
+                          ru: 'Свободно',
+                          en: 'Free slot',
+                        ),
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: freeColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${formatTime(TimeOfDay.fromDateTime(start))} – ${formatTime(TimeOfDay.fromDateTime(end))} · $minutes ${pickTr(language, tk: 'min', ru: 'мин', en: 'min')}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: freeColor.withValues(alpha: .8),
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 8),
+          OutlinedButton.icon(
+            onPressed: onTap,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: freeColor,
+              side: const BorderSide(color: freeColor),
+              backgroundColor: Colors.white,
+              shape: const StadiumBorder(),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              visualDensity: VisualDensity.compact,
+            ),
+            icon: const AppIcon(Icons.edit_outlined, size: 12),
+            label: Text(
+              pickTr(language, tk: 'Üýtgetmek', ru: 'Изменить', en: 'Edit'),
+              style: const TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }

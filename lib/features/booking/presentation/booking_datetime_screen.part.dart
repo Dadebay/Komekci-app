@@ -6,56 +6,74 @@ class BookingDateTimeScreen extends StatefulWidget {
   const BookingDateTimeScreen({
     super.key,
     required this.service,
-    required this.masterName,
+    required this.master,
   });
-  final SalonService service;
-  final String masterName;
+  final ApiService service;
+  final MasterBrief master;
 
   @override
   State<BookingDateTimeScreen> createState() => _BookingDateTimeScreenState();
 }
 
 class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
-  static final _today = DateTime(
-    dashboardToday.$1,
-    dashboardToday.$2,
-    dashboardToday.$3,
-  );
+  /// Days offered in the strip. The API answers up to 31 days at once.
+  static const _horizonDays = 14;
+
+  late final DateTime _today = appToday();
   late DateTime _selectedDate = _today;
   DateTime? _selectedSlot;
+  Availability? _availability;
+  Object? _error;
 
-  List<DateTime> _slotsFor(DateTime day, BookingProvider bookingProvider) {
-    if (!isSalonOpen(day)) return const [];
-    final slots = <DateTime>[];
-    final closing = DateTime(day.year, day.month, day.day, _bookingCloseHour);
-    var cursor = DateTime(day.year, day.month, day.day, _bookingOpenHour);
-    // The app's "today" is a fixed mock date, not the real device date, so
-    // lead time only borrows the real clock's time-of-day — comparing full
-    // DateTimes here would compare against the wrong calendar day entirely.
-    final realNow = TimeOfDay.now();
-    final leadCutoff = day == _today
-        ? DateTime(
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _availability = null;
+      _error = null;
+    });
+    try {
+      final result = await context.read<ClientRepository>().availability(
+        widget.master.id,
+        serviceId: widget.service.id,
+        from: _today,
+        to: _today.add(const Duration(days: _horizonDays - 1)),
+      );
+      if (!mounted) return;
+      setState(() {
+        _availability = result;
+        // Start on the first day that actually has room.
+        for (var i = 0; i < _horizonDays; i++) {
+          final day = _today.add(Duration(days: i));
+          if (_slotsFor(day).isNotEmpty) {
+            _selectedDate = day;
+            break;
+          }
+        }
+      });
+    } catch (error) {
+      if (mounted) setState(() => _error = error);
+    }
+  }
+
+  /// Free start times on [day], as given by the server (`HH:mm`).
+  List<DateTime> _slotsFor(DateTime day) {
+    final raw = _availability?.dates[formatApiDate(day)] ?? const <String>[];
+    return [
+      for (final s in raw)
+        if (RegExp(r'^\d{1,2}:\d{2}').hasMatch(s))
+          DateTime(
             day.year,
             day.month,
             day.day,
-            realNow.hour,
-            realNow.minute,
-          ).add(const Duration(minutes: 30))
-        : null;
-    while (cursor
-            .add(Duration(minutes: widget.service.minutes))
-            .isBefore(closing) ||
-        cursor
-            .add(Duration(minutes: widget.service.minutes))
-            .isAtSameMomentAs(closing)) {
-      final tooSoon = leadCutoff != null && cursor.isBefore(leadCutoff);
-      if (!tooSoon &&
-          !bookingProvider.hasConflict(cursor, widget.service.minutes)) {
-        slots.add(cursor);
-      }
-      cursor = cursor.add(const Duration(minutes: _bookingSlotStepMinutes));
-    }
-    return slots;
+            int.parse(s.split(':')[0]),
+            int.parse(s.split(':')[1]),
+          ),
+    ];
   }
 
   @override
@@ -64,7 +82,6 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
-    final bookingProvider = context.watch<BookingProvider>();
     final weekdayLabels = switch (language) {
       AppLanguage.tk => _weekdaysTk,
       AppLanguage.ru => _weekdaysRu,
@@ -75,8 +92,10 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
       AppLanguage.ru => _monthsFullRu,
       AppLanguage.en => _monthsEn,
     };
+    final availability = _availability;
+    final paused = availability != null && !availability.acceptingBookings;
     final days = List.generate(14, (i) => _today.add(Duration(days: i)));
-    final slots = _slotsFor(_selectedDate, bookingProvider);
+    final slots = _slotsFor(_selectedDate);
 
     return Scaffold(
       appBar: AppBar(
@@ -135,7 +154,7 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                       separatorBuilder: (_, _) => const SizedBox(width: 8),
                       itemBuilder: (_, index) {
                         final day = days[index];
-                        final open = isSalonOpen(day);
+                        final open = _slotsFor(day).isNotEmpty;
                         final selected =
                             day.year == _selectedDate.year &&
                             day.month == _selectedDate.month &&
@@ -173,19 +192,32 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                   const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: !isSalonOpen(_selectedDate)
+                    child: _error != null
+                        ? RetryErrorState(
+                            title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
+                            text: apiErrorMessage(_error!, language),
+                            retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                            onRetry: _load,
+                          )
+                        : availability == null
+                        ? const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 30),
+                            child: Center(child: CircularProgressIndicator()),
+                          )
+                        : paused
                         ? EmptyState(
                             icon: Icons.event_busy_outlined,
                             title: t(
-                              tk: 'Bu gün dynç güni',
-                              ru: 'Выходной день',
-                              en: 'Closed today',
+                              tk: 'Ýazgy wagtlaýyn ýapyk',
+                              ru: 'Запись временно закрыта',
+                              en: 'Bookings are paused',
                             ),
-                            text: t(
-                              tk: 'Başga bir gün saýlaň.',
-                              ru: 'Выберите другой день.',
-                              en: 'Please pick another day.',
-                            ),
+                            text: availability.message ??
+                                t(
+                                  tk: 'Usta häzirlikçe täze ýazgylary kabul etmeýär.',
+                                  ru: 'Мастер временно не принимает новые записи.',
+                                  en: 'This master is not accepting new bookings right now.',
+                                ),
                           )
                         : slots.isEmpty
                         ? EmptyState(
@@ -196,9 +228,9 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                               en: 'No free slots',
                             ),
                             text: t(
-                              tk: 'Bu gün üçin ähli wagtlar dolan. Başga gün synanyşyň.',
-                              ru: 'Все слоты на этот день заняты. Попробуйте другой день.',
-                              en: 'Every slot on this day is booked. Try another day.',
+                              tk: 'Bu gün üçin boş wagt ýok. Başga gün synanyşyň.',
+                              ru: 'На этот день свободного времени нет. Попробуйте другой день.',
+                              en: 'There is no free time on this day. Try another day.',
                             ),
                           )
                         : Wrap(
@@ -265,7 +297,7 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                       pageRoute(
                         BookingConfirmScreen(
                           service: widget.service,
-                          masterName: widget.masterName,
+                          master: widget.master,
                           startsAt: _selectedSlot!,
                         ),
                       ),

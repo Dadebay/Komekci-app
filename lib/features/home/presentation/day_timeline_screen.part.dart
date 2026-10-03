@@ -16,13 +16,15 @@ class DayTimelineScreen extends StatelessWidget {
     final tokens = context.appTokens;
     final bookingProvider = context.watch<BookingProvider>();
     final customerProvider = context.watch<CustomerProvider>();
+    bookingProvider.prefetch(day);
     final dayAppointments = bookingProvider.onDay(day);
     final entries = _buildTimeline(dayAppointments, day);
 
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: '${formatDate(day)} · ${_weekdayFullName(day.weekday, language)}',
+        title:
+            '${formatDate(day)} · ${_weekdayFullName(day.weekday, language)}',
       ),
       body: SafeArea(
         bottom: false,
@@ -37,24 +39,36 @@ class DayTimelineScreen extends StatelessWidget {
               accentBg: freeSlotBg,
               count: dayAppointments.length,
               child: entries.isEmpty
-                  ? EmptyState(
-                      icon: Icons.event_busy_outlined,
-                      title: t(
-                        tk: 'Bu gün ýazgy ýok',
-                        ru: 'На этот день записей нет',
-                        en: 'No bookings this day',
-                      ),
-                      text: t(
-                        tk: 'Boş gün.',
-                        ru: 'Свободный день.',
-                        en: 'A free day.',
+                  // The table itself is full-bleed inside the day card, so
+                  // only the empty state needs an inset of its own.
+                  ? Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                      child: EmptyState(
+                        icon: Icons.event_busy_outlined,
+                        title: t(
+                          tk: 'Bu gün ýazgy ýok',
+                          ru: 'На этот день записей нет',
+                          en: 'No bookings this day',
+                        ),
+                        text: t(
+                          tk: 'Boş gün.',
+                          ru: 'Свободный день.',
+                          en: 'A free day.',
+                        ),
                       ),
                     )
                   : _HomeApptTable(
                       entries: entries,
                       customers: customerProvider.customers,
                       language: language,
-                      onTap: () {},
+                      onTapAppointment: (appointment, customer) =>
+                          _openAppointmentActions(
+                            context,
+                            appointment,
+                            customer,
+                            language,
+                          ),
+                      onTapFree: () {},
                     ),
             ),
           ],

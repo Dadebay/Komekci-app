@@ -9,6 +9,7 @@ class BillingScreen extends StatelessWidget {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final billing = context.watch<BillingProvider>();
+    final settings = context.watch<AppSettingsProvider>();
     final recentHistory = billing.history.take(3).toList();
     final tokens = context.appTokens;
     return Scaffold(
@@ -77,7 +78,7 @@ class BillingScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '$_monthlyFee ${t(tk: "manat / aý", ru: "манат / мес.", en: "TMT / mo.")}',
+                              '${settings.monthlyFee} ${settings.currencyLabel(language)} / ${t(tk: "aý", ru: "мес.", en: "mo.")}',
                               style: const TextStyle(
                                 fontSize: 12.5,
                                 color: Colors.black54,
@@ -86,24 +87,7 @@ class BillingScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xffEFF7EF),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          t(tk: 'Aktiw', ru: 'Активна', en: 'Active'),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xff3E8E41),
-                          ),
-                        ),
-                      ),
+                      _SubscriptionStatusChip(status: billing.status, language: language),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -116,7 +100,9 @@ class BillingScreen extends StatelessWidget {
                       ru: 'Последний платёж',
                       en: 'Last payment',
                     ),
-                    value: formatDate(billing.lastPaymentDate),
+                    value: billing.lastChargeAt == null
+                        ? '—'
+                        : formatDate(billing.lastChargeAt!),
                   ),
                   const SizedBox(height: 10),
                   _SubscriptionDateRow(
@@ -126,7 +112,9 @@ class BillingScreen extends StatelessWidget {
                       ru: 'Следующий платёж',
                       en: 'Next payment',
                     ),
-                    value: formatDate(billing.nextPaymentDate),
+                    value: billing.nextChargeAt == null
+                        ? '—'
+                        : formatDate(billing.nextChargeAt!),
                   ),
                 ],
               ),
@@ -134,11 +122,7 @@ class BillingScreen extends StatelessWidget {
             const SizedBox(height: 14),
             _InfoBanner(
               icon: Icons.info_outline,
-              text: t(
-                tk: 'Siziň abunaňyz ${billing.nextPaymentDate.difference(DateTime.now()).inDays} gün soň awtomatiki täzelener. Indiki töleg senesi: ${formatDate(billing.nextPaymentDate)}',
-                ru: 'Ваша подписка автоматически продлится через ${billing.nextPaymentDate.difference(DateTime.now()).inDays} дней. Дата следующего платежа: ${formatDate(billing.nextPaymentDate)}',
-                en: 'Your subscription will automatically renew in ${billing.nextPaymentDate.difference(DateTime.now()).inDays} days. Next payment date: ${formatDate(billing.nextPaymentDate)}',
-              ),
+              text: _renewalText(billing, language),
             ),
             const SizedBox(height: 26),
             Text(
@@ -229,6 +213,76 @@ class BillingScreen extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+String _renewalText(BillingProvider billing, AppLanguage language) {
+  String t({required String tk, required String ru, required String en}) =>
+      pickTr(language, tk: tk, ru: ru, en: en);
+  final next = billing.nextChargeAt;
+  switch (billing.status) {
+    case SubscriptionStatus.suspended:
+      return t(
+        tk: 'Abuna işjeň däl. Täze ýazgylar ýapyk. Açmak üçin balansyňyzy dolduryň.',
+        ru: 'Подписка не активна, новые записи закрыты. Пополните баланс, чтобы открыть их.',
+        en: 'Your subscription is not active and new bookings are closed. Top up your balance to reopen them.',
+      );
+    case SubscriptionStatus.grace:
+      return t(
+        tk: 'Tölegiň wagty ýetdi, ýöne ýazgylar entek kabul edilýär. Tiz wagtda balansyňyzy dolduryň.',
+        ru: 'Пора платить, но записи пока принимаются. Пополните баланс как можно скорее.',
+        en: 'Payment is due but bookings are still open. Please top up soon.',
+      );
+    case SubscriptionStatus.active:
+      if (next == null) {
+        return t(
+          tk: 'Abunaňyz işjeň.',
+          ru: 'Ваша подписка активна.',
+          en: 'Your subscription is active.',
+        );
+      }
+      final days = next.difference(DateTime.now()).inDays;
+      return t(
+        tk: 'Siziň abunaňyz $days gün soň awtomatiki täzelener. Indiki töleg senesi: ${formatDate(next)}',
+        ru: 'Ваша подписка автоматически продлится через $days дней. Дата следующего платежа: ${formatDate(next)}',
+        en: 'Your subscription will automatically renew in $days days. Next payment date: ${formatDate(next)}',
+      );
+  }
+}
+
+class _SubscriptionStatusChip extends StatelessWidget {
+  const _SubscriptionStatusChip({required this.status, required this.language});
+  final SubscriptionStatus status;
+  final AppLanguage language;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    final (label, color) = switch (status) {
+      SubscriptionStatus.active => (
+        pickTr(language, tk: 'Aktiw', ru: 'Активна', en: 'Active'),
+        tokens.success,
+      ),
+      SubscriptionStatus.grace => (
+        pickTr(language, tk: 'Töleg wagty', ru: 'Льготный период', en: 'Grace period'),
+        tokens.warning,
+      ),
+      SubscriptionStatus.suspended => (
+        pickTr(language, tk: 'Duruzylan', ru: 'Приостановлена', en: 'Suspended'),
+        tokens.danger,
+      ),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: .12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
       ),
     );
   }

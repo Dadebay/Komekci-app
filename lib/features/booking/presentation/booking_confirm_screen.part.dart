@@ -6,11 +6,11 @@ class BookingConfirmScreen extends StatefulWidget {
   const BookingConfirmScreen({
     super.key,
     required this.service,
-    required this.masterName,
+    required this.master,
     required this.startsAt,
   });
-  final SalonService service;
-  final String masterName;
+  final ApiService service;
+  final MasterBrief master;
   final DateTime startsAt;
 
   @override
@@ -23,6 +23,15 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
   bool _submitting = false;
   String? _error;
 
+  /// Server's alternatives after `SLOT_TAKEN`.
+  List<DateTime> _suggestions = const [];
+  late DateTime _startsAt = widget.startsAt;
+
+  /// Same key for every retry of this booking, so a lost response can never
+  /// turn into two appointments.
+  final String _idempotencyKey =
+      '${DateTime.now().microsecondsSinceEpoch}-${Random().nextInt(1 << 32)}';
+
   @override
   void dispose() {
     _noteController.dispose();
@@ -31,84 +40,55 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
 
   Future<void> _confirm(_Tr t) async {
     if (_submitting) return;
+    final language = context.read<LanguageProvider>().language;
+    final bookings = context.read<ClientBookingsProvider>();
     setState(() {
       _submitting = true;
       _error = null;
+      _suggestions = const [];
     });
-
-    final connectivity = await Connectivity().checkConnectivity();
-    final offline = connectivity.every((r) => r == ConnectivityResult.none);
-    if (offline) {
-      setState(() {
-        _submitting = false;
-        _error = t(
-          tk: 'Internet ýok. Baglanyşygy barlap gaýtadan synanyşyň.',
-          ru: 'Нет подключения к интернету. Проверьте связь и попробуйте снова.',
-          en: 'No internet connection. Check your connection and try again.',
-        );
-      });
-      return;
-    }
-
-    if (!mounted) return;
-    final bookingProvider = context.read<BookingProvider>();
-    if (bookingProvider.hasConflict(widget.startsAt, widget.service.minutes)) {
-      setState(() {
-        _submitting = false;
-        _error = t(
-          tk: 'Bu wagt eýýäm alyndy. Başga wagt saýlaň.',
-          ru: 'Это время уже занято. Выберите другое.',
-          en: 'This time was just taken. Please choose another.',
-        );
-      });
-      return;
-    }
-
-    await Future<void>.delayed(const Duration(milliseconds: 500));
-    if (!mounted) return;
-
-    final appointment = bookingProvider.create(
-      service: widget.service.name,
-      startsAt: widget.startsAt,
-      price: widget.service.price.toDouble(),
-      minutes: widget.service.minutes,
-      note: _noteController.text.trim(),
-      notifyEarlierSlot: _notifyEarlier,
-    );
-
-    setState(() => _submitting = false);
-    if (appointment == null) {
-      setState(
-        () => _error = t(
-          tk: 'Bu wagt eýýäm alyndy. Başga wagt saýlaň.',
-          ru: 'Это время уже занято. Выберите другое.',
-          en: 'This time was just taken. Please choose another.',
-        ),
+    final ClientBooking booking;
+    try {
+      booking = await bookings.book(
+        serviceId: widget.service.id,
+        startsAt: _startsAt,
+        note: _noteController.text.trim(),
+        waitlistEarlier: _notifyEarlier,
+        idempotencyKey: '$_idempotencyKey-${_startsAt.millisecondsSinceEpoch}',
       );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _submitting = false;
+        _error = apiErrorMessage(error, language);
+        if (error is ApiException && error.code == ApiErrors.slotTaken) {
+          _suggestions = _parseSuggestions(error.suggestedSlots);
+        }
+      });
       return;
     }
-
-    context.read<ClientBookingsProvider>().add(
-      ClientBooking(
-        id: appointment.id,
-        masterName: widget.masterName,
-        serviceName: widget.service.name,
-        startsAt: appointment.startsAt,
-        minutes: appointment.minutes,
-        price: appointment.price,
-        note: appointment.note,
-      ),
-    );
-
+    if (!mounted) return;
+    setState(() => _submitting = false);
     Navigator.push(
       context,
-      pageRoute(
-        BookingSuccessScreen(
-          appointment: appointment,
-          masterName: widget.masterName,
-        ),
-      ),
+      pageRoute(BookingSuccessScreen(appointment: booking, masterName: widget.master.name)),
     );
+  }
+
+  /// `suggested_slots` come as clock times for the same day or full stamps.
+  List<DateTime> _parseSuggestions(List<String> raw) {
+    final out = <DateTime>[];
+    for (final s in raw) {
+      final clock = RegExp(r'^(\d{1,2}):(\d{2})').firstMatch(s);
+      if (clock != null && !s.contains('-')) {
+        out.add(DateTime(_startsAt.year, _startsAt.month, _startsAt.day,
+            int.parse(clock.group(1)!), int.parse(clock.group(2)!)));
+      } else {
+        final parsed = parseApiTime(s);
+        if (parsed != null) out.add(parsed);
+      }
+    }
+    return out;
   }
 
   @override
@@ -117,9 +97,9 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
-    final dateLabel = formatDate(widget.startsAt);
+    final dateLabel = formatDate(_startsAt);
     final timeLabel =
-        '${widget.startsAt.hour.toString().padLeft(2, '0')}:${widget.startsAt.minute.toString().padLeft(2, '0')}';
+        '${_startsAt.hour.toString().padLeft(2, '0')}:${_startsAt.minute.toString().padLeft(2, '0')}';
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -187,7 +167,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          widget.masterName,
+                          widget.master.name,
                           style: TextStyle(
                             color: tokens.textSecondary,
                             fontSize: 13,
@@ -204,7 +184,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                         _SummaryRow(
                           icon: Icons.schedule_outlined,
                           label:
-                              '$timeLabel · ${widget.service.minutes} ${t(tk: "min", ru: "мин", en: "min")}',
+                              '$timeLabel · ${widget.service.durationMin} ${t(tk: "min", ru: "мин", en: "min")}',
                         ),
                       ],
                     ),
@@ -279,6 +259,31 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                       ),
                       onRetry: () => _confirm(t),
                     ),
+                    if (_suggestions.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        t(tk: 'Ýakyn boş wagtlar:', ru: 'Ближайшее свободное время:', en: 'Nearest free times:'),
+                        style: TextStyle(fontSize: 12.5, color: tokens.textSecondary),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final slot in _suggestions)
+                            ActionChip(
+                              label: Text('${formatDate(slot)} · ${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}'),
+                              onPressed: () {
+                                setState(() {
+                                  _startsAt = slot;
+                                  _suggestions = const [];
+                                  _error = null;
+                                });
+                              },
+                            ),
+                        ],
+                      ),
+                    ],
                   ],
                 ],
               ),
@@ -312,7 +317,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${widget.service.price} ${t(tk: "manat", ru: "манат", en: "TMT")}',
+                        '${formatMoney(widget.service.price)} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
                         style: const TextStyle(
                           fontSize: 19,
                           fontWeight: FontWeight.w800,

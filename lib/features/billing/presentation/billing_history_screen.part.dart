@@ -1,36 +1,42 @@
 part of '../../../app/komekci_app.dart';
 
-String _ledgerTypeLabel(LedgerEntryType type, AppLanguage language) =>
+String _ledgerTypeLabel(LedgerType type, AppLanguage language) =>
     switch (type) {
-      LedgerEntryType.topUp => pickTr(
+      LedgerType.topup => pickTr(
         language,
         tk: 'Balans doldurmak',
         ru: 'Пополнение баланса',
         en: 'Balance top-up',
       ),
-      LedgerEntryType.subscriptionCharge => pickTr(
+      LedgerType.charge => pickTr(
         language,
         tk: 'Abuna tölegi',
         ru: 'Оплата подписки',
         en: 'Subscription payment',
       ),
+      LedgerType.refund => pickTr(
+        language,
+        tk: 'Yzyna gaýtarylma',
+        ru: 'Возврат',
+        en: 'Refund',
+      ),
     };
 
-String _ledgerStatusLabel(LedgerEntryStatus status, AppLanguage language) =>
+String _ledgerStatusLabel(LedgerStatus status, AppLanguage language) =>
     switch (status) {
-      LedgerEntryStatus.success => pickTr(
+      LedgerStatus.succeeded => pickTr(
         language,
         tk: 'Üstünlikli',
         ru: 'Успешно',
         en: 'Successful',
       ),
-      LedgerEntryStatus.pending => pickTr(
+      LedgerStatus.pending => pickTr(
         language,
         tk: 'Garaşylýar',
         ru: 'В обработке',
         en: 'Pending',
       ),
-      LedgerEntryStatus.failed => pickTr(
+      LedgerStatus.failed => pickTr(
         language,
         tk: 'Şowsuz',
         ru: 'Не удалось',
@@ -38,18 +44,18 @@ String _ledgerStatusLabel(LedgerEntryStatus status, AppLanguage language) =>
       ),
     };
 
-Color _ledgerStatusColor(LedgerEntryStatus status, AppThemeTokens tokens) =>
+Color _ledgerStatusColor(LedgerStatus status, AppThemeTokens tokens) =>
     switch (status) {
-      LedgerEntryStatus.success => tokens.success,
-      LedgerEntryStatus.pending => tokens.warning,
-      LedgerEntryStatus.failed => tokens.danger,
+      LedgerStatus.succeeded => tokens.success,
+      LedgerStatus.pending => tokens.warning,
+      LedgerStatus.failed => tokens.danger,
     };
 
 /// One row in the payment ledger — shared by [BillingScreen]'s recent-3
 /// preview and the full [BillingHistoryScreen] list.
 class _LedgerEntryTile extends StatelessWidget {
   const _LedgerEntryTile({required this.entry, required this.language});
-  final LedgerEntry entry;
+  final LedgerTransaction entry;
   final AppLanguage language;
 
   @override
@@ -88,7 +94,7 @@ class _LedgerEntryTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${formatDate(entry.date)}  ${formatTime(TimeOfDay.fromDateTime(entry.date))}',
+                  '${formatDate(entry.createdAt)}  ${formatTime(TimeOfDay.fromDateTime(entry.createdAt))}',
                   style: const TextStyle(fontSize: 12, color: Colors.black45),
                 ),
                 const SizedBox(height: 2),
@@ -125,7 +131,7 @@ class _LedgerEntryTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '-${entry.amount} ${t(tk: "manat", ru: "манат", en: "TMT")}',
+                '${entry.type == LedgerType.charge ? '-' : '+'}${formatMoney(entry.amount)} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -134,7 +140,7 @@ class _LedgerEntryTile extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                '${t(tk: "Balans", ru: "Баланс", en: "Balance")}: ${entry.resultingBalance}',
+                '${t(tk: "Balans", ru: "Баланс", en: "Balance")}: ${formatMoney(entry.balanceAfter)}',
                 style: const TextStyle(fontSize: 11, color: Colors.black45),
               ),
             ],
@@ -154,7 +160,8 @@ class BillingHistoryScreen extends StatelessWidget {
     final language = context.watch<LanguageProvider>().language;
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
-    final history = context.watch<BillingProvider>().history;
+    final billing = context.watch<BillingProvider>();
+    final history = billing.history;
     final tokens = context.appTokens;
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -184,14 +191,27 @@ class BillingHistoryScreen extends StatelessWidget {
                   ),
                 ),
               )
-            : ListView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                children: history
-                    .map(
-                      (entry) =>
-                          _LedgerEntryTile(entry: entry, language: language),
-                    )
-                    .toList(),
+            : RefreshIndicator(
+                onRefresh: billing.refresh,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  children: [
+                    for (final entry in history)
+                      _LedgerEntryTile(entry: entry, language: language),
+                    if (billing.hasMoreHistory)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: TextButton(
+                          onPressed: billing.loadingMore ? null : billing.loadMoreHistory,
+                          child: Text(
+                            billing.loadingMore
+                                ? t(tk: 'Ýüklenýär...', ru: 'Загрузка...', en: 'Loading...')
+                                : t(tk: 'Köpräk görkez', ru: 'Показать ещё', en: 'Show more'),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
       ),
     );

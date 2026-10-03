@@ -9,12 +9,13 @@ class CabinetProfileScreen extends StatefulWidget {
 
 class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
   static const _nicknameIndex = 1;
+
+  // name, nickname, address, about, instagram, tiktok
   late final _controllers = () {
     final p = context.read<MasterProfileProvider>();
     return [
       TextEditingController(text: p.name),
       TextEditingController(text: p.nickname),
-      TextEditingController(text: p.phone),
       TextEditingController(text: p.address),
       TextEditingController(text: p.about),
       TextEditingController(text: p.instagram),
@@ -23,43 +24,109 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
   }();
   File? _banner;
   bool _nicknameTaken = false;
+  bool _nicknameInvalid = false;
+  List<String> _nicknameSuggestions = const [];
+  bool _saving = false;
+  String? _error;
+  Timer? _nicknameDebounce;
 
   @override
   void dispose() {
+    _nicknameDebounce?.cancel();
     for (final controller in _controllers) {
       controller.dispose();
     }
     super.dispose();
   }
 
+  String get _enteredNickname => _controllers[_nicknameIndex].text
+      .trim()
+      .toLowerCase()
+      .replaceFirst('@', '');
+
+  /// Format first, then (after a short pause) ask the server whether the
+  /// nickname is free — unless it's the master's own.
   void _checkNickname() {
-    final current = context
-        .read<MasterProfileProvider>()
-        .nickname
-        .toLowerCase();
-    final value = _controllers[_nicknameIndex].text
-        .trim()
-        .toLowerCase()
-        .replaceFirst('@', '');
-    final taken = value != current && takenNicknames.contains(value);
-    if (taken != _nicknameTaken) setState(() => _nicknameTaken = taken);
+    _nicknameDebounce?.cancel();
+    final current = context.read<MasterProfileProvider>().nickname.toLowerCase();
+    final value = _enteredNickname;
+    final invalid = !nicknamePattern.hasMatch(value);
+    setState(() {
+      _nicknameInvalid = invalid;
+      _nicknameTaken = false;
+      _nicknameSuggestions = const [];
+    });
+    if (invalid || value == current) return;
+    final repository = context.read<AuthRepository>();
+    _nicknameDebounce = Timer(const Duration(milliseconds: 500), () async {
+      try {
+        final check = await repository.nicknameAvailable(value);
+        if (!mounted || value != _enteredNickname) return;
+        setState(() {
+          _nicknameTaken = !check.available;
+          _nicknameSuggestions = check.suggestions;
+        });
+      } catch (_) {
+        // Offline or rate limited: the server re-checks on save anyway.
+      }
+    });
   }
 
-  void _save() {
-    if (_nicknameTaken) return;
-    final profile = context.read<MasterProfileProvider>();
-    if (_banner != null) profile.setBanner(_banner!);
-    profile.update(
-      name: _controllers[0].text.trim(),
-      nickname: _controllers[1].text.trim().replaceFirst('@', ''),
-      phone: _controllers[2].text.trim(),
-      address: _controllers[3].text.trim(),
-      about: _controllers[4].text.trim(),
-      instagram: _controllers[5].text.trim(),
-      tiktok: _controllers[6].text.trim(),
-    );
+  Future<void> _changeAvatar(File file) => _uploadAvatar(context, file);
+
+  Future<void> _changePhone() async {
     final language = context.read<LanguageProvider>().language;
-    ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+    if (await showChangePhoneDialog(context)) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            pickTr(
+              language,
+              tk: 'Telefon belgisi üýtgedildi. Tölegi täze belgiden geçiriň.',
+              ru: 'Номер изменён. Оплачивайте теперь с нового номера.',
+              en: 'Phone number updated. Pay from the new number from now on.',
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _save() async {
+    if (_nicknameTaken || _nicknameInvalid || _saving) return;
+    final language = context.read<LanguageProvider>().language;
+    final profile = context.read<MasterProfileProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await profile.save(
+        name: _controllers[0].text.trim(),
+        nickname: _enteredNickname,
+        address: _controllers[2].text.trim(),
+        about: _controllers[3].text.trim(),
+        instagramUrl: socialUrl(_controllers[4].text, host: 'instagram.com') ?? '',
+        tiktokUrl: socialUrl(_controllers[5].text, host: 'tiktok.com', atPrefix: true) ?? '',
+        banner: _banner,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _saving = false;
+        if (error is ApiException && error.code == ApiErrors.nicknameTaken) {
+          _nicknameTaken = true;
+          _nicknameSuggestions = error.nicknameSuggestions;
+        } else {
+          _error = apiErrorMessage(error, language);
+        }
+      });
+      return;
+    }
+    messenger.showSnackBar(
       SnackBar(
         content: Text(
           pickTr(
@@ -71,7 +138,7 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
         ),
       ),
     );
-    Navigator.pop(context);
+    navigator.pop();
   }
 
   @override
@@ -85,7 +152,6 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
       AppLanguage.tk => [
         'Adyňyz',
         'Lakamyňyz',
-        'Telefon belgiňiz',
         'Salgysy',
         'Özüňiz barada',
         'Instagram (islege görä)',
@@ -94,7 +160,6 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
       AppLanguage.ru => [
         'Имя',
         'Никнейм',
-        'Телефон',
         'Адрес',
         'О себе',
         'Instagram (необязательно)',
@@ -103,7 +168,6 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
       AppLanguage.en => [
         'Name',
         'Nickname',
-        'Phone number',
         'Address',
         'About you',
         'Instagram (optional)',
@@ -113,7 +177,6 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
     const icons = [
       Icons.person_outline,
       Icons.account_box_outlined,
-      Icons.phone_outlined,
       Icons.location_on_outlined,
       Icons.edit_outlined,
       Icons.link_outlined,
@@ -133,6 +196,7 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                 children: [
                   PhotoUploadBox(
                     file: _banner ?? profile.banner,
+                    networkUrl: profile.bannerUrl,
                     onPicked: (file) => setState(() => _banner = file),
                     title: t(
                       tk: 'Banner suraty',
@@ -150,15 +214,15 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                   Center(
                     child: AvatarPicker(
                       file: profile.avatar,
-                      onPicked: (file) =>
-                          context.read<MasterProfileProvider>().setAvatar(file),
+                      networkUrl: profile.avatarUrl,
+                      onPicked: _changeAvatar,
                       radius: 46,
                     ),
                   ),
                   const SizedBox(height: 24),
                   ...List.generate(labels.length, (index) {
-                    final nicknameError =
-                        index == _nicknameIndex && _nicknameTaken;
+                    final nicknameError = index == _nicknameIndex &&
+                        (_nicknameTaken || _nicknameInvalid);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 14),
                       child: Column(
@@ -168,7 +232,7 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                           const SizedBox(height: 7),
                           TextField(
                             controller: _controllers[index],
-                            maxLines: index == 4 ? 3 : 1,
+                            maxLines: index == 3 ? 3 : 1,
                             onChanged: index == _nicknameIndex
                                 ? (_) => _checkNickname()
                                 : null,
@@ -178,11 +242,17 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                             ),
                             decoration: InputDecoration(
                               errorText: nicknameError
-                                  ? t(
-                                      tk: 'Bu lakam eýesiz däl',
-                                      ru: 'Этот никнейм уже занят',
-                                      en: 'This nickname is already taken',
-                                    )
+                                  ? (_nicknameTaken
+                                        ? t(
+                                            tk: 'Bu lakam eýesiz däl',
+                                            ru: 'Этот никнейм уже занят',
+                                            en: 'This nickname is already taken',
+                                          )
+                                        : t(
+                                            tk: '3-20 harp: kiçi harp, san we _',
+                                            ru: '3-20 символов: строчные буквы, цифры и _',
+                                            en: '3-20 chars: lowercase letters, numbers and _',
+                                          ))
                                   : null,
                               prefixIconConstraints:
                                   const BoxConstraints.tightFor(
@@ -221,10 +291,50 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                               ),
                             ),
                           ),
+                          if (index == _nicknameIndex)
+                            _NicknameSuggestionChips(
+                              suggestions: _nicknameSuggestions,
+                              onPick: (value) {
+                                _controllers[_nicknameIndex].text = value;
+                                _checkNickname();
+                              },
+                            ),
                         ],
                       ),
                     );
                   }),
+                  _FieldLabel(text: t(tk: 'Telefon belgiňiz', ru: 'Телефон', en: 'Phone number')),
+                  const SizedBox(height: 7),
+                  InkWell(
+                    onTap: _changePhone,
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      height: 52,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: tokens.surfaceElevated,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: tokens.border),
+                      ),
+                      child: Row(
+                        children: [
+                          AppIcon(Icons.phone_outlined, color: tokens.textPrimary, size: 18),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              displayPhone(profile.phone),
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                          Text(
+                            t(tk: 'Üýtget', ru: 'Изменить', en: 'Change'),
+                            style: TextStyle(color: tokens.accent, fontWeight: FontWeight.w600, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_error != null) _FieldError(_error!),
                 ],
               ),
             ),
@@ -248,12 +358,14 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                               '@',
                               '',
                             ),
-                            address: _controllers[3].text.trim(),
-                            about: _controllers[4].text.trim(),
-                            instagram: _controllers[5].text.trim(),
-                            tiktok: _controllers[6].text.trim(),
+                            address: _controllers[2].text.trim(),
+                            about: _controllers[3].text.trim(),
+                            instagram: _controllers[4].text.trim(),
+                            tiktok: _controllers[5].text.trim(),
                             avatar: profile.avatar,
+                            avatarUrl: profile.avatarUrl,
                             banner: _banner ?? profile.banner,
+                            bannerUrl: profile.bannerUrl,
                           ),
                         ),
                       ),
@@ -268,8 +380,10 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                   ),
                   const SizedBox(height: 10),
                   _MasterActionButton(
-                    label: t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save'),
-                    enabled: !_nicknameTaken,
+                    label: _saving
+                        ? t(tk: 'Saklanýar...', ru: 'Сохранение...', en: 'Saving...')
+                        : t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save'),
+                    enabled: !_nicknameTaken && !_nicknameInvalid && !_saving,
                     leading: Icons.save_outlined,
                     onTap: _save,
                   ),
@@ -294,7 +408,9 @@ class _MasterProfilePreviewScreen extends StatelessWidget {
     required this.instagram,
     required this.tiktok,
     required this.avatar,
+    required this.avatarUrl,
     required this.banner,
+    required this.bannerUrl,
   });
   final String name;
   final String nickname;
@@ -303,7 +419,9 @@ class _MasterProfilePreviewScreen extends StatelessWidget {
   final String instagram;
   final String tiktok;
   final File? avatar;
+  final String? avatarUrl;
   final File? banner;
+  final String? bannerUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -332,6 +450,13 @@ class _MasterProfilePreviewScreen extends StatelessWidget {
                       width: double.infinity,
                       fit: BoxFit.cover,
                     )
+                  : bannerUrl != null
+                  ? Image.network(
+                      bannerUrl!,
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    )
                   : Container(height: 160, color: tokens.surfaceElevated),
             ),
             Padding(
@@ -347,10 +472,8 @@ class _MasterProfilePreviewScreen extends StatelessWidget {
                       child: CircleAvatar(
                         radius: 36,
                         backgroundColor: const Color(0xffE6D2B1),
-                        backgroundImage: avatar != null
-                            ? FileImage(avatar!)
-                            : null,
-                        child: avatar == null
+                        backgroundImage: profileImage(file: avatar, url: avatarUrl),
+                        child: avatar == null && avatarUrl == null
                             ? AppIcon(
                                 Icons.person_outline,
                                 size: 32,
