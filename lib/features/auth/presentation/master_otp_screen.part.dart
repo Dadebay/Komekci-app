@@ -4,7 +4,12 @@ part of '../../../app/komekci_app.dart';
 /// `POST /auth/register`. A verified code signs the account in and moves on
 /// to the subscription payment.
 class MasterOtpScreen extends StatefulWidget {
-  const MasterOtpScreen({super.key, required this.phone, this.registration});
+  const MasterOtpScreen({
+    super.key,
+    required this.phone,
+    this.registration,
+    this.smsListener = const SmsCodeListener(),
+  });
 
   /// `+993XXXXXXXX`.
   final String phone;
@@ -13,14 +18,17 @@ class MasterOtpScreen extends StatefulWidget {
   /// if the server does not yet treat the pending account as signed-up.
   final RegistrationData? registration;
 
+  /// Fills the code in from the incoming SMS (Android).
+  final SmsCodeListener smsListener;
+
   @override
   State<MasterOtpScreen> createState() => _MasterOtpScreenState();
 }
 
 class _MasterOtpScreenState extends State<MasterOtpScreen> {
   static const _length = 6;
-  final _codeControllers = List.generate(_length, (_) => TextEditingController());
-  final _codeNodes = List.generate(_length, (_) => FocusNode());
+  final _code = TextEditingController();
+  final _focus = FocusNode();
   int _secondsLeft = 60;
   Timer? _resendTimer;
   String? _error;
@@ -31,25 +39,27 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
   void initState() {
     super.initState();
     _startCountdown();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _codeNodes.first.requestFocus(),
-    );
+    _listenForSms();
+  }
+
+  /// Waits for the SMS and, when it arrives, types the code and submits it.
+  Future<void> _listenForSms() async {
+    final code = await widget.smsListener.listen();
+    if (!mounted || code == null || _verifying) return;
+    _code.text = code;
+    if (_codeReady) _verify();
   }
 
   @override
   void dispose() {
+    widget.smsListener.cancel();
     _resendTimer?.cancel();
-    for (final controller in _codeControllers) {
-      controller.dispose();
-    }
-    for (final node in _codeNodes) {
-      node.dispose();
-    }
+    _code.dispose();
+    _focus.dispose();
     super.dispose();
   }
 
-  bool get _codeReady =>
-      _codeControllers.every((controller) => controller.text.isNotEmpty);
+  bool get _codeReady => _code.text.length == _length;
 
   void _startCountdown([int seconds = 60]) {
     setState(() => _secondsLeft = seconds);
@@ -84,12 +94,11 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
         }
       }
       if (!mounted) return;
-      for (final c in _codeControllers) {
-        c.clear();
-      }
-      _codeNodes.first.requestFocus();
+      _code.clear();
+      _focus.requestFocus();
       setState(() => _resending = false);
       _startCountdown();
+      widget.smsListener.cancel().then((_) => _listenForSms());
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -104,7 +113,7 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
 
   Future<void> _verify() async {
     if (!_codeReady || _verifying) return;
-    final code = _codeControllers.map((c) => c.text).join();
+    final code = _code.text;
     final auth = context.read<AuthProvider>();
     final language = context.read<LanguageProvider>().language;
     setState(() {
@@ -119,6 +128,8 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
         _verifying = false;
         _error = apiErrorMessage(error, language);
       });
+      _code.clear();
+      _focus.requestFocus();
       return;
     }
     if (!mounted) return;
@@ -190,9 +201,16 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(_length, (index) => _codeBox(index, tokens)),
+              _OtpCodeField(
+                controller: _code,
+                focusNode: _focus,
+                hasError: _error != null,
+                enabled: !_verifying,
+                boxHeight: 64,
+                onChanged: (_) {
+                  if (_error != null) setState(() => _error = null);
+                  if (_codeReady) _verify();
+                },
               ),
               if (_error != null) ...[
                 const SizedBox(height: 10),
@@ -251,47 +269,6 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
       ),
     );
   }
-
-  Widget _codeBox(int index, AppThemeTokens tokens) => SizedBox(
-    width: 46,
-    height: 64,
-    child: TextField(
-      controller: _codeControllers[index],
-      focusNode: _codeNodes[index],
-      textAlign: TextAlign.center,
-      keyboardType: TextInputType.number,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-      maxLength: 1,
-      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-      onChanged: (value) {
-        if (_error != null) setState(() => _error = null);
-        if (value.isNotEmpty && index < _length - 1) {
-          _codeNodes[index + 1].requestFocus();
-        } else if (value.isEmpty && index > 0) {
-          _codeNodes[index - 1].requestFocus();
-        }
-        setState(() {});
-        if (_codeReady) _verify();
-      },
-      decoration: InputDecoration(
-        counterText: '',
-        contentPadding: const EdgeInsets.symmetric(vertical: 14),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: _error != null ? tokens.danger : tokens.border,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: _error != null ? tokens.danger : tokens.accent,
-            width: 1.6,
-          ),
-        ),
-      ),
-    ),
-  );
 }
 
 class _PrivacyNote extends StatelessWidget {

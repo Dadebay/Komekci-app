@@ -90,12 +90,7 @@ class _ClientHomeHeader extends StatelessWidget {
     final tokens = context.appTokens;
     return Row(
       children: [
-        CircleAvatar(
-          radius: 26,
-          backgroundColor: const Color(0xffE6D2B1),
-          backgroundImage: profileImage(file: profile.avatar, url: profile.avatarUrl),
-          child: profile.avatar == null && profile.avatarUrl == null ? AppIcon(Icons.person_outline, size: 24, color: tokens.textPrimary) : null,
-        ),
+        RoundPhoto(file: profile.avatar, url: profile.avatarUrl, radius: 26),
         const SizedBox(width: 12),
         Expanded(
           child: Column(

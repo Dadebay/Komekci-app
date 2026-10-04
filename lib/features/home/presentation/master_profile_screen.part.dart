@@ -283,7 +283,13 @@ class _MasterProfileHero extends StatelessWidget {
             ),
             child: bannerUrl == null
                 ? null
-                : Image.network(bannerUrl!, width: double.infinity, height: 150, fit: BoxFit.cover),
+                : Image.network(
+                    bannerUrl!,
+                    width: double.infinity,
+                    height: 150,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  ),
           ),
           Positioned(
             left: 0,

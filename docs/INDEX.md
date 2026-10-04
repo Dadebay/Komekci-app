@@ -15,6 +15,7 @@ Add topic files in `docs/learnings/` and list them here.
 
 - `API_INTEGRATION_HANDOFF.md` - API integration state: architecture, status of every endpoint, known risks, remaining work (start here for backend work)
 - `API_DOCUMENTATION.md` - backend contract (KÖMEKÇI API for Flutter), copy of the backend team's document
+- `BACKEND_REQUEST_MASTERS_DIRECTORY.md` - endpoint request for the backend: list of masters for new clients (not built yet)
 - `ARCHITECTURE.md` - code layout (also at `lib/ARCHITECTURE.md`)
 - `SPECIFICATION.md` - product specification
 - `DEVAM_NOTU.md` - earlier continuation notes

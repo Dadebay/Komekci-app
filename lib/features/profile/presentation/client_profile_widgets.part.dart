@@ -24,21 +24,7 @@ class _ClientProfileCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 32,
-              backgroundColor: const Color(0xffE6D2B1),
-              backgroundImage: profileImage(
-                file: profile.avatar,
-                url: profile.avatarUrl,
-              ),
-              child: profile.avatar == null && profile.avatarUrl == null
-                  ? AppIcon(
-                      Icons.person_outline,
-                      size: 28,
-                      color: tokens.textPrimary,
-                    )
-                  : null,
-            ),
+            RoundPhoto(file: profile.avatar, url: profile.avatarUrl, radius: 32),
             const SizedBox(width: 14),
             Expanded(
               child: Column(

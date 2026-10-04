@@ -233,19 +233,7 @@ class _CustomerAvatar extends StatelessWidget {
   final double radius;
 
   @override
-  Widget build(BuildContext context) => CircleAvatar(
-    radius: radius,
-    backgroundColor: const Color(0xffE6D2B1),
-    backgroundImage: customer.photoUrl == null
-        ? null
-        : NetworkImage(customer.photoUrl!),
-    child: customer.photoUrl == null
-        ? AppIcon(
-            Icons.person_outline,
-            size: radius * .75,
-            color: context.appTokens.textPrimary,
-          )
-        : null,
-  );
+  Widget build(BuildContext context) =>
+      RoundPhoto(url: customer.photoUrl, radius: radius);
 }
 

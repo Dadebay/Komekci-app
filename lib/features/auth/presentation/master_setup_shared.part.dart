@@ -6,7 +6,7 @@ part of '../../../app/komekci_app.dart';
 const _masterSetupSteps = 4;
 
 /// Phone top-ups are a mobile-balance transfer: the app opens an SMS to this
-/// operator short code with "<receiver number> <amount>", where the receiver
+/// operator short code with `"<receiver number> <amount>"`, where the receiver
 /// number is the one the server hands out (`POST /me/billing/topup`).
 const _topUpShortCode = '0804';
 const _topUpAmounts = [20, 30, 40, 50];

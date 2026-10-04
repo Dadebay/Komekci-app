@@ -128,7 +128,11 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
               controller: _phoneController,
               keyboardType: TextInputType.phone,
               inputFormatters: [_PhoneNumberFormatter()],
-              decoration: const InputDecoration(prefixText: '+993 ', hintText: '65 123456'),
+              decoration: InputDecoration(
+                prefixIcon: phonePrefix(context),
+                prefixIconConstraints: phonePrefixConstraints,
+                hintText: '65 123456',
+              ),
             ),
           if (_error != null) _FieldError(_error!),
         ],

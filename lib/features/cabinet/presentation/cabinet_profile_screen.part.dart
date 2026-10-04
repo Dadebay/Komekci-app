@@ -456,6 +456,7 @@ class _MasterProfilePreviewScreen extends StatelessWidget {
                       height: 160,
                       width: double.infinity,
                       fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Container(height: 160, color: tokens.surfaceElevated),
                     )
                   : Container(height: 160, color: tokens.surfaceElevated),
             ),
@@ -469,18 +470,7 @@ class _MasterProfilePreviewScreen extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 40,
                       backgroundColor: tokens.surface,
-                      child: CircleAvatar(
-                        radius: 36,
-                        backgroundColor: const Color(0xffE6D2B1),
-                        backgroundImage: profileImage(file: avatar, url: avatarUrl),
-                        child: avatar == null && avatarUrl == null
-                            ? AppIcon(
-                                Icons.person_outline,
-                                size: 32,
-                                color: tokens.textPrimary,
-                              )
-                            : null,
-                      ),
+                      child: RoundPhoto(file: avatar, url: avatarUrl, radius: 36),
                     ),
                   ),
                   Transform.translate(

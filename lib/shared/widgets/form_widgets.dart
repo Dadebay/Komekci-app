@@ -1,28 +1,51 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
-import '../../data/models/api/user_models.dart';
 import 'app_icon.dart';
+import 'photo_picker.dart';
 import 'primary_button.dart';
 
 class AppScaffold extends StatelessWidget {
-  const AppScaffold({super.key, required this.title, this.subtitle, required this.child});
+  const AppScaffold({
+    super.key,
+    required this.title,
+    this.subtitle,
+    required this.child,
+    this.titleInAppBar = false,
+  });
   final String title;
   final String? subtitle;
   final Widget child;
+
+  /// Puts [title] centred in the app bar and [subtitle] centred under it,
+  /// instead of the large left-aligned heading in the body.
+  final bool titleInAppBar;
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
+      centerTitle: true,
+      title: titleInAppBar
+          ? Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700))
+          : null,
       leading: IconButton(icon: const AppIcon(Icons.arrow_back), onPressed: () => Navigator.maybePop(context)),
     ),
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: titleInAppBar ? CrossAxisAlignment.center : CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w700)),
-            if (subtitle != null) ...[const SizedBox(height: 7), Text(subtitle!, style: TextStyle(color: context.appTokens.textSecondary))],
+            if (!titleInAppBar)
+              Text(title, style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w700)),
+            if (subtitle != null) ...[
+              SizedBox(height: titleInAppBar ? 0 : 7),
+              Text(
+                subtitle!,
+                textAlign: titleInAppBar ? TextAlign.center : TextAlign.start,
+                style: TextStyle(color: context.appTokens.textSecondary),
+              ),
+            ],
             const SizedBox(height: 18),
             Expanded(child: child),
           ],
@@ -137,45 +160,6 @@ class SelectRow extends StatelessWidget {
   }
 }
 
-class MasterPreviewCard extends StatelessWidget {
-  const MasterPreviewCard({super.key, required this.master});
-  final MasterBrief master;
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.appTokens;
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: tokens.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: tokens.border),
-      ),
-      child: Row(
-        children: [
-          MasterAvatar(url: master.photoUrl, radius: 27),
-          const SizedBox(width: 13),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(master.name, style: const TextStyle(fontSize: 17)),
-                const SizedBox(height: 3),
-                Text(
-                  '@${master.nickname}${master.address.isEmpty ? '' : ' · ${master.address}'}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: tokens.textSecondary, fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-          AppIcon(Icons.chevron_right, color: tokens.disabled),
-        ],
-      ),
-    );
-  }
-}
-
 /// A master's round photo from the server, or a neutral placeholder.
 class MasterAvatar extends StatelessWidget {
   const MasterAvatar({super.key, this.url, this.radius = 27});
@@ -183,13 +167,7 @@ class MasterAvatar extends StatelessWidget {
   final double radius;
   @override
   Widget build(BuildContext context) {
-    final tokens = context.appTokens;
-    return CircleAvatar(
-      radius: radius,
-      backgroundColor: const Color(0xffE6D2B1),
-      backgroundImage: url == null ? null : NetworkImage(url!),
-      child: url == null ? AppIcon(Icons.face_2_outlined, color: tokens.textPrimary, size: radius * .9) : null,
-    );
+    return RoundPhoto(url: url, radius: radius, placeholder: Icons.face_2_outlined);
   }
 }
 
@@ -202,5 +180,57 @@ class HeroPhoto extends StatelessWidget {
       borderRadius: BorderRadius.circular(24),
       image: const DecorationImage(image: AssetImage('assets/images/inspiration_02.jpeg'), fit: BoxFit.cover),
     ),
+  );
+}
+
+/// "+993" shown at the start of a phone field at all times. `prefixText`
+/// only appears once the field is focused or filled, so it is drawn as an
+/// icon-slot widget instead.
+Widget phonePrefix(BuildContext context, {double fontSize = 16, FontWeight weight = FontWeight.w600}) =>
+    Padding(
+      padding: const EdgeInsets.only(left: 16, right: 10),
+      child: Text(
+        '+993',
+        style: TextStyle(
+          color: context.appTokens.textSecondary,
+          fontSize: fontSize,
+          fontWeight: weight,
+        ),
+      ),
+    );
+
+const phonePrefixConstraints = BoxConstraints(minWidth: 0, minHeight: 0);
+
+/// Filled, rounded input style shared by the sign-up forms: an optional
+/// leading icon (or custom [prefix], e.g. the phone's "+993") and a status
+/// [suffix]. [error] switches the border and icon to the danger colour.
+InputDecoration registrationDecoration(
+  AppThemeTokens tokens, {
+  required String hint,
+  required IconData icon,
+  Widget? prefix,
+  Widget? suffix,
+  bool error = false,
+}) {
+  OutlineInputBorder border(Color color, [double width = 1]) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(16),
+    borderSide: BorderSide(color: color, width: width),
+  );
+  return InputDecoration(
+    hintText: hint,
+    hintStyle: TextStyle(color: tokens.disabled, fontWeight: FontWeight.w400),
+    filled: true,
+    fillColor: tokens.surfaceElevated,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+    prefixIcon: prefix ??
+        Padding(
+          padding: const EdgeInsets.only(left: 14, right: 10),
+          child: AppIcon(icon, size: 20, color: error ? tokens.danger : tokens.textSecondary),
+        ),
+    prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+    suffixIcon: suffix == null ? null : Padding(padding: const EdgeInsets.only(right: 14), child: suffix),
+    suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+    enabledBorder: border(error ? tokens.danger : tokens.border),
+    focusedBorder: border(error ? tokens.danger : tokens.accent, 1.5),
   );
 }

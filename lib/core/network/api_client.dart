@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import 'api_config.dart';
 import 'api_exception.dart';
+import 'api_logger.dart';
 import 'token_store.dart';
 
 /// One file in a multipart request.
@@ -141,6 +142,7 @@ class ApiClient {
       if (auth && _tokens != null) 'Authorization': 'Bearer ${_tokens!.access}',
       ...?extraHeaders,
     };
+    final watch = Stopwatch()..start();
     try {
       if (multipart != null) {
         final request = http.MultipartRequest(method, uri)
@@ -162,7 +164,7 @@ class ApiClient {
           request.files.add(await http.MultipartFile.fromPath(f.field, f.path));
         }
         final streamed = await _client.send(request).timeout(apiUploadTimeout);
-        return http.Response.fromStream(streamed);
+        return _logged(method, uri, watch, await http.Response.fromStream(streamed));
       }
       final request = http.Request(method, uri)..headers.addAll(headers);
       if (json != null) {
@@ -170,18 +172,34 @@ class ApiClient {
         request.body = jsonEncode(json);
       }
       final streamed = await _client.send(request).timeout(apiTimeout);
-      return http.Response.fromStream(streamed);
+      return _logged(method, uri, watch, await http.Response.fromStream(streamed));
     } on ApiException {
       rethrow;
     } on TimeoutException catch (e) {
-      throw ApiException.network(e);
+      throw _failed(method, uri, watch, 'timeout', e);
     } on SocketException catch (e) {
-      throw ApiException.network(e);
+      throw _failed(method, uri, watch, 'network', e);
     } on HandshakeException catch (e) {
-      throw ApiException.network(e);
+      throw _failed(method, uri, watch, 'tls', e);
     } on http.ClientException catch (e) {
-      throw ApiException.network(e);
+      throw _failed(method, uri, watch, 'network', e);
     }
+  }
+
+  http.Response _logged(String method, Uri uri, Stopwatch watch, http.Response response) {
+    ApiLogger.log(
+      method: method,
+      uri: uri,
+      elapsed: watch.elapsed,
+      status: response.statusCode,
+      body: response.bodyBytes,
+    );
+    return response;
+  }
+
+  ApiException _failed(String method, Uri uri, Stopwatch watch, String reason, Object cause) {
+    ApiLogger.log(method: method, uri: uri, elapsed: watch.elapsed, failure: reason);
+    return ApiException.network(cause);
   }
 
   dynamic _decode(http.Response response) {

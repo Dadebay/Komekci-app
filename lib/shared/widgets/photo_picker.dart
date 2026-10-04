@@ -5,10 +5,11 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/localization/language_provider.dart';
 import '../../core/theme/app_theme_tokens.dart';
+import '../utils/image_compress.dart';
 import 'app_icon.dart';
 
-/// Photos are downscaled and re-encoded at 70% JPEG quality before they ever
-/// reach the app, so uploads stay small without a separate compression step.
+/// Photos are downscaled and re-encoded at 70% JPEG quality by the picker,
+/// then squeezed under 1 MB by [compressImageUnder] if that was not enough.
 const _pickedImageQuality = 70;
 const _pickedImageMaxWidth = 1440.0;
 
@@ -80,14 +81,55 @@ Future<File?> pickCompressedImage(
     imageQuality: _pickedImageQuality,
     maxWidth: _pickedImageMaxWidth,
   );
-  return picked == null ? null : File(picked.path);
+  if (picked == null) return null;
+  // The picker already downsizes; this guarantees the upload fits in 1 MB.
+  return compressImageUnder(File(picked.path));
 }
 
-/// A just-picked local file wins over the photo stored on the server.
-ImageProvider? profileImage({File? file, String? url}) {
-  if (file != null) return FileImage(file);
-  if (url != null) return NetworkImage(url);
-  return null;
+/// Round photo: a just-picked local [file] wins over the server [url];
+/// with neither — or when the download fails (a missing file on the server
+/// answers 500) — it shows a placeholder icon instead of throwing.
+class RoundPhoto extends StatelessWidget {
+  const RoundPhoto({
+    super.key,
+    this.file,
+    this.url,
+    this.radius = 24,
+    this.placeholder = Icons.person_outline,
+    this.backgroundColor = const Color(0xffE6D2B1),
+  });
+
+  final File? file;
+  final String? url;
+  final double radius;
+  final IconData placeholder;
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    Widget icon() => Center(
+      child: AppIcon(placeholder, size: radius * .85, color: tokens.textPrimary),
+    );
+    final Widget content;
+    if (file != null) {
+      content = Image.file(file!, fit: BoxFit.cover, errorBuilder: (_, _, _) => icon());
+    } else if (url != null) {
+      content = Image.network(
+        url!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => icon(),
+        frameBuilder: (_, child, frame, sync) => sync || frame != null ? child : icon(),
+      );
+    } else {
+      content = icon();
+    }
+    return SizedBox(
+      width: radius * 2,
+      height: radius * 2,
+      child: ClipOval(child: ColoredBox(color: backgroundColor, child: content)),
+    );
+  }
 }
 
 /// Round avatar with a camera badge, used on profile screens.
@@ -97,14 +139,12 @@ class AvatarPicker extends StatelessWidget {
     required this.file,
     required this.onPicked,
     this.radius = 44,
-    this.fallback,
     this.networkUrl,
   });
 
   final File? file;
   final ValueChanged<File> onPicked;
   final double radius;
-  final ImageProvider? fallback;
 
   /// Photo already stored on the server; shown until a new [file] is picked.
   final String? networkUrl;
@@ -119,19 +159,11 @@ class AvatarPicker extends StatelessWidget {
       },
       child: Stack(
         children: [
-          CircleAvatar(
+          RoundPhoto(
+            file: file,
+            url: networkUrl,
             radius: radius,
             backgroundColor: const Color(0xffF1EDE4),
-            backgroundImage: file != null
-                ? FileImage(file!)
-                : (networkUrl != null ? NetworkImage(networkUrl!) : fallback),
-            child: file == null && fallback == null && networkUrl == null
-                ? AppIcon(
-                    Icons.person_outline,
-                    color: tokens.textPrimary,
-                    size: radius * .8,
-                  )
-                : null,
           ),
           Positioned(
             right: 0,
@@ -210,7 +242,13 @@ class PhotoUploadBox extends StatelessWidget {
                 children: [
                   file != null
                       ? Image.file(file!, fit: BoxFit.cover)
-                      : Image.network(networkUrl!, fit: BoxFit.cover),
+                      : Image.network(
+                          networkUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => Center(
+                            child: AppIcon(Icons.image_outlined, color: tokens.textSecondary, size: 28),
+                          ),
+                        ),
                   Positioned(
                     right: 10,
                     bottom: 10,
