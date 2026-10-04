@@ -178,10 +178,15 @@ AppThemeTokens tokensFor(KomekciTheme theme) => switch (theme) {
   KomekciTheme.rose => roseTokens,
 };
 
+/// The app's font (declared in `pubspec.yaml`). Widgets that set their own
+/// [DefaultTextStyle] — snack bars, for one — do not inherit it from the
+/// theme and need it named.
+const appFontFamily = 'Gilroy';
+
 ThemeData buildThemeData(AppThemeTokens t) {
   final base = ThemeData(
     useMaterial3: true,
-    fontFamily: 'Gilroy',
+    fontFamily: appFontFamily,
     brightness: t.brightness,
     scaffoldBackgroundColor: t.surface,
     colorScheme: ColorScheme(
@@ -252,6 +257,23 @@ ThemeData buildThemeData(AppThemeTokens t) {
         borderRadius: BorderRadius.circular(15),
         borderSide: BorderSide(color: t.accent),
       ),
+    ),
+    // Plain `SnackBar(content: Text(...))` calls across the app pick this up;
+    // `AppToast` adds an icon on top of the same look.
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: t.textPrimary,
+      contentTextStyle: TextStyle(
+        fontFamily: appFontFamily,
+        fontSize: 13.5,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+        color: t.surface,
+      ),
+      actionTextColor: t.accent,
+      elevation: 6,
+      insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
     ),
     bottomSheetTheme: BottomSheetThemeData(backgroundColor: t.surface),
     dialogTheme: DialogThemeData(backgroundColor: t.surface),

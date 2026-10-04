@@ -16,8 +16,7 @@ class ClientMastersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
+    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final masters = context.watch<ClientMastersProvider>();
     final canPop = Navigator.of(context).canPop();
@@ -56,24 +55,14 @@ class ClientMastersScreen extends StatelessWidget {
                     else
                       EmptyState(
                         icon: Icons.groups_outlined,
-                        title: t(
-                          tk: 'Baglanan ussaňyz ýok',
-                          ru: 'Связанных мастеров нет',
-                          en: 'No connected masters yet',
-                        ),
-                        text: t(
-                          tk: 'Ussa goşup, bir näçe minutda baglanyşyň.',
-                          ru: 'Добавьте мастера, чтобы связаться с ним.',
-                          en: 'Add a master to connect with them.',
-                        ),
+                        title: t(tk: 'Baglanan ussaňyz ýok', ru: 'Связанных мастеров нет', en: 'No connected masters yet'),
+                        text: t(tk: 'Ussa goşup, bir näçe minutda baglanyşyň.', ru: 'Добавьте мастера, чтобы связаться с ним.', en: 'Add a master to connect with them.'),
                       ),
                   ],
                 )
               : ListView(
                   padding: EdgeInsets.fromLTRB(20, 12, 20, canPop ? 20 : 110),
-                  children: [
-                    for (final c in connections) _MyMasterCard(connection: c),
-                  ],
+                  children: [for (final c in connections) _MyMasterCard(connection: c)],
                 ),
         ),
       ),
@@ -97,8 +86,7 @@ class _MyMasterCard extends StatelessWidget {
 
   Future<void> _menu(BuildContext context) async {
     final language = context.read<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
+    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final masters = context.read<ClientMastersProvider>();
     final connected = connection.status == ConnectionStatus.accepted;
     final action = await showModalBottomSheet<String>(
@@ -115,11 +103,7 @@ class _MyMasterCard extends StatelessWidget {
               ),
             ListTile(
               leading: const AppIcon(Icons.link_off),
-              title: Text(
-                connected
-                    ? t(tk: 'Baglanyşygy aýyr', ru: 'Удалить связь', en: 'Remove connection')
-                    : t(tk: 'Haýyşy yzyna al', ru: 'Отозвать запрос', en: 'Cancel request'),
-              ),
+              title: Text(connected ? t(tk: 'Baglanyşygy aýyr', ru: 'Удалить связь', en: 'Remove connection') : t(tk: 'Haýyşy yzyna al', ru: 'Отозвать запрос', en: 'Cancel request')),
               onTap: () => Navigator.pop(sheetContext, 'remove'),
             ),
           ],
@@ -138,18 +122,11 @@ class _MyMasterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
+    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final master = connection.master;
     final connected = connection.status == ConnectionStatus.accepted;
     final (statusBg, statusFg, statusLabel) = connected
-        ? (
-            freeSlotBg,
-            freeSlotColorDark,
-            connection.active
-                ? t(tk: 'Esasy', ru: 'Основной', en: 'Main')
-                : t(tk: 'Baglanan', ru: 'Подключено', en: 'Connected'),
-          )
+        ? (freeSlotBg, freeSlotColorDark, connection.active ? t(tk: 'Esasy', ru: 'Основной', en: 'Main') : t(tk: 'Baglanan', ru: 'Подключено', en: 'Connected'))
         : (const Color(0xffFBF1D8), const Color(0xff77540E), t(tk: 'Garaşylýar', ru: 'Ожидание', en: 'Pending'));
 
     return Container(
@@ -164,9 +141,7 @@ class _MyMasterCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: connected
-              ? () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master)))
-              : null,
+          onTap: connected ? () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master))) : null,
           onLongPress: () => _menu(context),
           child: Padding(
             padding: const EdgeInsets.all(13),

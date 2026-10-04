@@ -14,8 +14,9 @@
 Add topic files in `docs/learnings/` and list them here.
 
 - `API_INTEGRATION_HANDOFF.md` - API integration state: architecture, status of every endpoint, known risks, remaining work (start here for backend work)
+- `API_CHECKLIST.md` - every Insomnia request with its app status (wired / repo only / seen in logs), to tick off one by one
 - `API_DOCUMENTATION.md` - backend contract (KÖMEKÇI API for Flutter), copy of the backend team's document
-- `BACKEND_REQUEST_MASTERS_DIRECTORY.md` - endpoint request for the backend: list of masters for new clients (not built yet)
+- `BACKEND_REQUESTS.md` - everything the app waits on from the backend, none built yet: (1) sign-up stuck on PHONE_TAKEN for unconfirmed accounts, (2) `GET /masters` list for new clients, (3) `POST /me/messages` master push messages
 - `ARCHITECTURE.md` - code layout (also at `lib/ARCHITECTURE.md`)
 - `SPECIFICATION.md` - product specification
 - `DEVAM_NOTU.md` - earlier continuation notes

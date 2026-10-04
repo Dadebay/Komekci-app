@@ -27,11 +27,7 @@ class FirebaseMessagingService {
 
   Future<void> initialize() async {
     await LocalNotificationsService.instance.initialize();
-    await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
     // The OS already showed these in the notification tray — just record them.
@@ -68,11 +64,7 @@ class FirebaseMessagingService {
       }
       if (Platform.isIOS) {
         final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-        _printToken(
-          label: 'APNS TOKEN',
-          token: apnsToken ?? 'not available yet (physical iPhone + APNs setup required)',
-          ansiColor: apnsToken == null ? '33' : '35',
-        );
+        _printToken(label: 'APNS TOKEN', token: apnsToken ?? 'not available yet (physical iPhone + APNs setup required)', ansiColor: apnsToken == null ? '33' : '35');
       }
     } on Object catch (e) {
       developer.log('Push device registration failed: $e', name: 'Komekci FCM');
@@ -91,11 +83,7 @@ class FirebaseMessagingService {
     developer.log('APNs did not answer in ${_apnsWait.inSeconds}s', name: 'Komekci FCM');
   }
 
-  void _printToken({
-    required String label,
-    required String token,
-    required String ansiColor,
-  }) {
+  void _printToken({required String label, required String token, required String ansiColor}) {
     // ANSI escapes render as coloured output in `flutter run` terminals.
     // ignore: avoid_print
     print('\x1B[1;${ansiColor}m╔══ KÖMEKÇI $label ══╗\x1B[0m');
@@ -108,11 +96,7 @@ class FirebaseMessagingService {
   void _handleForegroundMessage(RemoteMessage message) {
     final notification = message.notification;
     if (notification != null) {
-      LocalNotificationsService.instance.show(
-        title: notification.title,
-        body: notification.body,
-        payload: message.data.toString(),
-      );
+      LocalNotificationsService.instance.show(title: notification.title, body: notification.body, payload: message.data.toString());
     }
     _recordMessage(message);
   }
@@ -125,8 +109,5 @@ class FirebaseMessagingService {
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (Firebase.apps.isEmpty) await Firebase.initializeApp();
-  developer.log(
-    'Background message: ${message.messageId}',
-    name: 'Komekci FCM',
-  );
+  developer.log('Background message: ${message.messageId}', name: 'Komekci FCM');
 }

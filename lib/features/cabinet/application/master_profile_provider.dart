@@ -4,6 +4,7 @@ import '../../../core/session/session_scoped.dart';
 import '../../../data/models/api/user_models.dart';
 import '../../../data/repositories/master_repository.dart';
 import '../../../data/repositories/me_repository.dart';
+import '../../../shared/utils/image_url.dart';
 
 /// The signed-in master's own profile — single source of truth for
 /// everywhere their name/nickname/photo appear (cabinet home card, profile
@@ -33,6 +34,11 @@ class MasterProfileProvider extends SessionScoped {
   String? _avatarUrl;
   String? _bannerUrl;
 
+  /// Bumped after each upload so the replaced picture is not served from the
+  /// image cache (the server reuses the same URL); see [withImageRevision].
+  int _avatarRevision = 0;
+  int _bannerRevision = 0;
+
   /// Just-picked images, shown until the upload lands and the server URL
   /// replaces them.
   File? _avatar;
@@ -49,8 +55,8 @@ class MasterProfileProvider extends SessionScoped {
   String get instagram => _instagram;
   String get tiktok => _tiktok;
   List<String> get otherLinks => _otherLinks;
-  String? get avatarUrl => _avatarUrl;
-  String? get bannerUrl => _bannerUrl;
+  String? get avatarUrl => withImageRevision(_avatarUrl, _avatarRevision);
+  String? get bannerUrl => withImageRevision(_bannerUrl, _bannerRevision);
   File? get avatar => _avatar;
   File? get banner => _banner;
   bool get saving => _saving;
@@ -82,12 +88,35 @@ class MasterProfileProvider extends SessionScoped {
     _instagram = _tiktok = '';
     _otherLinks = const [];
     _avatarUrl = _bannerUrl = null;
+    _avatarRevision = _bannerRevision = 0;
     _avatar = _banner = null;
     _saving = false;
   }
 
   @override
   Future<void> onSignedIn(Me me) async {}
+
+  /// Re-reads the public profile from `GET /me/profile`, so the edit form
+  /// opens on what the server holds rather than on the copy that came with
+  /// `GET /me`. Name and nickname stay with the account (`PATCH /me`). On
+  /// failure the data from `/me` stays on screen.
+  Future<void> refresh() async {
+    if (_saving) return;
+    try {
+      final profile = await _master.profile();
+      if (_saving) return;
+      _address = profile.address;
+      _about = profile.description;
+      _instagram = profile.instagramUrl ?? '';
+      _tiktok = profile.tiktokUrl ?? '';
+      _otherLinks = profile.otherLinks;
+      _bannerUrl = profile.bannerUrl ?? _bannerUrl;
+      _avatarUrl = profile.photoUrl ?? _avatarUrl;
+      notifyListeners();
+    } catch (_) {
+      // Offline or rate limited: keep what `/me` gave us.
+    }
+  }
 
   /// Uploads a new profile photo right away (`PATCH /me`, multipart).
   Future<void> setAvatar(File file) async {
@@ -96,6 +125,7 @@ class MasterProfileProvider extends SessionScoped {
     try {
       final me = await _me.updateMe(photoPath: file.path);
       _avatar = null;
+      _avatarRevision = newImageRevision();
       _onMeChanged(me);
     } catch (_) {
       _avatar = null;
@@ -140,6 +170,7 @@ class MasterProfileProvider extends SessionScoped {
       _tiktok = profile.tiktokUrl ?? '';
       _otherLinks = profile.otherLinks;
       _bannerUrl = profile.bannerUrl ?? _bannerUrl;
+      if (banner != null) _bannerRevision = newImageRevision();
       _banner = null;
     } finally {
       _saving = false;

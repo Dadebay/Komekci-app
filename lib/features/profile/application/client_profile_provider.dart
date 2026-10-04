@@ -3,6 +3,7 @@ import 'dart:io';
 import '../../../core/session/session_scoped.dart';
 import '../../../data/models/api/user_models.dart';
 import '../../../data/repositories/me_repository.dart';
+import '../../../shared/utils/image_url.dart';
 
 /// The signed-in client's own profile — single source of truth for
 /// everywhere their name/phone/photo appear (home greeting, profile tab,
@@ -24,12 +25,16 @@ class ClientProfileProvider extends SessionScoped {
   String? _avatarUrl;
   File? _avatar;
 
+  /// Bumped after each upload: the server reuses the photo's URL, so without
+  /// it the image cache would keep showing the old picture.
+  int _avatarRevision = 0;
+
   String get name => _name;
   String get nickname => _nickname;
 
   /// `+993XXXXXXXX`.
   String get phone => _phone;
-  String? get avatarUrl => _avatarUrl;
+  String? get avatarUrl => withImageRevision(_avatarUrl, _avatarRevision);
 
   /// Just-picked photo, shown until the upload lands.
   File? get avatar => _avatar;
@@ -48,6 +53,7 @@ class ClientProfileProvider extends SessionScoped {
   void reset() {
     _name = _nickname = _phone = '';
     _avatarUrl = null;
+    _avatarRevision = 0;
     _avatar = null;
   }
 
@@ -59,8 +65,10 @@ class ClientProfileProvider extends SessionScoped {
     _avatar = file;
     notifyListeners();
     try {
-      _onMeChanged(await _me.updateMe(photoPath: file.path));
+      final me = await _me.updateMe(photoPath: file.path);
       _avatar = null;
+      _avatarRevision = newImageRevision();
+      _onMeChanged(me);
     } catch (_) {
       _avatar = null;
       notifyListeners();

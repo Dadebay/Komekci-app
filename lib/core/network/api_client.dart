@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
+import '../../shared/utils/image_compress.dart';
 import 'api_config.dart';
 import 'api_exception.dart';
 import 'api_logger.dart';
@@ -145,8 +146,14 @@ class ApiClient {
     final watch = Stopwatch()..start();
     try {
       if (multipart != null) {
-        final request = http.MultipartRequest(method, uri)
+        // PHP only fills the request body for a multipart *POST*; a real
+        // PATCH/PUT arrives with every field and file missing, so Laravel
+        // would answer 200 and silently save nothing. `_method` is Laravel's
+        // own override, so the route still sees the verb it declared.
+        final spoofed = method == 'PATCH' || method == 'PUT' || method == 'DELETE';
+        final request = http.MultipartRequest(spoofed ? 'POST' : method, uri)
           ..headers.addAll(headers);
+        if (spoofed) request.fields['_method'] = method;
         // `fields` is a Map, so a key that repeats (`other_links[]`) goes in
         // as its own text parts instead.
         final counts = <String, int>{};
@@ -161,7 +168,10 @@ class ApiClient {
           }
         }
         for (final f in multipart.files) {
-          request.files.add(await http.MultipartFile.fromPath(f.field, f.path));
+          // Safety net behind the picker: whatever file reaches an upload is
+          // brought under the size limit here (a no-op when it already is).
+          final file = await compressImageUnder(File(f.path));
+          request.files.add(await http.MultipartFile.fromPath(f.field, file.path));
         }
         final streamed = await _client.send(request).timeout(apiUploadTimeout);
         return _logged(method, uri, watch, await http.Response.fromStream(streamed));

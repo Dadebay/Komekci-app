@@ -21,6 +21,18 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
   bool _initialized = false;
   bool _saving = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // The schedule loads at sign-in; if that failed (no network) the form
+    // would stay locked, so try again when the screen opens.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final schedule = context.read<ScheduleProvider>();
+      if (!schedule.loaded && !schedule.loading) schedule.load();
+    });
+  }
+
   /// Copies the saved schedule into the editable fields, once it is loaded.
   void _adopt(ScheduleProvider schedule) {
     if (_initialized || !schedule.loaded) return;
@@ -50,7 +62,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
     if (_saving) return;
     final schedule = context.read<ScheduleProvider>();
     final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
+    final toast = AppToast.of(context);
     setState(() => _saving = true);
     final ok = await runApi(context, () async {
       await schedule.saveWeek([
@@ -68,18 +80,12 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
     if (!mounted) return;
     setState(() => _saving = false);
     if (!ok) return;
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          pickTr(
+    toast.success(pickTr(
             language,
             tk: 'Iş wagty ýatda saklandy.',
             ru: 'График сохранён.',
             en: 'Working hours saved.',
-          ),
-        ),
-      ),
-    );
+          ));
     navigator.pop();
   }
 

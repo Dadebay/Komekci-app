@@ -7,6 +7,7 @@ class _PaymentMethodTile extends StatelessWidget {
     required this.subtitle,
     required this.selected,
     required this.onTap,
+    this.enabled = true,
   });
   final IconData icon;
   final String title;
@@ -14,11 +15,16 @@ class _PaymentMethodTile extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
+  /// False greys the tile out and ignores taps (method not available now).
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    return GestureDetector(
-      onTap: onTap,
+    return Opacity(
+      opacity: enabled ? 1 : .45,
+      child: GestureDetector(
+      onTap: enabled ? onTap : null,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
@@ -85,6 +91,7 @@ class _PaymentMethodTile extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

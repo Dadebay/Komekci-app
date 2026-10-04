@@ -144,7 +144,7 @@ class BillingScreen extends StatelessWidget {
               leading: Icons.add,
               onTap: () => Navigator.push(
                 context,
-                pageRoute(const MasterSubscriptionScreen()),
+                pageRoute(const MasterSubscriptionScreen(onboarding: false)),
               ),
             ),
             const SizedBox(height: 26),

@@ -45,7 +45,7 @@ Durum: ✅ uygulamaya bağlı (repo + provider + ekran) · 🟡 repo/provider ha
 | 14 | POST `/me/notifications/{id}/read` | ✅ | |
 | 15 | POST `/me/devices` | ✅ | `DeviceRegistrar`: girişte token'ı kendisi alır, son kaydedileni saklar (aykitap'taki `_syncTokenWithBackend` mantığı) |
 | 16 | DELETE `/me/devices` | ✅ | çıkışta |
-| 17 | GET `/me/profile` | 🟡 | profil `/me` içindeki `profile` bloğundan okunuyor |
+| 17 | GET `/me/profile` | ✅ | profil formu açılırken `MasterProfileProvider.refresh()`; ilk veri yine `/me` → `profile` bloğundan |
 | 18 | PATCH `/me/profile` | ✅ | |
 | 19 | GET `/me/services` | ✅ | |
 | 20 | POST `/me/services` | ✅ | foto zorunlu |
@@ -91,7 +91,7 @@ Durum: ✅ uygulamaya bağlı (repo + provider + ekran) · 🟡 repo/provider ha
 | 60 | POST `/waitlist/{id}/accept` | ✅ | bildirim kartında; payload anahtarı **tahmin** (`waitlist_id`/`waitlist_offer_id`) |
 | 61 | POST `/waitlist/{id}/decline` | ✅ | aynı |
 
-Özet: **59 ✅, 2 🟡, 0 hiç yok.** (`POST /transactions*` ödeme geçidinindir, uygulama kullanmaz.)
+Özet: **60 ✅, 1 🟡, 0 hiç yok.** (`POST /transactions*` ödeme geçidinindir, uygulama kullanmaz.)
 
 ## API'nin desteklemediği için bilinçli değişen ekranlar
 
@@ -109,14 +109,14 @@ Durum: ✅ uygulamaya bağlı (repo + provider + ekran) · 🟡 repo/provider ha
 ## Doğrulanmamış / riskli noktalar (sıradaki model bunlara bakmalı)
 
 1. **Canlı test yok** (yazma uçları). Gerçek hesapla denenmeli: register→OTP→abonelik, usta kalender, müşteri randevu akışı. Production'da hesap açar/SMS atar → kullanıcı onayı gerek.
-2. **PATCH + multipart** (`/me`, `/me/profile`, `/me/services/{id}` foto): Laravel PATCH multipart'ı bazen okumaz. Çalışmazsa `POST` + `_method=PATCH` kullan (`ApiClient.request` / repository'ler).
+2. **PATCH + multipart** (`/me`, `/me/profile`, `/me/services/{id}` foto): PHP, PATCH ile gelen multipart gövdeyi doldurmaz (200 döner, hiçbir şey kaydolmaz). `ApiClient` artık multipart PATCH/PUT/DELETE'i `POST` + `_method` alanı olarak yolluyor (`api_client.dart`, test: `api_client_test.dart`). Cihazda foto/banner yüklemeyi yine de dene.
 3. **Sunucu sertifikası**: ZeroSSL → kök Sectigo R46. Eski CA paketli cihazlarda (eski Android) TLS hatası olabilir; Insomnia'nın eski CA paketi de reddediyordu. Sunucu tarafı sağlam (curl/Chrome çalışıyor).
 4. **Backend gözlemleri** (dev'e iletildi): production'da `phpdebugbar-id` header'ı (Debugbar açık), TLS 1.2'de renegotiation isteği.
 5. **Müşteri `status` değerleri** (`new/regular/vip`?) dokümanda yok; `Customer.parseStatus` tahmin ediyor.
 6. **Bildirim payload'u** dokümanda yok (waitlist id anahtarı tahmin).
 7. **Kayıt sırasında OTP "tekrar gönder"**: bekleyen hesap için `otp/request` 404 verirse `register` yeniden çağrılıyor; backend davranışı doğrulanmadı.
 8. **Fotoğraf**: sunucu `photo`'yu her rol için zorunlu tutuyor (422: "Поле photo обязательно"), usta için ayrıca `banner`. Uygulama ikisini de zorunlu kılıyor. Seçilen görseller `compressImageUnder` ile 900 KB altına indiriliyor (`shared/utils/image_compress.dart`, saf Dart `image` paketi).
-9. `monthlyFee` tam sayıya yuvarlanır (bakiye hesapları `int`); `subscription_price` küsuratlıysa yanlış. `_topUpAmounts = [20,30,40,50]` sabit (`master_setup_shared.part.dart`).
+9. `monthlyFee` tam sayıya yuvarlanır (bakiye hesapları `int`); `subscription_price` küsuratlıysa yanlış. `_topUpAmounts = [20,30,40,50]` sabit (`master_setup_shared.dart`).
 10. Ağ yokken açılışta token varsa `/me` alınamaz → `LanguageScreen`'e düşer (çevrimdışı rol önbelleği yok).
 11. ETag / `If-None-Match` önbelleği yok (dokümanda opsiyonel).
 12. **FCM**: `FirebaseMessagingService` (core/services) artık elyeter'deki `PushService` gibi iOS'ta APNs'i bekleyip (arka planda, splash'i geciktirmez) `komekci` konusuna abone oluyor. Konu adı benim seçimim; backend yayınları bu konuya atıyorsa adı eşleştir, atmıyorsa abonelik zararsız.

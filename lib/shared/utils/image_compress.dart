@@ -4,9 +4,13 @@ import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
 
-/// Uploads stay below this many bytes (1 MB with some headroom for the
-/// multipart envelope).
+/// What the compressor aims for: comfortably under 1 MB.
 const maxUploadBytes = 900 * 1024;
+
+/// The most a picture may weigh when it is accepted for upload: 1 MB minus
+/// room for the multipart envelope. A file above this after compression
+/// (unreadable image, odd format) is refused instead of being sent.
+const uploadLimitBytes = 1000 * 1024;
 
 /// Returns [file] unchanged when it is already under [maxBytes]; otherwise a
 /// JPEG copy re-encoded at a lower quality and, if that is not enough,

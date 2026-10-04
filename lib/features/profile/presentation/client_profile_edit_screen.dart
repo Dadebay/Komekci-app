@@ -37,7 +37,7 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
     }
     final language = context.read<LanguageProvider>().language;
     final profile = context.read<ClientProfileProvider>();
-    final messenger = ScaffoldMessenger.of(context);
+    final toast = AppToast.of(context);
     final navigator = Navigator.of(context);
     setState(() {
       _saving = true;
@@ -53,47 +53,35 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
       });
       return;
     }
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          pickTr(
+    toast.success(pickTr(
             language,
             tk: 'Profil ýatda saklandy.',
             ru: 'Профиль сохранён.',
             en: 'Profile saved.',
-          ),
-        ),
-      ),
-    );
+          ),);
     navigator.pop();
   }
 
   Future<void> _changeAvatar(File file) async {
     final language = context.read<LanguageProvider>().language;
-    final messenger = ScaffoldMessenger.of(context);
+    final toast = AppToast.of(context);
     try {
       await context.read<ClientProfileProvider>().setAvatar(file);
     } catch (error) {
-      messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
+      toast.error(apiErrorMessage(error, language));
     }
   }
 
   Future<void> _changePhone() async {
     final language = context.read<LanguageProvider>().language;
-    final messenger = ScaffoldMessenger.of(context);
+    final toast = AppToast.of(context);
     if (await showChangePhoneDialog(context)) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            pickTr(
+      toast.success(pickTr(
               language,
               tk: 'Telefon belgisi üýtgedildi.',
               ru: 'Номер телефона изменён.',
               en: 'Phone number updated.',
-            ),
-          ),
-        ),
-      );
+            ),);
     }
   }
 

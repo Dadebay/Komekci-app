@@ -259,7 +259,7 @@ class _StatusPill extends StatelessWidget {
 }
 
 /// Bottom sheet used to change a customer's status. Mirrors the app's other
-/// "pick a value" sheets (see `_pickDuration` in cabinet_screens.part.dart).
+/// "pick a value" sheets (see `_pickDuration` in cabinet_screens.dart).
 Customer? _findCustomer(List<Customer> customers, String id) {
   for (final customer in customers) {
     if (customer.id == id) return customer;

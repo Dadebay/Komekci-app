@@ -141,12 +141,12 @@ class _CabinetScreenState extends State<CabinetScreen> {
 
 /// Uploads the master's new profile photo, surfacing a failure as a snackbar.
 Future<void> _uploadAvatar(BuildContext context, File file) async {
-  final messenger = ScaffoldMessenger.of(context);
+  final toast = AppToast.of(context);
   final language = context.read<LanguageProvider>().language;
   try {
     await context.read<MasterProfileProvider>().setAvatar(file);
   } catch (error) {
-    messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
+    toast.error(apiErrorMessage(error, language));
   }
 }
 
@@ -274,7 +274,7 @@ class _MasterCard extends StatelessWidget {
                 GestureDetector(
                   onTap: () => Navigator.push(
                     context,
-                    pageRoute(const MasterSubscriptionScreen()),
+                    pageRoute(const MasterSubscriptionScreen(onboarding: false)),
                   ),
                   child: Container(
                     padding: const EdgeInsets.symmetric(

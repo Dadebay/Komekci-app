@@ -116,7 +116,7 @@ Durum: ✅ uygulamaya bağlı (repo + provider + ekran) · 🟡 repo/provider ha
 6. **Bildirim payload'u** dokümanda yok (waitlist id anahtarı tahmin).
 7. **Kayıt sırasında OTP "tekrar gönder"**: bekleyen hesap için `otp/request` 404 verirse `register` yeniden çağrılıyor; backend davranışı doğrulanmadı.
 8. **Fotoğraf**: sunucu `photo`'yu her rol için zorunlu tutuyor (422: "Поле photo обязательно"), usta için ayrıca `banner`. Uygulama ikisini de zorunlu kılıyor. Seçilen görseller `compressImageUnder` ile 900 KB altına indiriliyor (`shared/utils/image_compress.dart`, saf Dart `image` paketi).
-9. `monthlyFee` tam sayıya yuvarlanır (bakiye hesapları `int`); `subscription_price` küsuratlıysa yanlış. `_topUpAmounts = [20,30,40,50]` sabit (`master_setup_shared.part.dart`).
+9. `monthlyFee` tam sayıya yuvarlanır (bakiye hesapları `int`); `subscription_price` küsuratlıysa yanlış. `_topUpAmounts = [20,30,40,50]` sabit (`master_setup_shared.dart`).
 10. Ağ yokken açılışta token varsa `/me` alınamaz → `LanguageScreen`'e düşer (çevrimdışı rol önbelleği yok).
 11. ETag / `If-None-Match` önbelleği yok (dokümanda opsiyonel).
 12. **FCM**: `FirebaseMessagingService` (core/services) artık elyeter'deki `PushService` gibi iOS'ta APNs'i bekleyip (arka planda, splash'i geciktirmez) `komekci` konusuna abone oluyor. Konu adı benim seçimim; backend yayınları bu konuya atıyorsa adı eşleştir, atmıyorsa abonelik zararsız.

@@ -9,7 +9,6 @@ const _masterSetupSteps = 4;
 /// operator short code with `"<receiver number> <amount>"`, where the receiver
 /// number is the one the server hands out (`POST /me/billing/topup`).
 const _topUpShortCode = '0804';
-const _topUpAmounts = [20, 30, 40, 50];
 
 
 /// Sits under the confirm button in payment dialogs, replacing a back arrow.

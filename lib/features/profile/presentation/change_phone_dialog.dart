@@ -20,12 +20,14 @@ class _ChangePhoneDialog extends StatefulWidget {
 class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
   final _phoneController = TextEditingController();
   final _codeController = TextEditingController();
+  final _sms = const SmsCodeListener();
   String? _newPhone;
   bool _busy = false;
   String? _error;
 
   @override
   void dispose() {
+    _sms.cancel();
     _phoneController.dispose();
     _codeController.dispose();
     super.dispose();
@@ -67,6 +69,33 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
       await auth.requestPhoneChange(phone);
       if (mounted) setState(() => _newPhone = phone);
     });
+    if (_newPhone != null) _listenForSms();
+  }
+
+  /// Android: fills in and submits the code from the incoming SMS.
+  Future<void> _listenForSms() async {
+    await _sms.cancel();
+    final code = await _sms.listen();
+    if (!mounted || code == null || _newPhone == null || _busy) return;
+    _codeController.text = code;
+    _confirm();
+  }
+
+  /// Back to the number field (typed it wrong).
+  void _editNumber() {
+    _sms.cancel();
+    _codeController.clear();
+    setState(() {
+      _newPhone = null;
+      _error = null;
+    });
+  }
+
+  Future<void> _resend() async {
+    final auth = context.read<AuthProvider>();
+    final phone = _newPhone!;
+    await _run(() => auth.requestPhoneChange(phone));
+    if (mounted && _error == null) _listenForSms();
   }
 
   Future<void> _confirm() async {
@@ -118,6 +147,10 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
               controller: _codeController,
               keyboardType: TextInputType.number,
               maxLength: 6,
+              autofillHints: const [AutofillHints.oneTimeCode],
+              onChanged: (value) {
+                if (value.length == 6) _confirm();
+              },
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 22, letterSpacing: 6, fontWeight: FontWeight.w700),
@@ -135,6 +168,23 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
               ),
             ),
           if (_error != null) _FieldError(_error!),
+          if (awaitingCode)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Wrap(
+                spacing: 4,
+                children: [
+                  TextButton(
+                    onPressed: _busy ? null : _editNumber,
+                    child: Text(t(tk: 'Belgini üýtget', ru: 'Изменить номер', en: 'Change number')),
+                  ),
+                  TextButton(
+                    onPressed: _busy ? null : _resend,
+                    child: Text(t(tk: 'Kody täzeden iber', ru: 'Отправить код снова', en: 'Resend code')),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
       actions: [
