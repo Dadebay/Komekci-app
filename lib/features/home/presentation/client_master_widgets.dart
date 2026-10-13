@@ -10,7 +10,7 @@ class _ClientMasterCarousel extends StatefulWidget {
 }
 
 class _ClientMasterCarouselState extends State<_ClientMasterCarousel> {
-  final _controller = PageController(viewportFraction: .4);
+  final _controller = PageController(viewportFraction: .78);
 
   @override
   void dispose() {
@@ -37,10 +37,10 @@ class _ClientMasterCarouselState extends State<_ClientMasterCarousel> {
     return SizedBox(
       // A little taller than the cards themselves so their drop shadow has
       // room to render — PageView clips to its own bounds by default.
-      height: 190,
+      height: 226,
       child: PageView.builder(
         controller: _controller,
-        itemCount: masters.length,
+        itemCount: masters.length + 1,
         // Without this, PageView centers the first/last page instead of
         // starting flush at the left edge, leaving a near-empty-card gap
         // before the first card.
@@ -48,7 +48,9 @@ class _ClientMasterCarouselState extends State<_ClientMasterCarousel> {
         clipBehavior: Clip.none,
         itemBuilder: (_, index) => Padding(
           padding: const EdgeInsets.only(right: 12, bottom: 12),
-          child: _ClientMasterCard(master: masters[index].master, tk: widget.tk),
+          child: index == masters.length
+              ? const _AddMasterCard()
+              : _ClientMasterCard(master: masters[index].master, tk: widget.tk),
         ),
       ),
     );
@@ -64,73 +66,140 @@ class _ClientMasterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
-    return InkWell(
+    final open = master.acceptingBookings;
+    return GestureDetector(
       onTap: () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master))),
-      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.black.withValues(alpha: .05)),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: .07), blurRadius: 20, offset: const Offset(0, 8)),
-          ],
-        ),
+        clipBehavior: Clip.antiAlias,
+        decoration: _bookingCardDecoration(tokens),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: tokens.accent.withValues(alpha: .55), width: 1.4),
-              ),
-              child: MasterAvatar(url: master.photoUrl, radius: 21),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              master.name,
-              style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              '@${master.nickname}',
-              style: TextStyle(fontSize: 10.5, color: tokens.textSecondary),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                AppIcon(Icons.location_on_outlined, size: 10, color: tokens.textSecondary),
-                const SizedBox(width: 3),
-                Expanded(
-                  child: Text(
-                    master.address.isEmpty ? '—' : master.address,
-                    style: TextStyle(fontSize: 9.5, color: tokens.textSecondary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+            Container(height: 46, color: Color.alphaBlend(tokens.accent.withValues(alpha: .14), tokens.surface)),
+            // 30px of layout height: the avatar hangs up into the band above.
+            SizedBox(
+              height: 30,
+              child: OverflowBox(
+                alignment: Alignment.topCenter,
+                minHeight: 0,
+                maxHeight: 90,
+                child: Transform.translate(
+                  offset: const Offset(0, -30),
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: tokens.surface,
+                      border: Border.all(color: tokens.accent, width: 1.6),
+                      boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .10), blurRadius: 12, offset: const Offset(0, 5))],
+                    ),
+                    child: MasterAvatar(url: master.photoUrl, radius: 26),
                   ),
                 ),
-              ],
+              ),
             ),
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              height: 32,
-              child: FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: tokens.textPrimary, padding: EdgeInsets.zero, shape: const StadiumBorder()),
-                onPressed: master.acceptingBookings
-                    ? () => Navigator.push(context, pageRoute(BookingPage(master: master)))
-                    : null,
-                child: Text(
-                  pickTr(language, tk: 'Ýazyl', ru: 'Записаться', en: 'Book'),
-                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+                child: Column(
+                  children: [
+                    Text(
+                      master.name,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '@${master.nickname}',
+                      style: TextStyle(fontSize: 12.5, color: tokens.textSecondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AppIcon(Icons.location_on_outlined, size: 13, color: tokens.textSecondary),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            master.address.isEmpty ? '—' : master.address,
+                            style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 38,
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: tokens.textPrimary,
+                          disabledBackgroundColor: tokens.surfaceElevated,
+                          padding: EdgeInsets.zero,
+                          shape: const StadiumBorder(),
+                        ),
+                        onPressed: open ? () => Navigator.push(context, pageRoute(BookingPage(master: master))) : null,
+                        child: Text(
+                          open
+                              ? pickTr(language, tk: 'Ýazyl', ru: 'Записаться', en: 'Book')
+                              : pickTr(language, tk: 'Wagtlaýyn ýapyk', ru: 'Запись закрыта', en: 'Paused'),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: open ? tokens.surface : tokens.textSecondary),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Last slot of the strip: connect one more master.
+class _AddMasterCard extends StatelessWidget {
+  const _AddMasterCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    final language = context.watch<LanguageProvider>().language;
+    return GestureDetector(
+      onTap: () => Navigator.push(context, pageRoute(const ConnectMasterScreen())),
+      child: Container(
+        decoration: BoxDecoration(
+          color: tokens.surfaceElevated,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: tokens.accent.withValues(alpha: .35)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .15), shape: BoxShape.circle),
+              child: AppIcon(Icons.add, size: 26, color: tokens.accent),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              pickTr(language, tk: 'Usta goş', ru: 'Добавить мастера', en: 'Add master'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              pickTr(language, tk: 'Lakam ýa-da telefon', ru: 'Никнейм или телефон', en: 'Nickname or phone'),
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
             ),
           ],
         ),

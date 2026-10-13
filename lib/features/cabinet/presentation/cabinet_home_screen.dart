@@ -9,11 +9,22 @@ class CabinetScreen extends StatefulWidget {
 
 class _CabinetScreenState extends State<CabinetScreen> {
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final requests = context.read<ConnectionRequestsProvider>();
+      if (!requests.loading) requests.load();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
+    final pendingRequests = context.watch<ConnectionRequestsProvider>().count;
     final entries = <(IconData, String, Widget)>[
       (
         Icons.person_outline,
@@ -99,6 +110,7 @@ class _CabinetScreenState extends State<CabinetScreen> {
                 index: index + 1,
                 icon: entry.$1,
                 label: entry.$2,
+                badgeCount: entry.$3 is RequestsScreen ? pendingRequests : 0,
                 onTap: () => Navigator.push(context, pageRoute(entry.$3)),
               );
             }),
@@ -331,11 +343,13 @@ class _CabinetRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.badgeCount = 0,
   });
   final int index;
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final int badgeCount;
 
   @override
   Widget build(BuildContext context) {
@@ -372,6 +386,22 @@ class _CabinetRow extends StatelessWidget {
                 ),
               ),
             ),
+            if (badgeCount > 0) ...[
+              Container(
+                constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                decoration: BoxDecoration(
+                  color: tokens.danger,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  badgeCount > 99 ? '99+' : '$badgeCount',
+                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
             const AppIcon(Icons.chevron_right, color: Colors.black26, size: 18),
           ],
         ),

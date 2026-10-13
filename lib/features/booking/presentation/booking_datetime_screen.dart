@@ -97,61 +97,63 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
     final days = List.generate(14, (i) => _today.add(Duration(days: i)));
     final slots = _slotsFor(_selectedDate);
 
+    // Free times split into parts of the day, so a long list stays scannable.
+    final groups = <(String, List<DateTime>)>[
+      (t(tk: 'Irden', ru: 'Утро', en: 'Morning'), [for (final x in slots) if (x.hour < 12) x]),
+      (t(tk: 'Gündiz', ru: 'День', en: 'Afternoon'), [for (final x in slots) if (x.hour >= 12 && x.hour < 17) x]),
+      (t(tk: 'Agşam', ru: 'Вечер', en: 'Evening'), [for (final x in slots) if (x.hour >= 17) x]),
+    ];
+    final slotWidth = (MediaQuery.sizeOf(context).width - 40 - 30) / 4;
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
+    String clock(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const AppIcon(Icons.arrow_back),
-          onPressed: () => Navigator.maybePop(context),
-        ),
-      ),
+      backgroundColor: tokens.surface,
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 18),
-              child: _WizardSteps(
-                current: 2,
-                labels: [
-                  t(tk: 'Hyzmat', ru: 'Услуга', en: 'Service'),
-                  t(tk: 'Wagt', ru: 'Время', en: 'Time'),
-                  t(tk: 'Tassykla', ru: 'Подтв.', en: 'Confirm'),
-                ],
-              ),
+            _BookingHeader(
+              master: widget.master,
+              current: 2,
+              labels: [
+                t(tk: 'Hyzmat', ru: 'Услуга', en: 'Service'),
+                t(tk: 'Wagt', ru: 'Время', en: 'Time'),
+                t(tk: 'Tassykla', ru: 'Подтв.', en: 'Confirm'),
+              ],
             ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      t(
-                        tk: 'Tarih we wagt saýlaň',
-                        ru: 'Выберите дату и время',
-                        en: 'Pick a date & time',
-                      ),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _BookingTitle(
+                      title: t(tk: 'Tarih we wagt saýlaň', ru: 'Выберите дату и время', en: 'Pick a date & time'),
+                      subtitle: '${widget.service.name} · ${widget.service.durationMin} ${t(tk: 'min', ru: 'мин', en: 'min')} · ${formatMoney(widget.service.price)} $currency',
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 20),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      '${monthLabels[_selectedDate.month - 1]} ${_selectedDate.year}',
-                      style: TextStyle(color: tokens.textSecondary),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        AppIcon(Icons.calendar_today_outlined, size: 15, color: tokens.accent),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${monthLabels[_selectedDate.month - 1]} ${_selectedDate.year}',
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   SizedBox(
-                    height: 74,
+                    height: 84,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       itemCount: days.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 8),
+                      separatorBuilder: (_, _) => const SizedBox(width: 10),
                       itemBuilder: (_, index) {
                         final day = days[index];
                         final open = _slotsFor(day).isNotEmpty;
@@ -164,6 +166,7 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                           dayNumber: day.day,
                           selected: selected,
                           enabled: open,
+                          isToday: day == _today,
                           onTap: open
                               ? () => setState(() {
                                   _selectedDate = day;
@@ -174,24 +177,9 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 26),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      t(
-                        tk: 'Elýeterli wagtlar',
-                        ru: 'Доступное время',
-                        en: 'Available times',
-                      ),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _error != null
                         ? RetryErrorState(
                             title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
@@ -207,11 +195,7 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                         : paused
                         ? EmptyState(
                             icon: Icons.event_busy_outlined,
-                            title: t(
-                              tk: 'Ýazgy wagtlaýyn ýapyk',
-                              ru: 'Запись временно закрыта',
-                              en: 'Bookings are paused',
-                            ),
+                            title: t(tk: 'Ýazgy wagtlaýyn ýapyk', ru: 'Запись временно закрыта', en: 'Bookings are paused'),
                             text: availability.message ??
                                 t(
                                   tk: 'Usta häzirlikçe täze ýazgylary kabul etmeýär.',
@@ -222,55 +206,68 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                         : slots.isEmpty
                         ? EmptyState(
                             icon: Icons.schedule_outlined,
-                            title: t(
-                              tk: 'Boş wagt ýok',
-                              ru: 'Свободного времени нет',
-                              en: 'No free slots',
-                            ),
+                            title: t(tk: 'Boş wagt ýok', ru: 'Свободного времени нет', en: 'No free slots'),
                             text: t(
                               tk: 'Bu gün üçin boş wagt ýok. Başga gün synanyşyň.',
                               ru: 'На этот день свободного времени нет. Попробуйте другой день.',
                               en: 'There is no free time on this day. Try another day.',
                             ),
                           )
-                        : Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: slots.map((slot) {
-                              final selected = _selectedSlot == slot;
-                              return InkWell(
-                                onTap: () =>
-                                    setState(() => _selectedSlot = slot),
-                                borderRadius: BorderRadius.circular(14),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              for (final group in groups)
+                                if (group.$2.isNotEmpty) ...[
+                                  Row(
+                                    children: [
+                                      Text(group.$1, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                        decoration: BoxDecoration(color: tokens.surfaceElevated, borderRadius: BorderRadius.circular(8)),
+                                        child: Text(
+                                          '${group.$2.length}',
+                                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: tokens.textSecondary),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: selected
-                                        ? tokens.textPrimary
-                                        : tokens.surface,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: selected
-                                          ? tokens.textPrimary
-                                          : tokens.border,
-                                    ),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 10,
+                                    runSpacing: 10,
+                                    children: [
+                                      for (final slot in group.$2)
+                                        GestureDetector(
+                                          onTap: () => setState(() => _selectedSlot = slot),
+                                          child: AnimatedContainer(
+                                            duration: const Duration(milliseconds: 180),
+                                            width: slotWidth,
+                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            alignment: Alignment.center,
+                                            decoration: BoxDecoration(
+                                              color: _selectedSlot == slot ? tokens.textPrimary : tokens.surface,
+                                              borderRadius: BorderRadius.circular(14),
+                                              border: Border.all(color: _selectedSlot == slot ? tokens.textPrimary : tokens.border),
+                                              boxShadow: _selectedSlot == slot
+                                                  ? [BoxShadow(color: tokens.textPrimary.withValues(alpha: .22), blurRadius: 12, offset: const Offset(0, 5))]
+                                                  : null,
+                                            ),
+                                            child: Text(
+                                              clock(slot),
+                                              style: TextStyle(
+                                                fontSize: 13.5,
+                                                fontWeight: FontWeight.w700,
+                                                color: _selectedSlot == slot ? tokens.surface : tokens.textPrimary,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                  child: Text(
-                                    '${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}',
-                                    style: TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: selected
-                                          ? tokens.surface
-                                          : tokens.textPrimary,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }).toList(),
+                                  const SizedBox(height: 22),
+                                ],
+                            ],
                           ),
                   ),
                 ],
@@ -279,39 +276,16 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 10, 24, 14),
-          child: SizedBox(
-            height: 56,
-            child: FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: tokens.textPrimary,
-                shape: const StadiumBorder(),
+      bottomNavigationBar: _BookingBottomBar(
+        caption: t(tk: 'Saýlanan wagt', ru: 'Выбранное время', en: 'Selected time'),
+        value: _selectedSlot == null ? '—' : '${formatDate(_selectedSlot!)} · ${clock(_selectedSlot!)}',
+        label: t(tk: 'Dowam et', ru: 'Далее', en: 'Continue'),
+        onPressed: _selectedSlot == null
+            ? null
+            : () => Navigator.push(
+                context,
+                pageRoute(BookingConfirmScreen(service: widget.service, master: widget.master, startsAt: _selectedSlot!)),
               ),
-              onPressed: _selectedSlot == null
-                  ? null
-                  : () => Navigator.push(
-                      context,
-                      pageRoute(
-                        BookingConfirmScreen(
-                          service: widget.service,
-                          master: widget.master,
-                          startsAt: _selectedSlot!,
-                        ),
-                      ),
-                    ),
-              child: Text(
-                t(tk: 'Dowam et', ru: 'Далее', en: 'Continue'),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -324,48 +298,49 @@ class _DateChip extends StatelessWidget {
     required this.selected,
     required this.enabled,
     required this.onTap,
+    this.isToday = false,
   });
   final String weekday;
   final int dayNumber;
   final bool selected;
   final bool enabled;
+  final bool isToday;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final t = context.appTokens;
     return Opacity(
-      opacity: enabled ? 1 : .35,
-      child: InkWell(
+      opacity: enabled ? 1 : .38,
+      child: GestureDetector(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          width: 52,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          width: 58,
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
             color: selected ? t.textPrimary : t.surface,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(color: selected ? t.textPrimary : t.border),
+            boxShadow: selected ? [BoxShadow(color: t.textPrimary.withValues(alpha: .22), blurRadius: 12, offset: const Offset(0, 5))] : null,
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 weekday,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: selected
-                      ? t.surface.withValues(alpha: .7)
-                      : t.textSecondary,
-                ),
+                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: selected ? t.surface.withValues(alpha: .7) : t.textSecondary),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 5),
               Text(
                 '$dayNumber',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: selected ? t.surface : t.textPrimary,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: selected ? t.surface : t.textPrimary),
+              ),
+              const SizedBox(height: 5),
+              Container(
+                width: 5,
+                height: 5,
+                decoration: BoxDecoration(shape: BoxShape.circle, color: isToday ? t.accent : Colors.transparent),
               ),
             ],
           ),
@@ -374,4 +349,3 @@ class _DateChip extends StatelessWidget {
     );
   }
 }
-

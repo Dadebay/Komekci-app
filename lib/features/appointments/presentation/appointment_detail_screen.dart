@@ -23,94 +23,214 @@ class AppointmentDetailScreen extends StatelessWidget {
       if (b.id == booking.id) current = b;
     }
     final isUpcoming = current.status == ClientBookingStatus.expected;
-    final timeLabel = '${current.startsAt.hour.toString().padLeft(2, '0')}:${current.startsAt.minute.toString().padLeft(2, '0')}';
-    final canPop = Navigator.of(context).canPop();
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
+    final statusColor = _bookingStatusColor(tokens, current.status);
+    final countdown = _bookingCountdown(current, language);
+    String clock(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
     return Scaffold(
       backgroundColor: tokens.surface,
-      appBar: CabinetAppBar(title: current.serviceName),
       body: SafeArea(
         bottom: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+        child: Column(
           children: [
-            const HeroPhoto(),
-            const SizedBox(height: 18),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.black.withValues(alpha: .05)),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .07), blurRadius: 20, offset: const Offset(0, 8))],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 6),
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor: const Color(0xffE6D2B1),
-                        child: AppIcon(Icons.person_outline, size: 19, color: tokens.textPrimary),
+                  GestureDetector(
+                    onTap: () => Navigator.maybePop(context),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: tokens.surface,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: tokens.border.withValues(alpha: .8)),
+                        boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .06), blurRadius: 10, offset: const Offset(0, 3))],
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      child: AppIcon(Icons.arrow_back, size: 19, color: tokens.textPrimary),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      t(tk: 'Ýazgy', ru: 'Запись', en: 'Booking'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  const SizedBox(width: 44),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                children: [
+                  // When and how it stands: status, countdown, date and time.
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: _flatTintDecoration(tokens, statusColor),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Text(current.masterName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                            _ClientBookingStatusChip(status: current.status, tk: tk),
+                            const Spacer(),
+                            if (countdown != null)
+                              Row(
+                                children: [
+                                  AppIcon(Icons.timer_outlined, size: 15, color: tokens.textPrimary),
+                                  const SizedBox(width: 4),
+                                  Text(countdown, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+                                ],
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        Text(formatDate(current.startsAt), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, height: 1.1)),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            AppIcon(Icons.schedule_outlined, size: 18, color: statusColor),
+                            const SizedBox(width: 7),
                             Text(
-                              '${current.minutes} ${t(tk: "min", ru: "мин", en: "min")} · ${current.price.toStringAsFixed(0)} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
-                              style: TextStyle(color: tokens.textSecondary, fontSize: 12.5),
+                              '${clock(current.startsAt)} – ${clock(current.endsAt)}',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: statusColor),
                             ),
                           ],
                         ),
-                      ),
-                      _ClientBookingStatusChip(status: current.status, tk: tk),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Container(height: 1, color: tokens.border),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      AppIcon(Icons.calendar_today_outlined, size: 13, color: tokens.textSecondary),
-                      const SizedBox(width: 5),
-                      Text(formatDate(current.startsAt), style: TextStyle(fontSize: 12.5, color: tokens.textSecondary)),
-                      const SizedBox(width: 14),
-                      AppIcon(Icons.schedule_outlined, size: 13, color: tokens.textSecondary),
-                      const SizedBox(width: 5),
-                      Text(timeLabel, style: TextStyle(fontSize: 12.5, color: tokens.textSecondary)),
-                    ],
+                      ],
+                    ),
                   ),
                   if (current.lateMinutes != null) ...[
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: tokens.warning.withValues(alpha: .12),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: tokens.warning.withValues(alpha: .3)),
+                      ),
+                      child: Row(
+                        children: [
+                          AppIcon(Icons.timer_outlined, size: 18, color: tokens.warning),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              t(
+                                tk: '${current.lateMinutes} min gijä galýaryn diýip habar berdiňiz',
+                                ru: 'Вы сообщили, что опоздаете на ${current.lateMinutes} мин',
+                                en: 'You signalled you’ll be ${current.lateMinutes} min late',
+                              ),
+                              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.warning, height: 1.35),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: _bookingCardDecoration(tokens),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(t(tk: 'Master', ru: 'Мастер', en: 'Master'), style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: tokens.textSecondary)),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(2.5),
+                              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: tokens.accent, width: 1.6)),
+                              child: MasterAvatar(url: current.masterPhotoUrl, radius: 24),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(current.masterName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Container(height: 1, color: tokens.border),
+                        const SizedBox(height: 16),
+                        Text(t(tk: 'Hyzmat', ru: 'Услуга', en: 'Service'), style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: tokens.textSecondary)),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Container(
+                              width: 46,
+                              height: 46,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .13), borderRadius: BorderRadius.circular(15)),
+                              child: AppIcon(Icons.content_cut, size: 20, color: tokens.accent),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(current.serviceName, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                                  const SizedBox(height: 3),
+                                  Row(
+                                    children: [
+                                      AppIcon(Icons.hourglass_empty, size: 12, color: tokens.textSecondary),
+                                      const SizedBox(width: 4),
+                                      Text('${current.minutes} ${t(tk: "min", ru: "мин", en: "min")}', style: TextStyle(fontSize: 12.5, color: tokens.textSecondary)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text('${current.price.toStringAsFixed(0)} $currency', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: tokens.accent)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (current.note.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: _bookingCardDecoration(tokens),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              AppIcon(Icons.sticky_note_2_outlined, size: 16, color: tokens.accent),
+                              const SizedBox(width: 6),
+                              Text(t(tk: 'Bellik', ru: 'Заметка', en: 'Note'), style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(current.note, style: TextStyle(fontSize: 13.5, color: tokens.textSecondary, height: 1.5)),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (current.waitlistEarlier && isUpcoming) ...[
+                    const SizedBox(height: 14),
                     Row(
                       children: [
-                        AppIcon(Icons.timer_outlined, size: 14, color: tokens.warning),
+                        AppIcon(Icons.notifications_none, size: 15, color: tokens.textSecondary),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             t(
-                              tk: '${current.lateMinutes} min gijä galýaryn diýip habar berdiňiz',
-                              ru: 'Вы сообщили, что опоздаете на ${current.lateMinutes} мин',
-                              en: 'You signalled you’ll be ${current.lateMinutes} min late',
+                              tk: 'Has erki wagt açylsa size habar berler',
+                              ru: 'Сообщим, если освободится более раннее время',
+                              en: 'We’ll tell you if an earlier slot opens up',
                             ),
-                            style: TextStyle(fontSize: 12, color: tokens.warning),
+                            style: TextStyle(fontSize: 12, color: tokens.textSecondary),
                           ),
                         ),
                       ],
                     ),
-                  ],
-                  if (current.note.isNotEmpty) ...[
-                    const SizedBox(height: 14),
-                    Text(
-                      t(tk: 'Bellik', ru: 'Заметка', en: 'Note'),
-                      style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(current.note, style: TextStyle(color: tokens.textSecondary, height: 1.4)),
                   ],
                 ],
               ),
@@ -118,47 +238,64 @@ class AppointmentDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 8, 20, canPop ? 16 : 24),
-          child: isUpcoming
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(50),
-                        side: BorderSide(color: tokens.border),
-                        shape: const StadiumBorder(),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: tokens.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
+          boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .08), blurRadius: 22, offset: const Offset(0, -6))],
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: isUpcoming
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size.fromHeight(52),
+                                side: BorderSide(color: tokens.border),
+                                shape: const StadiumBorder(),
+                              ),
+                              onPressed: () => _showLateSheet(context, current, t),
+                              icon: AppIcon(Icons.timer_outlined, size: 17, color: tokens.textPrimary),
+                              label: Text(t(tk: 'Gijä galýaryn', ru: 'Опаздываю', en: 'Running late'), style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: tokens.textPrimary)),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: FilledButton.icon(
+                              style: FilledButton.styleFrom(
+                                minimumSize: const Size.fromHeight(52),
+                                backgroundColor: tokens.textPrimary,
+                                shape: const StadiumBorder(),
+                              ),
+                              onPressed: () => Navigator.push(context, pageRoute(RescheduleScreen(booking: current))),
+                              icon: AppIcon(Icons.edit_outlined, size: 17, color: tokens.surface),
+                              label: Text(t(tk: 'Üýtget', ru: 'Изменить', en: 'Change'), style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: tokens.surface)),
+                            ),
+                          ),
+                        ],
                       ),
-                      onPressed: () => _showLateSheet(context, current, t),
-                      child: Text(t(tk: 'Gijä galýaryn', ru: 'Я опаздываю', en: 'I’m running late')),
-                    ),
-                    const SizedBox(height: 10),
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(50),
-                        side: BorderSide(color: tokens.border),
-                        shape: const StadiumBorder(),
+                      const SizedBox(height: 4),
+                      TextButton(
+                        onPressed: () => _confirmCancel(context, current, t),
+                        child: Text(
+                          t(tk: 'Randevuny ýatyr', ru: 'Отменить запись', en: 'Cancel appointment'),
+                          style: TextStyle(color: tokens.danger, fontWeight: FontWeight.w700),
+                        ),
                       ),
-                      onPressed: () => Navigator.push(context, pageRoute(RescheduleScreen(booking: current))),
-                      child: Text(t(tk: 'Randevuny üýtget', ru: 'Изменить запись', en: 'Change appointment')),
-                    ),
-                    const SizedBox(height: 6),
-                    TextButton(
-                      onPressed: () => _confirmCancel(context, current, t),
-                      child: Text(
-                        t(tk: 'Randevuny ýatyr', ru: 'Отменить запись', en: 'Cancel appointment'),
-                        style: TextStyle(color: tokens.danger),
-                      ),
-                    ),
-                  ],
-                )
-              : PrimaryButton(
-                  label: t(tk: 'Täzeden ýazyl', ru: 'Записаться снова', en: 'Book again'),
-                  onTap: () => _rebook(context, current, t),
-                ),
+                    ],
+                  )
+                : PrimaryButton(
+                    label: t(tk: 'Täzeden ýazyl', ru: 'Записаться снова', en: 'Book again'),
+                    onTap: () => _rebook(context, current, t),
+                  ),
+          ),
         ),
       ),
     );

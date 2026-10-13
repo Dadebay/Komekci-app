@@ -15,6 +15,9 @@ class _ClientHomeState extends State<ClientHome> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
+    final language = context.watch<LanguageProvider>().language;
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
     final pages = [
       const ClientHomeDashboard(),
       const ClientMastersScreen(),
@@ -26,13 +29,20 @@ class _ClientHomeState extends State<ClientHome> {
       backgroundColor: tokens.surface,
       body: SafeArea(bottom: false, child: pages[tab]),
       bottomNavigationBar: GlassNavBar(
+        docked: true,
         currentIndex: tab,
         onSelected: (v) => setState(() => tab = v),
         icons: const [
-          HugeIcons.strokeRoundedHome01,
-          HugeIcons.strokeRoundedUserGroup,
-          HugeIcons.strokeRoundedCalendar01,
-          HugeIcons.strokeRoundedUser,
+          HugeIcons.strokeRoundedHome03,
+          HugeIcons.strokeRoundedUserStar01,
+          HugeIcons.strokeRoundedCalendar05,
+          HugeIcons.strokeRoundedUserCircle,
+        ],
+        labels: [
+          t(tk: 'Baş sahypa', ru: 'Главная', en: 'Home'),
+          t(tk: 'Ussalarym', ru: 'Мои мастера', en: 'My masters'),
+          t(tk: 'Ýazgylarym', ru: 'Мои записи', en: 'Bookings'),
+          t(tk: 'Profil', ru: 'Профиль', en: 'Profile'),
         ],
       ),
     );
@@ -77,6 +87,7 @@ class _MasterHomeState extends State<MasterHome> {
       backgroundColor: tokens.surface,
       body: SafeArea(bottom: false, child: pages[tab]),
       bottomNavigationBar: GlassNavBar(
+        docked: true,
         currentIndex: tab,
         onSelected: (v) {
           if (v == 3) {
@@ -87,11 +98,11 @@ class _MasterHomeState extends State<MasterHome> {
           setState(() => tab = v);
         },
         icons: const [
-          HugeIcons.strokeRoundedHome01,
+          HugeIcons.strokeRoundedHome03,
           HugeIcons.strokeRoundedUserGroup,
-          HugeIcons.strokeRoundedCalendar01,
+          HugeIcons.strokeRoundedCalendar05,
           HugeIcons.strokeRoundedUserAdd01,
-          HugeIcons.strokeRoundedUser,
+          HugeIcons.strokeRoundedUserCircle,
         ],
         labels: [
           t(tk: 'Baş sahypa', ru: 'Главная', en: 'Home'),

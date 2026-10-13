@@ -106,11 +106,25 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
                 children: [
                   Center(
-                    child: AvatarPicker(
-                      file: profile.avatar,
-                      networkUrl: profile.avatarUrl,
-                      onPicked: _changeAvatar,
-                      radius: 46,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: profile.avatar != null || profile.avatarUrl != null
+                            ? [
+                                BoxShadow(
+                                  color: tokens.textPrimary.withValues(alpha: .16),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: AvatarPicker(
+                        file: profile.avatar,
+                        networkUrl: profile.avatarUrl,
+                        onPicked: _changeAvatar,
+                        radius: 46,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 26),

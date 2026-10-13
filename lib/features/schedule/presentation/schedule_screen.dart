@@ -18,9 +18,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   bool _showMonth = false;
   bool _searching = false;
   final _searchController = TextEditingController();
+  Timer? _availabilityTicker;
+
+  @override
+  void initState() {
+    super.initState();
+    _availabilityTicker = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) setState(() {});
+    });
+  }
 
   @override
   void dispose() {
+    _availabilityTicker?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -41,6 +51,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final tokens = context.appTokens;
     final bookingProvider = context.watch<BookingProvider>();
     final customerProvider = context.watch<CustomerProvider>();
+    final schedule = context.watch<ScheduleProvider>().schedule;
     final canPop = Navigator.of(context).canPop();
     bookingProvider
       ..prefetch(_selected)
@@ -49,16 +60,23 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
     final dayAppointments = bookingProvider.onDay(_selected);
     final query = _searchController.text.trim().toLowerCase();
-    final visible = query.isEmpty
-        ? dayAppointments
-        : dayAppointments
-              .where(
-                (a) =>
-                    a.clientName.toLowerCase().contains(query) ||
-                    a.serviceName.toLowerCase().contains(query),
-              )
-              .toList();
-    final entries = _buildTimeline(visible, _selected);
+    final now = DateTime.now();
+    final minLeadMinutes = schedule?.minLeadMin ?? 30;
+    final timeline = _buildTimeline(dayAppointments, _selected, schedule)
+        .where(
+          (entry) =>
+              entry is! _FreeEntry ||
+              meetsBookingLeadTime(entry.start, now, minLeadMinutes),
+        )
+        .toList();
+    final entries = query.isEmpty
+        ? timeline
+        : timeline.where((entry) {
+            if (entry is! _ApptEntry) return false;
+            final appointment = entry.appointment;
+            return appointment.clientName.toLowerCase().contains(query) ||
+                appointment.serviceName.toLowerCase().contains(query);
+          }).toList();
 
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -75,9 +93,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   child: Text(t(tk: 'Bugün', ru: 'Сегодня', en: 'Today')),
                 ),
               ),
-            IconActionButton(
-              icon: Icons.grid_view_outlined,
-              onTap: () => Navigator.push(
+            IconButton(
+              tooltip: t(tk: 'Hepdelik görnüş', ru: 'Неделя', en: 'Week view'),
+              icon: AppIcon(
+                Icons.grid_view_outlined,
+                size: 21,
+                color: tokens.textPrimary,
+              ),
+              onPressed: () => Navigator.push(
                 context,
                 pageRoute(
                   WeekOverviewScreen(
@@ -88,9 +111,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            IconActionButton(
-              icon: Icons.search,
-              onTap: () => setState(() => _searching = !_searching),
+            IconButton(
+              tooltip: _searching
+                  ? t(
+                      tk: 'Gözlegi ýap',
+                      ru: 'Закрыть поиск',
+                      en: 'Close search',
+                    )
+                  : t(tk: 'Gözle', ru: 'Поиск', en: 'Search'),
+              icon: AppIcon(
+                _searching ? Icons.close : Icons.search,
+                size: 21,
+                color: tokens.textPrimary,
+              ),
+              onPressed: () => setState(() => _searching = !_searching),
             ),
           ],
         ),
@@ -188,53 +222,69 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               ],
             ),
             const SizedBox(height: 14),
-            if (entries.isEmpty)
+            if (query.isNotEmpty && entries.isEmpty)
               EmptyState(
-                icon: Icons.event_busy_outlined,
+                icon: Icons.search_off,
                 title: t(
-                  tk: 'Bu gün ýazgy ýok',
-                  ru: 'На этот день записей нет',
-                  en: 'No bookings today',
+                  tk: 'Netije tapylmady',
+                  ru: 'Ничего не найдено',
+                  en: 'No results found',
                 ),
                 text: t(
-                  tk: 'Boş gün — dynç alyň!',
-                  ru: 'Свободный день.',
-                  en: 'A free day — enjoy the rest!',
+                  tk: 'Başga at ýa-da hyzmat bilen gözläň.',
+                  ru: 'Попробуйте другое имя или услугу.',
+                  en: 'Try another name or service.',
                 ),
-              )
-            else
-              ...entries.map((entry) {
-                if (entry is _ApptEntry) {
-                  final customer = entry.appointment.customerId == null
-                      ? null
-                      : _findCustomer(
-                          customerProvider.customers,
-                          entry.appointment.customerId!,
-                        );
-                  return _AppointmentRow(
-                    appointment: entry.appointment,
-                    customer: customer,
-                    language: language,
-                    onTap: () => _openAppointmentActions(
-                      context,
-                      entry.appointment,
-                      customer,
-                      language,
-                    ),
-                  );
-                }
-                final free = entry as _FreeEntry;
-                return _FreeSlotRow(
-                  start: free.start,
-                  end: free.end,
+              ),
+            ...entries.map((entry) {
+              if (entry is _ApptEntry) {
+                final customer = entry.appointment.customerId == null
+                    ? null
+                    : _findCustomer(
+                        customerProvider.customers,
+                        entry.appointment.customerId!,
+                      );
+                return _AppointmentRow(
+                  appointment: entry.appointment,
+                  customer: customer,
                   language: language,
-                  onTap: () => _NewSlotAppointmentSheet.show(
+                  onTap: () => _openAppointmentActions(
+                    context,
+                    entry.appointment,
+                    customer,
+                    language,
+                  ),
+                );
+              }
+              final free = entry as _FreeEntry;
+              return _FreeSlotRow(
+                start: free.start,
+                end: free.end,
+                language: language,
+                onTap: () {
+                  if (!meetsBookingLeadTime(
+                    free.start,
+                    DateTime.now(),
+                    minLeadMinutes,
+                  )) {
+                    setState(() {});
+                    AppToast.of(context).error(
+                      t(
+                        tk: 'Bu wagt indi elýeterli däl. Başga wagt saýlaň.',
+                        ru: 'Это время уже недоступно. Выберите другое.',
+                        en: 'This time is no longer available. Choose another.',
+                      ),
+                    );
+                    return;
+                  }
+                  _NewSlotAppointmentSheet.show(
                     context,
                     start: free.start,
                     end: free.end,
-                  ),
-                );
-              }),
+                  );
+                },
+              );
+            }),
           ],
         ),
       ),

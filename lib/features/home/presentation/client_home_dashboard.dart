@@ -87,57 +87,82 @@ class _ClientHomeHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final unreadCount = context.watch<NotificationProvider>().unreadCount;
     final profile = context.watch<ClientProfileProvider>();
+    final language = context.watch<LanguageProvider>().language;
     final tokens = context.appTokens;
-    return Row(
-      children: [
-        RoundPhoto(file: profile.avatar, url: profile.avatarUrl, radius: 26),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                profile.name,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(displayPhone(profile.phone), style: TextStyle(fontSize: 12.5, color: tokens.textSecondary)),
-            ],
+    final greeting = pickTr(language, tk: 'Salam', ru: 'Привет', en: 'Hello');
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 12, 14, 12),
+      decoration: _flatTintDecoration(tokens, tokens.accent),
+      child: Row(
+        children: [
+          // The ring and white gap frame the photo, so a busy picture still
+          // reads as a clean circle.
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: tokens.surface,
+              border: Border.all(color: tokens.accent, width: 1.8),
+              boxShadow: [BoxShadow(color: tokens.accent.withValues(alpha: .25), blurRadius: 12, offset: const Offset(0, 4))],
+            ),
+            child: RoundPhoto(file: profile.avatar, url: profile.avatarUrl, radius: 27),
           ),
-        ),
-        GestureDetector(
-          onTap: () => Navigator.push(context, pageRoute(const ClientNotificationSettingsScreen())),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(color: tokens.surfaceElevated, shape: BoxShape.circle),
-                child: AppIcon(Icons.notifications_none, size: 20, color: tokens.textPrimary),
-              ),
-              if (unreadCount > 0)
-                Positioned(
-                  right: -1,
-                  top: -1,
-                  child: Container(
-                    width: 17,
-                    height: 17,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(color: tokens.textPrimary, shape: BoxShape.circle),
-                    child: Text(
-                      unreadCount > 9 ? '9+' : '$unreadCount',
-                      style: TextStyle(fontSize: 9.5, color: tokens.surface, fontWeight: FontWeight.w700),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('$greeting 👋', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary)),
+                const SizedBox(height: 1),
+                Text(
+                  profile.name,
+                  style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800, height: 1.15),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 3),
+                Text(displayPhone(profile.phone), style: TextStyle(fontSize: 12.5, color: tokens.textSecondary)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => Navigator.push(context, pageRoute(const ClientNotificationSettingsScreen())),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: tokens.surface,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: tokens.border.withValues(alpha: .7)),
+                    boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .06), blurRadius: 10, offset: const Offset(0, 3))],
+                  ),
+                  child: AppIcon(Icons.notifications_none, size: 21, color: tokens.textPrimary),
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(color: tokens.danger, shape: BoxShape.circle, border: Border.all(color: tokens.surface, width: 1.5)),
+                      child: Text(
+                        unreadCount > 9 ? '9+' : '$unreadCount',
+                        style: const TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w800),
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

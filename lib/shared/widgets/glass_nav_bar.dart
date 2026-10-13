@@ -1,9 +1,13 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
+import '../utils/app_today.dart';
+import 'animated_huge_icon.dart';
+import 'nav_motion_icons.dart';
 
 /// HugeIcons ships its glyphs as JSON path data rather than as [IconData].
 typedef HugeIconData = List<List<dynamic>>;
@@ -12,7 +16,7 @@ typedef HugeIconData = List<List<dynamic>>;
 /// tile that glides between positions, stretching slightly mid-travel; an
 /// optional label sits under each icon, outside the tile.
 class GlassNavBar extends StatelessWidget {
-  const GlassNavBar({super.key, required this.icons, required this.currentIndex, required this.onSelected, this.labels});
+  const GlassNavBar({super.key, required this.icons, required this.currentIndex, required this.onSelected, this.labels, this.animatedIcons = false, this.docked = false});
 
   final List<HugeIconData> icons;
   final int currentIndex;
@@ -21,17 +25,29 @@ class GlassNavBar extends StatelessWidget {
   /// One label per icon, shown underneath it. Omit to keep the bar icon-only.
   final List<String>? labels;
 
+  /// Draws the icons by hand and plays a small scene on each when it is picked
+  /// (see `nav_motion_icons.dart`). Off, the bar shows plain HugeIcons.
+  final bool animatedIcons;
+
+  /// An opaque bar with side margins instead of the floating glass pill:
+  /// white surface, rounded corners and a soft shadow, like the booking and
+  /// master-profile action bars.
+  final bool docked;
+
   static const _barHeight = 68.0;
-  static const _labelledBarHeight = 76.0;
+  static const _labelledBarHeight = 60.0;
   static const _tileWidth = 54.0;
   static const _tileHeight = 46.0;
-  static const _labelledTileHeight = 42.0;
-  static const _tileTop = 8.0;
+  static const _labelledTileHeight = 34.0;
+  static const _tileTop = 6.0;
   static const _slide = Duration(milliseconds: 460);
 
   @override
   Widget build(BuildContext context) {
     final t = context.appTokens;
+    if (docked) {
+      return _DockedBar(icons: icons, labels: labels, currentIndex: currentIndex, onSelected: onSelected, tokens: t);
+    }
     final hasLabels = labels != null;
     final barHeight = hasLabels ? _labelledBarHeight : _barHeight;
     final tileHeight = hasLabels ? _labelledTileHeight : _tileHeight;
@@ -92,6 +108,8 @@ class GlassNavBar extends StatelessWidget {
                                     icon: icons[index],
                                     label: labels?[index],
                                     tokens: t,
+                                    selected: index == currentIndex,
+                                    animated: animatedIcons,
                                     // Fade tracks the tile, so the icon lights up as it arrives.
                                     progress: (1 - (position - index).abs()).clamp(0.0, 1.0),
                                     onTap: () => onSelected(index),
@@ -114,11 +132,21 @@ class GlassNavBar extends StatelessWidget {
   }
 }
 
-class _NavSlot extends StatelessWidget {
-  const _NavSlot({required this.icon, required this.progress, required this.onTap, required this.tokens, this.label});
+class _NavSlot extends StatefulWidget {
+  const _NavSlot({
+    required this.icon,
+    required this.selected,
+    required this.animated,
+    required this.progress,
+    required this.onTap,
+    required this.tokens,
+    this.label,
+  });
 
   final HugeIconData icon;
   final String? label;
+  final bool selected;
+  final bool animated;
 
   /// 1 when this slot holds the tile, 0 when the tile is a full slot away.
   final double progress;
@@ -126,50 +154,246 @@ class _NavSlot extends StatelessWidget {
   final AppThemeTokens tokens;
 
   @override
+  State<_NavSlot> createState() => _NavSlotState();
+}
+
+class _NavSlotState extends State<_NavSlot> with SingleTickerProviderStateMixin {
+  static const _iconSize = 21.0;
+
+  late final AnimationController _controller = AnimationController(vsync: this);
+
+  /// Hand-drawn icons play their own scene (master bar only); otherwise plain HugeIcons.
+  late final NavMotionKind? _kind = widget.animated ? navMotionKindFor(widget.icon) : null;
+  bool _pressed = false;
+
+  @override
+  void didUpdateWidget(_NavSlot oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selected && !oldWidget.selected) _play();
+  }
+
+  void _play() {
+    final kind = _kind;
+    if (kind == null || MediaQuery.disableAnimationsOf(context)) return;
+    _controller.duration = navMotionLength(kind);
+    _controller.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _glyph(double t) {
+    final kind = _kind;
+    if (kind != null) {
+      // Grey while the tile is away, the on-accent colour as it arrives.
+      final color = Color.lerp(widget.tokens.textPrimary.withValues(alpha: .5), widget.tokens.accentOn, widget.progress)!;
+      return NavMotionIcon(kind: kind, t: t, color: color, size: _iconSize, day: appToday().day);
+    }
+    // Two copies cross-fade so the icon recolours while the tile travels.
+    return SizedBox(
+      width: _iconSize,
+      height: _iconSize,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Opacity(
+            opacity: 1 - widget.progress,
+            child: HugeIcon(icon: widget.icon, color: widget.tokens.textPrimary.withValues(alpha: .5), size: _iconSize),
+          ),
+          Opacity(
+            opacity: widget.progress,
+            child: HugeIcon(icon: widget.icon, color: widget.tokens.accentOn, size: _iconSize),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final iconStack = Transform.scale(
-      scale: 1 + (progress * .1),
+      scale: 1 + (widget.progress * .1),
       child: SizedBox(
         width: 40,
-        height: 40,
-        // Two copies cross-fade so the icon recolours while the tile travels.
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Opacity(
-              opacity: 1 - progress,
-              child: HugeIcon(icon: icon, color: tokens.textPrimary.withValues(alpha: .5), size: 21),
-            ),
-            Opacity(
-              opacity: progress,
-              child: HugeIcon(icon: icon, color: tokens.accentOn, size: 21),
-            ),
-          ],
+        height: widget.label == null ? 40 : GlassNavBar._labelledTileHeight,
+        child: Center(
+          // 1 is the resting icon, so it is also what an idle slot paints.
+          child: AnimatedBuilder(animation: _controller, builder: (context, _) => _glyph(_controller.isAnimating ? _controller.value : 1)),
         ),
       ),
     );
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: label == null
-          ? Center(child: iconStack)
-          : Padding(
-              padding: const EdgeInsets.only(top: GlassNavBar._tileTop),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  iconStack,
-                  const SizedBox(height: 3),
-                  Text(
-                    label!,
-                    style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w600, color: Color.lerp(tokens.textSecondary, tokens.accent, progress)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      onTap: () {
+        _play();
+        widget.onTap();
+      },
+      child: AnimatedScale(
+        scale: _pressed ? .88 : 1,
+        duration: const Duration(milliseconds: 110),
+        curve: Curves.easeOut,
+        child: widget.label == null
+            ? Center(child: iconStack)
+            : Padding(
+                padding: const EdgeInsets.only(top: GlassNavBar._tileTop),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    iconStack,
+                    const SizedBox(height: 1),
+                    Text(
+                      widget.label!,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color.lerp(widget.tokens.textSecondary, widget.tokens.accent, widget.progress),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+}
+
+/// Docked variant of [GlassNavBar]: plain HugeIcons with a caption, the picked
+/// tab tinted in the accent colour on a soft rounded highlight.
+class _DockedBar extends StatelessWidget {
+  const _DockedBar({required this.icons, required this.labels, required this.currentIndex, required this.onSelected, required this.tokens});
+
+  final List<HugeIconData> icons;
+  final List<String>? labels;
+  final int currentIndex;
+  final ValueChanged<int> onSelected;
+  final AppThemeTokens tokens;
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    top: false,
+    child: Container(
+      // Inset from the screen edges, so every corner is rounded.
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: tokens.border.withValues(alpha: .6)),
+        boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .10), blurRadius: 22, offset: const Offset(0, 6))],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
+        child: Row(
+          children: List.generate(
+            icons.length,
+            (index) => Expanded(
+              child: _DockedSlot(
+                icon: icons[index],
+                label: labels?[index],
+                selected: index == currentIndex,
+                tokens: tokens,
+                onTap: () => onSelected(index),
               ),
             ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _DockedSlot extends StatefulWidget {
+  const _DockedSlot({required this.icon, required this.selected, required this.onTap, required this.tokens, this.label});
+
+  final HugeIconData icon;
+  final String? label;
+  final bool selected;
+  final VoidCallback onTap;
+  final AppThemeTokens tokens;
+
+  @override
+  State<_DockedSlot> createState() => _DockedSlotState();
+}
+
+class _DockedSlotState extends State<_DockedSlot> with SingleTickerProviderStateMixin {
+  /// Drives the icon tracing itself: 0 → 1 when the tab is picked.
+  late final AnimationController _draw = AnimationController(vsync: this, duration: const Duration(milliseconds: 850));
+
+  @override
+  void didUpdateWidget(_DockedSlot oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selected && !oldWidget.selected) _play();
+  }
+
+  void _play() {
+    if (MediaQuery.disableAnimationsOf(context)) return;
+    _draw.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _draw.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = widget.tokens;
+    final idle = tokens.textPrimary.withValues(alpha: .5);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        _play();
+        widget.onTap();
+      },
+      child: TweenAnimationBuilder<double>(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        tween: Tween(end: widget.selected ? 1 : 0),
+        builder: (context, t, _) {
+          final color = Color.lerp(idle, tokens.accent, t)!;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 52,
+                height: 32,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .14 * t), borderRadius: BorderRadius.circular(16)),
+                child: AnimatedBuilder(
+                  animation: _draw,
+                  builder: (context, _) {
+                    final p = _draw.isAnimating ? _draw.value : 1.0;
+                    // A small springy pop while the lines are being drawn.
+                    final pop = _draw.isAnimating ? .14 * math.sin(math.pi * p) : 0.0;
+                    return Transform.scale(
+                      scale: 1 + .06 * t + pop,
+                      child: AnimatedHugeIcon(icon: widget.icon, color: color, progress: p, size: 22),
+                    );
+                  },
+                ),
+              ),
+              if (widget.label != null) ...[
+                const SizedBox(height: 3),
+                Text(
+                  widget.label!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 10.5, fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w600, color: Color.lerp(tokens.textSecondary, tokens.textPrimary, t)),
+                ),
+              ],
+            ],
+          );
+        },
+      ),
     );
   }
 }

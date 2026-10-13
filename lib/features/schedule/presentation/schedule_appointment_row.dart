@@ -26,8 +26,6 @@ class _StatusBadge2 extends StatelessWidget {
   );
 }
 
-const _timeColumnWidth = 46.0;
-
 class _AppointmentRow extends StatelessWidget {
   const _AppointmentRow({
     required this.appointment,
@@ -43,148 +41,202 @@ class _AppointmentRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    final tint = customer == null
-        ? tokens.surface
-        : _statusBg(customer!.status);
+    final statusColor = _apptStatusColor(appointment.status);
+    final phone = customer?.phone ?? appointment.clientPhone;
+    final canCall =
+        appointment.status == AppointmentStatus.expected &&
+        phone != null &&
+        phone.trim().isNotEmpty;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: _timeColumnWidth,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 14),
-              child: Text(
-                formatTime(TimeOfDay.fromDateTime(appointment.startsAt)),
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: tokens.surfaceElevated,
+        borderRadius: BorderRadius.circular(18),
+        elevation: 1,
+        shadowColor: tokens.textPrimary.withValues(alpha: .10),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: statusColor.withValues(alpha: .24)),
             ),
-          ),
-          Expanded(
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: tint.withValues(alpha: .6),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: tokens.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        customer == null
-                            ? CircleAvatar(
-                                radius: 17,
-                                backgroundColor: const Color(0xffE6D2B1),
-                                child: AppIcon(
-                                  Icons.person_outline,
-                                  size: 15,
-                                  color: tokens.textPrimary,
-                                ),
-                              )
-                            : _CustomerAvatar(customer: customer!, radius: 17),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                appointment.clientName,
-                                style: const TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (customer != null)
-                                Text(
-                                  _handleFor(customer!),
-                                  style: const TextStyle(
-                                    fontSize: 10.5,
-                                    color: Colors.black45,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        if (customer != null)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: _StatusBadge2(
-                              label: _scheduleCustomerLabel(
-                                customer!.status,
-                                language,
-                              ),
-                              color: _statusColor(customer!.status),
-                              bg: tokens.surface,
-                            ),
-                          ),
-                      ],
+                    AppIcon(
+                      Icons.schedule_outlined,
+                      size: 17,
+                      color: statusColor,
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            appointment.serviceName,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.black54,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${formatTime(TimeOfDay.fromDateTime(appointment.startsAt))} – ${formatTime(TimeOfDay.fromDateTime(appointment.endsAt))}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: tokens.textPrimary,
                         ),
-                        _StatusBadge2(
-                          label: _apptStatusLabel(appointment.status, language),
-                          color: _apptStatusColor(appointment.status),
-                          bg: _apptStatusBg(appointment.status),
-                        ),
-                        if (appointment.status == AppointmentStatus.expected &&
-                            customer != null) ...[
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () => launchUrl(
-                              Uri(
-                                scheme: 'tel',
-                                path: customer!.phone.replaceAll(' ', ''),
-                              ),
-                            ),
-                            child: Container(
-                              width: 26,
-                              height: 26,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: tokens.surface,
-                                border: Border.all(color: tokens.border),
-                              ),
-                              child: AppIcon(
-                                Icons.phone_outlined,
-                                size: 12,
-                                color: tokens.textPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    _StatusBadge2(
+                      label: _apptStatusLabel(appointment.status, language),
+                      color: statusColor,
+                      bg: _apptStatusBg(appointment.status),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 13),
+                Divider(height: 1, color: tokens.border),
+                const SizedBox(height: 13),
+                Row(
+                  children: [
+                    customer == null
+                        ? CircleAvatar(
+                            radius: 20,
+                            backgroundColor: tokens.accent.withValues(
+                              alpha: .16,
+                            ),
+                            child: AppIcon(
+                              Icons.person_outline,
+                              size: 19,
+                              color: tokens.accent,
+                            ),
+                          )
+                        : _CustomerAvatar(customer: customer!, radius: 20),
+                    const SizedBox(width: 11),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            appointment.clientName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: tokens.textPrimary,
+                            ),
+                          ),
+                          if (customer != null)
+                            Text(
+                              '${_handleFor(customer!)} · ${_scheduleCustomerLabel(customer!.status, language)}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: tokens.textSecondary,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (canCall) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        tooltip: pickTr(
+                          language,
+                          tk: 'Jaň etmek',
+                          ru: 'Позвонить',
+                          en: 'Call',
+                        ),
+                        onPressed: () => launchUrl(
+                          Uri(scheme: 'tel', path: phone.replaceAll(' ', '')),
+                        ),
+                        constraints: const BoxConstraints.tightFor(
+                          width: 40,
+                          height: 40,
+                        ),
+                        style: IconButton.styleFrom(
+                          backgroundColor: tokens.surface,
+                          side: BorderSide(color: tokens.border),
+                        ),
+                        icon: AppIcon(
+                          Icons.phone_outlined,
+                          size: 18,
+                          color: tokens.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 13),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 11,
+                    vertical: 9,
+                  ),
+                  decoration: BoxDecoration(
+                    color: tokens.accent.withValues(alpha: .09),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Row(
+                    children: [
+                      AppIcon(
+                        Icons.content_cut,
+                        size: 15,
+                        color: tokens.accent,
+                      ),
+                      const SizedBox(width: 9),
+                      Expanded(
+                        child: Text(
+                          appointment.serviceName,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: tokens.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (appointment.note.trim().isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: AppIcon(
+                          Icons.sticky_note_2_outlined,
+                          size: 14,
+                          color: tokens.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          appointment.note,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            height: 1.3,
+                            color: tokens.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

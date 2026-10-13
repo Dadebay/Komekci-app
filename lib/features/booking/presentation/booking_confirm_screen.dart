@@ -101,112 +101,87 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
     final timeLabel =
         '${_startsAt.hour.toString().padLeft(2, '0')}:${_startsAt.minute.toString().padLeft(2, '0')}';
 
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: tokens.surface,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: tokens.surface,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const AppIcon(Icons.arrow_back),
-          onPressed: () => Navigator.maybePop(context),
-        ),
-        title: Text(
-          t(tk: 'Randevu', ru: 'Запись', en: 'Booking'),
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
-        ),
-      ),
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 18),
-              child: _WizardSteps(
-                current: 3,
-                labels: [
-                  t(tk: 'Hyzmat', ru: 'Услуга', en: 'Service'),
-                  t(tk: 'Wagt', ru: 'Время', en: 'Time'),
-                  t(tk: 'Tassykla', ru: 'Подтв.', en: 'Confirm'),
-                ],
-              ),
+            _BookingHeader(
+              master: widget.master,
+              current: 3,
+              labels: [
+                t(tk: 'Hyzmat', ru: 'Услуга', en: 'Service'),
+                t(tk: 'Wagt', ru: 'Время', en: 'Time'),
+                t(tk: 'Tassykla', ru: 'Подтв.', en: 'Confirm'),
+              ],
             ),
             Expanded(
               child: ListView(
-                padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + MediaQuery.of(context).viewInsets.bottom),
+                padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + MediaQuery.of(context).viewInsets.bottom),
                 children: [
-                  Text(
-                    t(
-                      tk: 'Tassyklaň',
-                      ru: 'Подтвердите запись',
-                      en: 'Confirm booking',
-                    ),
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  _BookingTitle(
+                    title: t(tk: 'Tassyklaň', ru: 'Подтвердите запись', en: 'Confirm booking'),
+                    subtitle: t(tk: 'Maglumatlary barlaň', ru: 'Проверьте детали записи', en: 'Check the details below'),
                   ),
                   const SizedBox(height: 18),
                   Container(
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.black.withValues(alpha: .05)),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .07), blurRadius: 20, offset: const Offset(0, 8))],
-                    ),
+                    decoration: _bookingCardDecoration(tokens),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.service.name,
-                          style: const TextStyle(
-                            fontSize: 15.5,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                widget.service.name,
+                                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, height: 1.2),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              '${formatMoney(widget.service.price)} $currency',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: tokens.accent),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          widget.master.name,
-                          style: TextStyle(
-                            color: tokens.textSecondary,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(height: 1, color: tokens.border),
-                        const SizedBox(height: 12),
-                        _SummaryRow(
-                          icon: Icons.calendar_today_outlined,
-                          label: dateLabel,
-                        ),
-                        const SizedBox(height: 8),
-                        _SummaryRow(
-                          icon: Icons.schedule_outlined,
-                          label:
-                              '$timeLabel · ${widget.service.durationMin} ${t(tk: "min", ru: "мин", en: "min")}',
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _BookingInfoTile(
+                                icon: Icons.calendar_today_outlined,
+                                caption: t(tk: 'Senesi', ru: 'Дата', en: 'Date'),
+                                value: dateLabel,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _BookingInfoTile(
+                                icon: Icons.schedule_outlined,
+                                caption: t(tk: 'Wagty', ru: 'Время', en: 'Time'),
+                                value: '$timeLabel · ${widget.service.durationMin} ${t(tk: "min", ru: "мин", en: "min")}',
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.black.withValues(alpha: .05)),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .07), blurRadius: 20, offset: const Offset(0, 8))],
-                    ),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+                    decoration: _bookingCardDecoration(tokens),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           t(tk: 'Bellik', ru: 'Заметка', en: 'Note'),
-                          style: const TextStyle(
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 10),
                         TextField(
@@ -225,8 +200,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                         ),
                         CheckboxListTile(
                           value: _notifyEarlier,
-                          onChanged: (v) =>
-                              setState(() => _notifyEarlier = v ?? false),
+                          onChanged: (v) => setState(() => _notifyEarlier = v ?? false),
                           controlAffinity: ListTileControlAffinity.leading,
                           contentPadding: EdgeInsets.zero,
                           dense: true,
@@ -246,17 +220,9 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                   if (_error != null) ...[
                     const SizedBox(height: 8),
                     RetryErrorState(
-                      title: t(
-                        tk: 'Ýalňyşlyk',
-                        ru: 'Ошибка',
-                        en: 'Something went wrong',
-                      ),
+                      title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
                       text: _error!,
-                      retryLabel: t(
-                        tk: 'Täzeden synanyş',
-                        ru: 'Повторить',
-                        en: 'Try again',
-                      ),
+                      retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
                       onRetry: () => _confirm(t),
                     ),
                     if (_suggestions.isNotEmpty) ...[
@@ -291,100 +257,52 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: .06), blurRadius: 20, offset: const Offset(0, -6)),
-          ],
-        ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 14, 24, 14),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        t(tk: 'Jemi', ru: 'Итого', en: 'Total'),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: tokens.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${formatMoney(widget.service.price)} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
-                        style: const TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  height: 56,
-                  child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: tokens.textPrimary,
-                      shape: const StadiumBorder(),
-                      padding: const EdgeInsets.symmetric(horizontal: 26),
-                    ),
-                    onPressed: _submitting ? null : () => _confirm(t),
-                    child: _submitting
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.4,
-                              color: tokens.surface,
-                            ),
-                          )
-                        : Text(
-                            t(
-                              tk: 'Randevuny tassykla',
-                              ru: 'Подтвердить запись',
-                              en: 'Confirm booking',
-                            ),
-                            style: const TextStyle(
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      bottomNavigationBar: _BookingBottomBar(
+        caption: t(tk: 'Jemi', ru: 'Итого', en: 'Total'),
+        value: '${formatMoney(widget.service.price)} $currency',
+        label: t(tk: 'Randevuny tassykla', ru: 'Подтвердить запись', en: 'Confirm booking'),
+        loading: _submitting,
+        onPressed: () => _confirm(t),
       ),
     );
   }
 }
 
-class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({required this.icon, required this.label});
+/// Caption + value tile with a tinted icon, used for date and time.
+class _BookingInfoTile extends StatelessWidget {
+  const _BookingInfoTile({required this.icon, required this.caption, required this.value});
   final IconData icon;
-  final String label;
+  final String caption;
+  final String value;
 
   @override
   Widget build(BuildContext context) {
     final t = context.appTokens;
-    return Row(
-      children: [
-        AppIcon(icon, size: 15, color: t.textSecondary),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: t.surfaceElevated, borderRadius: BorderRadius.circular(16)),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: t.accent.withValues(alpha: .14), shape: BoxShape.circle),
+            child: AppIcon(icon, size: 16, color: t.accent),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(caption, style: TextStyle(fontSize: 10.5, color: t.textSecondary)),
+                const SizedBox(height: 2),
+                Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
-

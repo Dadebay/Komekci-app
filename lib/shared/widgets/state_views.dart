@@ -51,6 +51,68 @@ class EmptyState extends StatelessWidget {
   }
 }
 
+/// Empty appointment day, with the calendar illustration used on the master's
+/// home dashboard and schedule.
+class BookingsEmptyState extends StatelessWidget {
+  const BookingsEmptyState({
+    super.key,
+    required this.title,
+    required this.text,
+    this.framed = true,
+  });
+
+  final String title;
+  final String text;
+  final bool framed;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 26),
+      decoration: framed
+          ? BoxDecoration(
+              color: tokens.surfaceElevated,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: tokens.border),
+            )
+          : null,
+      child: Column(
+        children: [
+          Image.asset(
+            'assets/images/empty_bookings_3d.png',
+            width: 168,
+            height: 168,
+            fit: BoxFit.contain,
+            excludeFromSemantics: true,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: tokens.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.4,
+              color: tokens.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// A failed load with a retry action — for real API errors, not empty results.
 class RetryErrorState extends StatelessWidget {
   const RetryErrorState({

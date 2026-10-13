@@ -252,7 +252,10 @@ Future<void> _rescheduleAppointment(
     );
     return;
   }
-  await runApi(context, () => bookingProvider.reschedule(appointment.id, picked));
+  await runApi(
+    context,
+    () => bookingProvider.reschedule(appointment.id, picked),
+  );
 }
 
 Future<void> _confirmCancelAppointment(
@@ -280,7 +283,10 @@ Future<void> _confirmCancelAppointment(
     cancelLabel: t(tk: 'Ýok', ru: 'Нет', en: 'No'),
   );
   if (confirmed && context.mounted) {
-    await runApi(context, () => context.read<BookingProvider>().cancel(appointment.id));
+    await runApi(
+      context,
+      () => context.read<BookingProvider>().cancel(appointment.id),
+    );
   }
 }
 
@@ -411,7 +417,12 @@ void _openAppointmentActions(
                 ),
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  runApi(context, () => context.read<BookingProvider>().markNoShow(appointment.id));
+                  runApi(
+                    context,
+                    () => context.read<BookingProvider>().markNoShow(
+                      appointment.id,
+                    ),
+                  );
                 },
               ),
             ],
@@ -431,7 +442,12 @@ void _openAppointmentActions(
                 ),
                 onTap: () {
                   Navigator.pop(sheetContext);
-                  runApi(context, () => context.read<BookingProvider>().complete(appointment.id));
+                  runApi(
+                    context,
+                    () => context.read<BookingProvider>().complete(
+                      appointment.id,
+                    ),
+                  );
                 },
               ),
             if (appointment.status == AppointmentStatus.expected ||
@@ -529,17 +545,16 @@ class _FreeEntry extends _TimelineEntry {
   final DateTime end;
 }
 
-/// Fills the gaps between [appointments] (already sorted, same day) with
-/// free-time blocks across the 09:00–19:00 working window, broken into
-/// 1-hour chunks (a trailing shorter chunk for whatever's left over) rather
-/// than one long block, so each hour can be booked on its own.
+/// Fills gaps between appointments only inside the server's working windows.
+/// Free time is displayed in one-hour chunks for the timeline.
 List<_TimelineEntry> _buildTimeline(
   List<Appointment> appointments,
   DateTime day,
+  Schedule? schedule,
 ) {
-  final workStart = DateTime(day.year, day.month, day.day, 9);
-  final workEnd = DateTime(day.year, day.month, day.day, 19);
-  final entries = <_TimelineEntry>[];
+  final entries = <_TimelineEntry>[
+    for (final appointment in appointments) _ApptEntry(appointment),
+  ];
 
   void addFreeChunks(DateTime start, DateTime end) {
     var chunkStart = start;
@@ -552,15 +567,41 @@ List<_TimelineEntry> _buildTimeline(
     }
   }
 
-  var cursor = workStart;
-  for (final appt in appointments) {
-    if (appt.startsAt.isAfter(cursor)) {
-      addFreeChunks(cursor, appt.startsAt);
+  final active = [
+    for (final appointment in appointments)
+      if (appointment.status != AppointmentStatus.cancelled &&
+          appointment.status != AppointmentStatus.noShow)
+        appointment,
+  ]..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+
+  for (final window in workingTimeRanges(schedule, day)) {
+    var cursor = window.start;
+    for (final appointment in active) {
+      if (!appointment.startsAt.isBefore(window.end) ||
+          !appointment.endsAt.isAfter(window.start)) {
+        continue;
+      }
+      if (appointment.startsAt.isAfter(cursor)) {
+        addFreeChunks(
+          cursor,
+          appointment.startsAt.isBefore(window.end)
+              ? appointment.startsAt
+              : window.end,
+        );
+      }
+      if (appointment.endsAt.isAfter(cursor)) cursor = appointment.endsAt;
     }
-    entries.add(_ApptEntry(appt));
-    final apptEnd = appt.startsAt.add(const Duration(minutes: 30));
-    if (apptEnd.isAfter(cursor)) cursor = apptEnd;
+    if (window.end.isAfter(cursor)) addFreeChunks(cursor, window.end);
   }
-  if (workEnd.isAfter(cursor)) addFreeChunks(cursor, workEnd);
+
+  entries.sort((a, b) {
+    final aStart = a is _ApptEntry
+        ? a.appointment.startsAt
+        : (a as _FreeEntry).start;
+    final bStart = b is _ApptEntry
+        ? b.appointment.startsAt
+        : (b as _FreeEntry).start;
+    return aStart.compareTo(bStart);
+  });
   return entries;
 }

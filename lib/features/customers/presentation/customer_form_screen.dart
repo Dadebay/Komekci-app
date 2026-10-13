@@ -38,7 +38,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
   }
 
   bool get _phoneOk =>
-      _phoneController.text.replaceAll(RegExp(r'\D'), '').length >= 8;
+      _phoneController.text.replaceAll(RegExp(r'\D'), '').length == 8;
   bool get _complete => _isEditing || (_nameOk && _phoneOk);
 
   @override
@@ -111,6 +111,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
   Widget build(BuildContext context) {
     final tk = context.watch<LanguageProvider>().isTurkmen;
     final tokens = context.appTokens;
+    final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
@@ -119,11 +120,9 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
             : (tk ? 'Täze müşderi' : 'Новый клиент'),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                 children: [
                   _FormBanner(
                     title: _isEditing
@@ -158,8 +157,12 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   const SizedBox(height: 8),
                   _FormField(
                     controller: _phoneController,
-                    hint: '+993 .. ......',
+                    hint: '65 123456',
                     keyboardType: TextInputType.phone,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => FocusScope.of(context).unfocus(),
+                    prefixIcon: _isEditing ? null : phonePrefix(context, fontSize: 14),
+                    inputFormatters: _isEditing ? null : [_PhoneNumberFormatter()],
                     invalid: _showErrors && !_phoneOk,
                     enabled: !_isEditing,
                     onChanged: () => setState(() {}),
@@ -197,39 +200,42 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   ],
                   if (_error != null) _FieldError(_error!),
                 ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-              child: Column(
-                children: [
-                  _MasterActionButton(
-                    label: _isEditing
-                        ? (tk ? 'Ýatda sakla' : 'Сохранить')
-                        : (tk ? 'Dowam et' : 'Продолжить'),
-                    enabled: _complete && !_saving,
-                    leading: _isEditing ? Icons.save_outlined : null,
-                    trailingArrow: !_isEditing,
-                    onTap: _save,
-                  ),
-                  const SizedBox(height: 2),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      tk ? 'Ýatyrmazdan yzyna dön' : 'Вернуться без сохранения',
-                      style: TextStyle(
-                        color: tokens.accent,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
+      bottomNavigationBar: keyboardOpen
+          ? null
+          : SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _MasterActionButton(
+                      label: _isEditing
+                          ? (tk ? 'Ýatda sakla' : 'Сохранить')
+                          : (tk ? 'Dowam et' : 'Продолжить'),
+                      enabled: _complete && !_saving,
+                      leading: _isEditing ? Icons.save_outlined : null,
+                      trailingArrow: !_isEditing,
+                      onTap: _save,
+                    ),
+                    const SizedBox(height: 2),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        tk ? 'Ýatyrmazdan yzyna dön' : 'Вернуться без сохранения',
+                        style: TextStyle(
+                          color: tokens.accent,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }
@@ -291,4 +297,3 @@ class _FormBanner extends StatelessWidget {
     ),
   );
 }
-

@@ -50,15 +50,29 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                   parent: _controller,
                   curve: Curves.elasticOut,
                 ),
+                // Two soft halos around the check read as a ripple.
                 child: Container(
-                  width: 92,
-                  height: 92,
+                  width: 144,
+                  height: 144,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: tokens.accent,
-                    shape: BoxShape.circle,
+                  decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .10), shape: BoxShape.circle),
+                  child: Container(
+                    width: 112,
+                    height: 112,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .18), shape: BoxShape.circle),
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: tokens.accent,
+                        shape: BoxShape.circle,
+                        boxShadow: [BoxShadow(color: tokens.accent.withValues(alpha: .4), blurRadius: 18, offset: const Offset(0, 8))],
+                      ),
+                      child: AppIcon(Icons.check, size: 38, color: tokens.accentOn),
+                    ),
                   ),
-                  child: AppIcon(Icons.check, size: 42, color: tokens.accentOn),
                 ),
               ),
               const SizedBox(height: 26),
@@ -70,8 +84,8 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                 ),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 10),
@@ -88,41 +102,32 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: tokens.surfaceElevated,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: tokens.border),
-                ),
+                decoration: _bookingCardDecoration(tokens),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      a.serviceName,
-                      style: const TextStyle(
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    Text(a.serviceName, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 3),
-                    Text(
-                      widget.masterName,
-                      style: TextStyle(
-                        color: tokens.textSecondary,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(height: 1, color: tokens.border),
-                    const SizedBox(height: 12),
-                    _SummaryRow(
-                      icon: Icons.calendar_today_outlined,
-                      label: formatDate(a.startsAt),
-                    ),
-                    const SizedBox(height: 8),
-                    _SummaryRow(
-                      icon: Icons.schedule_outlined,
-                      label:
-                          '$timeLabel · ${a.minutes} ${t(tk: "min", ru: "мин", en: "min")}',
+                    Text(widget.masterName, style: TextStyle(color: tokens.textSecondary, fontSize: 13)),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _BookingInfoTile(
+                            icon: Icons.calendar_today_outlined,
+                            caption: t(tk: 'Senesi', ru: 'Дата', en: 'Date'),
+                            value: formatDate(a.startsAt),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _BookingInfoTile(
+                            icon: Icons.schedule_outlined,
+                            caption: t(tk: 'Wagty', ru: 'Время', en: 'Time'),
+                            value: '$timeLabel · ${a.minutes} ${t(tk: "min", ru: "мин", en: "min")}',
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

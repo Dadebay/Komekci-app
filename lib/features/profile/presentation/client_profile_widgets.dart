@@ -1,8 +1,7 @@
 part of '../../../app/komekci_app.dart';
 
-/// Avatar + name + phone summary, tapping through to [ClientEditProfileScreen].
-/// Mirrors the master side's `_MasterCard` so both roles share one visual
-/// language for "this is your account" cards.
+/// Profile hero: big avatar, name, phone and three live counters, tapping
+/// through to [ClientEditProfileScreen].
 class _ClientProfileCard extends StatelessWidget {
   const _ClientProfileCard({required this.onTap});
   final VoidCallback onTap;
@@ -11,64 +10,90 @@ class _ClientProfileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final profile = context.watch<ClientProfileProvider>();
-    return InkWell(
+    final language = context.watch<LanguageProvider>().language;
+    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
+    final bookings = context.watch<ClientBookingsProvider>().bookings;
+    final upcoming = bookings.where((b) => b.status == ClientBookingStatus.expected).length;
+    final masters = context.watch<ClientMastersProvider>().accepted.length;
+
+    Widget stat(String value, String label) => Expanded(
+      child: Column(
+        children: [
+          Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, height: 1.1)),
+          const SizedBox(height: 3),
+          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11.5, color: tokens.textSecondary)),
+        ],
+      ),
+    );
+
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(22),
       child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: Colors.black.withValues(alpha: .05)),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .07), blurRadius: 20, offset: const Offset(0, 8))],
-        ),
-        child: Row(
+        padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
+        decoration: _bookingCardDecoration(tokens).copyWith(borderRadius: BorderRadius.circular(28)),
+        child: Column(
           children: [
-            RoundPhoto(file: profile.avatar, url: profile.avatarUrl, radius: 32),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    profile.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: tokens.surface,
+                    border: Border.all(color: tokens.accent, width: 2),
+                  ),
+                  child: RoundPhoto(file: profile.avatar, url: profile.avatarUrl, radius: 44),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 2,
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: tokens.accent,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: tokens.surface, width: 2.5),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    child: AppIcon(Icons.edit_outlined, size: 13, color: tokens.accentOn),
                   ),
-                  const SizedBox(height: 5),
-                  Row(
-                    children: [
-                      AppIcon(
-                        Icons.phone_outlined,
-                        size: 13,
-                        color: tokens.textSecondary,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        displayPhone(profile.phone),
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          color: tokens.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              profile.name,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(color: tokens.surfaceElevated, borderRadius: BorderRadius.circular(20)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppIcon(Icons.phone_outlined, size: 13, color: tokens.textSecondary),
+                  const SizedBox(width: 6),
+                  Text(displayPhone(profile.phone), style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary)),
                 ],
               ),
             ),
-            Container(
-              width: 34,
-              height: 34,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: tokens.accent.withValues(alpha: .12),
-                shape: BoxShape.circle,
-              ),
-              child: AppIcon(Icons.edit_outlined, size: 15, color: tokens.accent),
+            const SizedBox(height: 18),
+            Container(height: 1, color: tokens.border),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                stat('${bookings.length}', t(tk: 'Ýazgy', ru: 'Записей', en: 'Bookings')),
+                Container(width: 1, height: 32, color: tokens.border),
+                stat('$upcoming', t(tk: 'Gelejek', ru: 'Предстоящих', en: 'Upcoming')),
+                Container(width: 1, height: 32, color: tokens.border),
+                stat('$masters', t(tk: 'Ussa', ru: 'Мастеров', en: 'Masters')),
+              ],
             ),
           ],
         ),
@@ -77,9 +102,44 @@ class _ClientProfileCard extends StatelessWidget {
   }
 }
 
-/// One row of [ClientProfile]'s menu: icon chip, title + status subtitle,
-/// chevron. Card-styled (unlike the old bare `ListTile` `SettingRow`) so it
-/// matches the rest of the client app's bordered, rounded card language.
+/// A titled group of settings rows sharing one rounded card.
+class _ClientProfileGroup extends StatelessWidget {
+  const _ClientProfileGroup({required this.title, required this.children});
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(6, 0, 0, 10),
+          child: Text(title, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: tokens.textSecondary)),
+        ),
+        Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: _bookingCardDecoration(tokens),
+          child: Material(
+            color: Colors.transparent,
+            child: Column(
+              children: [
+                for (var i = 0; i < children.length; i++) ...[
+                  children[i],
+                  if (i != children.length - 1) Divider(height: 1, thickness: 1, indent: 64, color: tokens.border.withValues(alpha: .7)),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// One row inside a [_ClientProfileGroup]: icon tile, title, the current value
+/// on the right and a chevron.
 class _ClientProfileMenuRow extends StatelessWidget {
   const _ClientProfileMenuRow({
     required this.icon,
@@ -95,60 +155,38 @@ class _ClientProfileMenuRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: .05)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .07), blurRadius: 20, offset: const Offset(0, 8))],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: tokens.accent.withValues(alpha: .12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: AppIcon(icon, color: tokens.accent, size: 18),
-                ),
-                const SizedBox(width: 13),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          color: tokens.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                AppIcon(Icons.chevron_right, size: 17, color: tokens.disabled),
-              ],
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .13), borderRadius: BorderRadius.circular(12)),
+              child: AppIcon(icon, color: tokens.accent, size: 18),
             ),
-          ),
+            const SizedBox(width: 14),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700))),
+            const SizedBox(width: 8),
+            // Not flexible: the title's Expanded pushes the value and chevron
+            // to the right edge, the value capped so a long one can't squeeze
+            // the title.
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 150),
+              child: Text(
+                subtitle,
+                textAlign: TextAlign.right,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12.5, color: tokens.textSecondary),
+              ),
+            ),
+            const SizedBox(width: 4),
+            AppIcon(Icons.chevron_right, size: 17, color: tokens.disabled),
+          ],
         ),
       ),
     );
@@ -189,20 +227,26 @@ class _ClientLogoutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: OutlinedButton.icon(
-        onPressed: () => _confirmAndLogout(context),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: tokens.danger,
-          side: BorderSide.none,
-          shape: const StadiumBorder(),
-        ),
-        icon: AppIcon(Icons.logout, size: 17, color: tokens.danger.withValues(alpha: .6)),
-        label: Text(
-          t(tk: 'Ulgamdan çyk', ru: 'Выйти из аккаунта', en: 'Sign out'),
-          style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: tokens.danger.withValues(alpha: .6)),
+    return GestureDetector(
+      onTap: () => _confirmAndLogout(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: _bookingCardDecoration(tokens),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(color: tokens.danger.withValues(alpha: .12), borderRadius: BorderRadius.circular(12)),
+              child: AppIcon(Icons.logout, size: 18, color: tokens.danger),
+            ),
+            const SizedBox(width: 14),
+            Text(
+              t(tk: 'Ulgamdan çyk', ru: 'Выйти из аккаунта', en: 'Sign out'),
+              style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: tokens.danger),
+            ),
+          ],
         ),
       ),
     );

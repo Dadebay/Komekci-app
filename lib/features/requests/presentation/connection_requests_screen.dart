@@ -22,6 +22,7 @@ class RequestsScreen extends StatelessWidget {
         child: RefreshIndicator(
           onRefresh: provider.load,
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
             children: [
               if (provider.error != null && requests.isEmpty)
@@ -37,8 +38,7 @@ class RequestsScreen extends StatelessWidget {
                         padding: EdgeInsets.only(top: 40),
                         child: Center(child: CircularProgressIndicator()),
                       )
-                    : EmptyState(
-                        icon: Icons.person_add_alt_1_outlined,
+                    : _ConnectionRequestsEmptyState(
                         title: t(tk: 'Haýyş ýok', ru: 'Запросов нет', en: 'No requests'),
                         text: t(
                           tk: 'Müşderiler lakamyňyz bilen sizi tapyp baglanyşyk haýyşyny iberip bilerler.',
@@ -97,6 +97,61 @@ class RequestsScreen extends StatelessWidget {
                   ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ConnectionRequestsEmptyState extends StatelessWidget {
+  const _ConnectionRequestsEmptyState({required this.title, required this.text});
+
+  final String title;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return Padding(
+      padding: const EdgeInsets.only(top: 32),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+        decoration: BoxDecoration(
+          color: tokens.surfaceElevated,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: tokens.border),
+        ),
+        child: Column(
+          children: [
+            Image.asset(
+              'assets/images/empty_connection_requests_3d.png',
+              width: 184,
+              height: 184,
+              fit: BoxFit.contain,
+              excludeFromSemantics: true,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: tokens.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.4,
+                color: tokens.textSecondary,
+              ),
+            ),
+          ],
         ),
       ),
     );

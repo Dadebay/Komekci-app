@@ -58,11 +58,32 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
     final name = profile?.name ?? widget.master.name;
     final nickname = profile?.nickname ?? widget.master.nickname;
     final address = profile?.address ?? widget.master.address;
-    final links = <(IconData, String)>[
-      if ((profile?.instagramUrl ?? '').isNotEmpty) (Icons.camera_alt_outlined, profile!.instagramUrl!),
-      if ((profile?.tiktokUrl ?? '').isNotEmpty) (Icons.music_note_outlined, profile!.tiktokUrl!),
-      for (final l in profile?.otherLinks ?? const <String>[]) (Icons.link_outlined, l),
+    final links = <(IconData, String, String)>[
+      if ((profile?.instagramUrl ?? '').isNotEmpty) (Icons.camera_alt_outlined, 'Instagram', profile!.instagramUrl!),
+      if ((profile?.tiktokUrl ?? '').isNotEmpty) (Icons.music_note_outlined, 'TikTok', profile!.tiktokUrl!),
+      for (final l in profile?.otherLinks ?? const <String>[]) (Icons.link_outlined, _linkHost(l), l),
     ];
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
+    final shortest = services.isEmpty ? null : services.map((s) => s.durationMin).reduce((a, b) => a < b ? a : b);
+
+    Widget sectionTitle(String text, {int? count}) => Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(width: 4, height: 16, decoration: BoxDecoration(color: tokens.accent, borderRadius: BorderRadius.circular(2))),
+          const SizedBox(width: 8),
+          Text(text, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+          if (count != null) ...[
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(color: tokens.surfaceElevated, borderRadius: BorderRadius.circular(9)),
+              child: Text('$count', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: tokens.textSecondary)),
+            ),
+          ],
+        ],
+      ),
+    );
 
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -76,32 +97,29 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                 photoUrl: profile?.photoUrl ?? widget.master.photoUrl,
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
-                      child: Text(name, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
+                      child: Text(name, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, height: 1.15)),
                     ),
-                    const SizedBox(height: 4),
-                    Center(
-                      child: Text('@$nickname', style: TextStyle(fontSize: 13.5, color: tokens.textSecondary)),
-                    ),
-                    if (address.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            AppIcon(Icons.location_on_outlined, size: 13, color: tokens.textSecondary),
-                            const SizedBox(width: 3),
-                            Flexible(
-                              child: Text(address, style: TextStyle(fontSize: 12.5, color: tokens.textSecondary)),
-                            ),
-                          ],
+                    const SizedBox(height: 10),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _ProfilePill(label: '@$nickname'),
+                        if (address.isNotEmpty) _ProfilePill(icon: Icons.location_on_outlined, label: address),
+                        _ProfilePill(
+                          dotColor: accepting ? tokens.success : tokens.warning,
+                          label: accepting
+                              ? t(tk: 'Ýazgy açyk', ru: 'Запись открыта', en: 'Taking bookings')
+                              : t(tk: 'Wagtlaýyn ýapyk', ru: 'Запись закрыта', en: 'Bookings paused'),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                     if (_error != null) ...[
                       const SizedBox(height: 20),
                       RetryErrorState(
@@ -111,53 +129,81 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                         onRetry: _load,
                       ),
                     ],
-                    if ((profile?.description ?? '').isNotEmpty) ...[
-                      const SizedBox(height: 24),
-                      Text(
-                        t(tk: 'Hakynda', ru: 'О мастере', en: 'About'),
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    if (_services != null) ...[
+                      const SizedBox(height: 22),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _ProfileStat(
+                              icon: Icons.content_cut,
+                              caption: t(tk: 'Hyzmat', ru: 'Услуг', en: 'Services'),
+                              value: '${services.length}',
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _ProfileStat(
+                              icon: Icons.payments_outlined,
+                              caption: t(tk: 'Başlangyç', ru: 'От', en: 'From'),
+                              value: cheapest == null ? '—' : '${formatMoney(cheapest)} $currency',
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _ProfileStat(
+                              icon: Icons.schedule_outlined,
+                              caption: t(tk: 'Iň gysga', ru: 'От', en: 'Shortest'),
+                              value: shortest == null ? '—' : '$shortest ${t(tk: 'min', ru: 'мин', en: 'min')}',
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        profile!.description,
-                        style: TextStyle(fontSize: 13, color: tokens.textSecondary, height: 1.55),
+                    ],
+                    if ((profile?.description ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 28),
+                      sectionTitle(t(tk: 'Hakynda', ru: 'О мастере', en: 'About')),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: _bookingCardDecoration(tokens),
+                        child: Text(
+                          profile!.description,
+                          style: TextStyle(fontSize: 13.5, color: tokens.textSecondary, height: 1.6),
+                        ),
                       ),
                     ],
                     if (links.isNotEmpty) ...[
-                      const SizedBox(height: 24),
-                      Text(
-                        t(tk: 'Sosial ulgamlar', ru: 'Соцсети', en: 'Social media'),
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 10),
-                      for (final link in links)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: InkWell(
-                            onTap: () => launchUrl(Uri.parse(link.$2), mode: LaunchMode.externalApplication),
-                            child: Row(
-                              children: [
-                                AppIcon(link.$1, size: 15, color: tokens.accent),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    link.$2,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 13, color: tokens.accent),
-                                  ),
+                      const SizedBox(height: 28),
+                      sectionTitle(t(tk: 'Sosial ulgamlar', ru: 'Соцсети', en: 'Social media')),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          for (final link in links)
+                            GestureDetector(
+                              onTap: () => launchUrl(Uri.parse(link.$3), mode: LaunchMode.externalApplication),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: tokens.surface,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: tokens.border),
                                 ),
-                              ],
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    AppIcon(link.$1, size: 16, color: tokens.accent),
+                                    const SizedBox(width: 8),
+                                    Text(link.$2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
+                        ],
+                      ),
                     ],
-                    const SizedBox(height: 24),
-                    Text(
-                      t(tk: 'Hyzmatlar', ru: 'Услуги', en: 'Services'),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 28),
+                    sectionTitle(t(tk: 'Hyzmatlar', ru: 'Услуги', en: 'Services'), count: _services == null ? null : services.length),
                     if (_services == null && _error == null)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 16),
@@ -172,6 +218,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                       ...services.map(
                         (s) => _MasterServiceRow(
                           name: s.name,
+                          description: s.description,
                           price: s.price,
                           minutes: s.durationMin,
                           onTap: accepting
@@ -203,59 +250,81 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
               ),
             ),
           ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SafeArea(
-              top: false,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-                decoration: BoxDecoration(
-                  color: tokens.surface,
-                  border: Border(top: BorderSide(color: tokens.border)),
-                ),
-                child: Row(
-                  children: [
-                    if (cheapest != null)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            t(tk: 'Başlangyç bahasy', ru: 'Цена от', en: 'Starting from'),
-                            style: TextStyle(fontSize: 11, color: tokens.textSecondary),
-                          ),
-                          Text(
-                            '${formatMoney(cheapest)} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
-                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-                          ),
-                        ],
-                      ),
-                    const Spacer(),
-                    SizedBox(
-                      height: 50,
-                      child: FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: tokens.textPrimary,
-                          shape: const StadiumBorder(),
-                          padding: const EdgeInsets.symmetric(horizontal: 30),
-                        ),
-                        onPressed: accepting
-                            ? () => Navigator.push(context, pageRoute(BookingPage(master: widget.master)))
-                            : null,
-                        child: Text(
-                          accepting
-                              ? t(tk: 'Ýazyl', ru: 'Записаться', en: 'Book')
-                              : t(tk: 'Wagtlaýyn ýapyk', ru: 'Запись закрыта', en: 'Bookings paused'),
-                          style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+        ],
+      ),
+      bottomNavigationBar: _BookingBottomBar(
+        caption: t(tk: 'Başlangyç bahasy', ru: 'Цена от', en: 'Starting from'),
+        value: cheapest == null ? '—' : '${formatMoney(cheapest)} $currency',
+        label: accepting
+            ? t(tk: 'Ýazyl', ru: 'Записаться', en: 'Book')
+            : t(tk: 'Wagtlaýyn ýapyk', ru: 'Запись закрыта', en: 'Bookings paused'),
+        onPressed: accepting ? () => Navigator.push(context, pageRoute(BookingPage(master: widget.master))) : null,
+      ),
+    );
+  }
+}
+
+/// `https://www.example.com/path` -> `example.com`.
+String _linkHost(String url) {
+  final host = Uri.tryParse(url)?.host ?? '';
+  return (host.isEmpty ? url : host).replaceFirst('www.', '');
+}
+
+class _ProfilePill extends StatelessWidget {
+  const _ProfilePill({required this.label, this.icon, this.dotColor});
+  final String label;
+  final IconData? icon;
+  final Color? dotColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: tokens.surfaceElevated,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: tokens.border.withValues(alpha: .6)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[AppIcon(icon!, size: 13, color: tokens.textSecondary), const SizedBox(width: 5)],
+          if (dotColor != null) ...[
+            Container(width: 7, height: 7, decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle)),
+            const SizedBox(width: 6),
+          ],
+          Flexible(
+            child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary)),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileStat extends StatelessWidget {
+  const _ProfileStat({required this.icon, required this.caption, required this.value});
+  final IconData icon;
+  final String caption;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: _bookingCardDecoration(tokens),
+      child: Column(
+        children: [
+          AppIcon(icon, size: 18, color: tokens.accent),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+          ),
+          const SizedBox(height: 2),
+          Text(caption, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: tokens.textSecondary)),
         ],
       ),
     );
@@ -271,25 +340,36 @@ class _MasterProfileHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     return SizedBox(
-      height: 194,
+      height: 246,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Container(
-            height: 150,
+            height: 196,
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [const Color(0xffFBF1D8), tokens.surface]),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+              color: Color.alphaBlend(tokens.accent.withValues(alpha: .16), tokens.surface),
             ),
-            child: bannerUrl == null
-                ? null
-                : Image.network(
-                    bannerUrl!,
-                    width: double.infinity,
-                    height: 150,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (bannerUrl != null)
+                  Image.network(bannerUrl!, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink()),
+                // Keeps the back button readable on a photo banner.
+                if (bannerUrl != null)
+                  DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [tokens.textPrimary.withValues(alpha: .28), Colors.transparent, tokens.textPrimary.withValues(alpha: .12)],
+                      stops: const [0, .45, 1],
+                    ),
                   ),
+                ),
+              ],
+            ),
           ),
           Positioned(
             left: 0,
@@ -297,15 +377,19 @@ class _MasterProfileHero extends StatelessWidget {
             bottom: 0,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(shape: BoxShape.circle, color: tokens.surface),
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: tokens.surface,
+                  boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .14), blurRadius: 18, offset: const Offset(0, 8))],
+                ),
                 child: Container(
                   padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.fromBorderSide(BorderSide(color: tokens.accent, width: 2)),
                   ),
-                  child: MasterAvatar(url: photoUrl, radius: 40),
+                  child: MasterAvatar(url: photoUrl, radius: 44),
                 ),
               ),
             ),
@@ -327,23 +411,24 @@ class _MasterProfileIconButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
+        width: 42,
+        height: 42,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: tokens.surface.withValues(alpha: .85),
+          color: tokens.surface.withValues(alpha: .92),
           shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .08), blurRadius: 10, offset: const Offset(0, 3))],
+          boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .12), blurRadius: 12, offset: const Offset(0, 4))],
         ),
-        child: AppIcon(icon, size: 18, color: tokens.textPrimary),
+        child: AppIcon(icon, size: 19, color: tokens.textPrimary),
       ),
     );
   }
 }
 
 class _MasterServiceRow extends StatelessWidget {
-  const _MasterServiceRow({required this.name, required this.price, required this.minutes, this.onTap});
+  const _MasterServiceRow({required this.name, required this.price, required this.minutes, this.description = '', this.onTap});
   final String name;
+  final String description;
   final double price;
   final int minutes;
   final VoidCallback? onTap;
@@ -352,43 +437,64 @@ class _MasterServiceRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final tokens = context.appTokens;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-        decoration: BoxDecoration(
-          color: tokens.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: tokens.border),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      const AppIcon(Icons.schedule_outlined, size: 12, color: Colors.black38),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$minutes ${pickTr(language, tk: 'min', ru: 'мин', en: 'min')}',
-                        style: const TextStyle(fontSize: 11.5, color: Colors.black45),
-                      ),
+    final bookable = onTap != null;
+    return Opacity(
+      opacity: bookable ? 1 : .6,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: _bookingCardDecoration(tokens),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .13), borderRadius: BorderRadius.circular(15)),
+                child: AppIcon(Icons.content_cut, size: 20, color: tokens.accent),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+                    if (description.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(description, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: tokens.textSecondary)),
                     ],
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        AppIcon(Icons.schedule_outlined, size: 12, color: tokens.textSecondary),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$minutes ${pickTr(language, tk: 'min', ru: 'мин', en: 'min')}',
+                          style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${formatMoney(price)} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
+                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: tokens.accent),
                   ),
+                  if (bookable) ...[
+                    const SizedBox(height: 4),
+                    AppIcon(Icons.chevron_right, size: 16, color: tokens.disabled),
+                  ],
                 ],
               ),
-            ),
-            Text(
-              '${formatMoney(price)} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: tokens.accent),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

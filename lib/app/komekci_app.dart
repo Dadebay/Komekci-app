@@ -49,6 +49,7 @@ import '../features/notifications/application/notification_provider.dart';
 import '../features/profile/application/client_profile_provider.dart';
 import '../features/requests/application/connection_requests_provider.dart';
 import '../features/schedule/application/schedule_provider.dart';
+import '../features/schedule/domain/working_time.dart';
 import '../features/services/application/service_provider.dart';
 import '../data/models/salon_service.dart';
 import '../data/models/customer.dart';

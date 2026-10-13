@@ -493,7 +493,13 @@ class _ProfileHero extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: tokens.surface,
-                        boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .08), blurRadius: 12, offset: const Offset(0, 4))],
+                        boxShadow: [
+                          BoxShadow(
+                            color: tokens.textPrimary.withValues(alpha: avatar != null || avatarUrl != null ? .16 : .08),
+                            blurRadius: avatar != null || avatarUrl != null ? 20 : 12,
+                            offset: Offset(0, avatar != null || avatarUrl != null ? 8 : 4),
+                          ),
+                        ],
                       ),
                       child: AvatarPicker(file: avatar, networkUrl: avatarUrl, onPicked: onPickAvatar, radius: _avatarRadius),
                     ),

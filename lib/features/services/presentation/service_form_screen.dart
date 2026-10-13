@@ -560,7 +560,7 @@ class _ErrorText extends StatelessWidget {
 }
 
 class _FormField extends StatelessWidget {
-  const _FormField({required this.controller, required this.hint, required this.onChanged, this.maxLines = 1, this.maxLength, this.keyboardType, this.invalid = false, this.enabled = true});
+  const _FormField({required this.controller, required this.hint, required this.onChanged, this.maxLines = 1, this.maxLength, this.keyboardType, this.textInputAction, this.onSubmitted, this.inputFormatters, this.prefixIcon, this.invalid = false, this.enabled = true});
 
   final TextEditingController controller;
   final String hint;
@@ -568,6 +568,10 @@ class _FormField extends StatelessWidget {
   final int maxLines;
   final int? maxLength;
   final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+  final List<TextInputFormatter>? inputFormatters;
+  final Widget? prefixIcon;
   final bool invalid;
   final bool enabled;
 
@@ -581,10 +585,15 @@ class _FormField extends StatelessWidget {
       maxLines: maxLines,
       maxLength: maxLength,
       keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      onSubmitted: onSubmitted,
+      inputFormatters: inputFormatters,
       onChanged: (_) => onChanged(),
       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
       decoration: InputDecoration(
         hintText: hint,
+        prefixIcon: prefixIcon,
+        prefixIconConstraints: prefixIcon == null ? null : phonePrefixConstraints,
         hintStyle: const TextStyle(color: Colors.black38, fontSize: 14, fontWeight: FontWeight.w400),
         errorText: invalid ? pickTr(language, tk: 'Bu meýdan hökmany', ru: 'Обязательное поле', en: 'This field is required') : null,
         errorStyle: const TextStyle(fontSize: 11.5),

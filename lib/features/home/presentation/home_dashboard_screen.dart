@@ -38,6 +38,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
         pickTr(language, tk: tk, ru: ru, en: en);
     final bookingProvider = context.watch<BookingProvider>();
     final customerProvider = context.watch<CustomerProvider>();
+    final schedule = context.watch<ScheduleProvider>().schedule;
     final canPop = Navigator.of(context).canPop();
     final tokens = context.appTokens;
 
@@ -45,7 +46,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     bookingProvider.prefetch(today);
 
     final todayAppointments = bookingProvider.onDay(today);
-    final entries = _buildTimeline(todayAppointments, today);
+    final entries = _buildTimeline(todayAppointments, today, schedule);
     final freeSlotsToday = entries.whereType<_FreeEntry>().length;
 
     // Compared against the live clock's time-of-day projected onto the mock
@@ -184,23 +185,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               accentBg: freeSlotBg,
               count: todayAppointments.length,
               showHeader: false,
-              child: entries.isEmpty
-                  // The table itself is full-bleed inside the day card, so
-                  // only the empty state needs an inset of its own.
-                  ? Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                      child: EmptyState(
-                        icon: Icons.event_busy_outlined,
-                        title: t(
-                          tk: 'Şu gün ýazgy ýok',
-                          ru: 'На сегодня записей нет',
-                          en: 'No bookings today',
-                        ),
-                        text: t(
-                          tk: 'Boş gün — dynç alyň!',
-                          ru: 'Свободный день.',
-                          en: 'A free day — relax!',
-                        ),
+              child: todayAppointments.isEmpty
+                  ? BookingsEmptyState(
+                      framed: false,
+                      title: t(
+                        tk: 'Şu gün ýazgy ýok',
+                        ru: 'На сегодня записей нет',
+                        en: 'No bookings today',
+                      ),
+                      text: t(
+                        tk: 'Boş wagtlary senenamadan görüp bilersiňiz.',
+                        ru: 'Свободное время можно посмотреть в расписании.',
+                        en: 'View available times in the schedule.',
                       ),
                     )
                   : _HomeApptTable(

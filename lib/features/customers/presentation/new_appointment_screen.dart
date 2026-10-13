@@ -62,6 +62,21 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
       _time.hour,
       _time.minute,
     );
+    if (!appointmentFitsWorkingTime(
+      context.read<ScheduleProvider>().schedule,
+      startsAt,
+      service.minutes,
+    )) {
+      AppToast.of(context).error(
+        pickTr(
+          context.read<LanguageProvider>().language,
+          tk: 'Bu hyzmat saýlanan wagta sygmaýar. Başga wagt saýlaň.',
+          ru: 'Услуга не помещается в выбранное время. Выберите другое время.',
+          en: 'This service does not fit the selected time. Choose another time.',
+        ),
+      );
+      return;
+    }
     final bookings = context.read<BookingProvider>();
     final customers = context.read<CustomerProvider>();
     setState(() => _saving = true);

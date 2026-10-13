@@ -15,99 +15,84 @@ class ClientProfile extends StatelessWidget {
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final theme = context.watch<ThemeProvider>().selected;
+    final mastersCount = context.watch<ClientMastersProvider>().accepted.length;
 
     final notificationPrefs = context.watch<AuthProvider>().me?.notificationPrefs ?? const <String, bool>{};
     final notificationsOn = notificationPrefs.isEmpty || notificationPrefs.values.any((v) => v);
     return Builder(
       builder: (context) {
-        final entries = <(IconData, String, String, VoidCallback)>[
-          (
-            Icons.groups_outlined,
-            t(tk: 'Ussalarym', ru: 'Мои мастера', en: 'My masters'),
-            t(
-              tk: 'Baglanan ussalaryňyz',
-              ru: 'Связанные мастера',
-              en: 'Masters you follow',
-            ),
-            () => Navigator.push(context, pageRoute(const MyMastersScreen())),
+        final accountRows = <Widget>[
+          _ClientProfileMenuRow(
+            icon: Icons.groups_outlined,
+            title: t(tk: 'Ussalarym', ru: 'Мои мастера', en: 'My masters'),
+            subtitle: '$mastersCount',
+            onTap: () => Navigator.push(context, pageRoute(const MyMastersScreen())),
           ),
-          (
-            Icons.notifications_none,
-            t(tk: 'Bildirişler', ru: 'Уведомления', en: 'Notifications'),
-            notificationsOn
-                ? t(tk: 'Işjeň', ru: 'Включены', en: 'Enabled')
-                : t(tk: 'Öçürilen', ru: 'Отключены', en: 'Disabled'),
-            () => Navigator.push(
-              context,
-              pageRoute(const ClientNotificationSettingsScreen()),
-            ),
+          _ClientProfileMenuRow(
+            icon: Icons.notifications_none,
+            title: t(tk: 'Bildirişler', ru: 'Уведомления', en: 'Notifications'),
+            subtitle: notificationsOn ? t(tk: 'Işjeň', ru: 'Включены', en: 'On') : t(tk: 'Öçürilen', ru: 'Отключены', en: 'Off'),
+            onTap: () => Navigator.push(context, pageRoute(const ClientNotificationSettingsScreen())),
           ),
-          (
-            Icons.brush_outlined,
-            t(tk: 'Görnüşi', ru: 'Оформление', en: 'Appearance'),
-            _themeName(theme),
-            () => _showThemeSheet(context),
+        ];
+        final appRows = <Widget>[
+          _ClientProfileMenuRow(
+            icon: Icons.brush_outlined,
+            title: t(tk: 'Görnüşi', ru: 'Оформление', en: 'Appearance'),
+            subtitle: _themeName(theme),
+            onTap: () => _showThemeSheet(context),
           ),
-          (
-            Icons.language,
-            t(tk: 'Dil', ru: 'Язык', en: 'Language'),
-            _languageName(language),
-            () => _showLanguageSheet(context),
+          _ClientProfileMenuRow(
+            icon: Icons.language,
+            title: t(tk: 'Dil', ru: 'Язык', en: 'Language'),
+            subtitle: _languageName(language),
+            onTap: () => _showLanguageSheet(context),
           ),
-          (
-            Icons.help_outline,
-            t(tk: 'Goldaw', ru: 'Поддержка', en: 'Support'),
-            t(
-              tk: 'Soraglar we habarlaşyk',
-              ru: 'Вопросы и контакты',
-              en: 'FAQ & contact',
-            ),
-            () => Navigator.push(context, pageRoute(const ClientSupportScreen())),
+        ];
+        final helpRows = <Widget>[
+          _ClientProfileMenuRow(
+            icon: Icons.help_outline,
+            title: t(tk: 'Goldaw', ru: 'Поддержка', en: 'Support'),
+            subtitle: t(tk: 'Soraglar', ru: 'Вопросы', en: 'FAQ'),
+            onTap: () => Navigator.push(context, pageRoute(const ClientSupportScreen())),
           ),
         ];
 
         return Scaffold(
           backgroundColor: tokens.surface,
-          appBar: CabinetAppBar(
-            title: t(tk: 'Profil', ru: 'Профиль', en: 'Profile'),
-          ),
-          body: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 18, 20, 110),
-          children: [
-            _ClientProfileCard(
-              onTap: () => Navigator.push(
-                context,
-                pageRoute(const ClientEditProfileScreen()),
-              ),
-            ),
-            const SizedBox(height: 22),
-            ...entries.map(
-              (entry) => _ClientProfileMenuRow(
-                icon: entry.$1,
-                title: entry.$2,
-                subtitle: entry.$3,
-                onTap: entry.$4,
-              ),
-            ),
-            const SizedBox(height: 14),
-            _ClientLogoutButton(t: t),
-            Center(
-              child: TextButton(
-                onPressed: () => _confirmDeleteAccount(context),
-                child: Text(
-                  t(tk: 'Hasaby poz', ru: 'Удалить аккаунт', en: 'Delete account'),
-                  style: TextStyle(color: tokens.textSecondary, fontSize: 12),
+          body: SafeArea(
+            bottom: false,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 120),
+              children: [
+                Text(t(tk: 'Profil', ru: 'Профиль', en: 'Profile'), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, height: 1.1)),
+                const SizedBox(height: 18),
+                _ClientProfileCard(
+                  onTap: () => Navigator.push(context, pageRoute(const ClientEditProfileScreen())),
                 ),
-              ),
+                const SizedBox(height: 24),
+                _ClientProfileGroup(title: t(tk: 'Hasap', ru: 'Аккаунт', en: 'Account'), children: accountRows),
+                const SizedBox(height: 20),
+                _ClientProfileGroup(title: t(tk: 'Programma', ru: 'Приложение', en: 'App'), children: appRows),
+                const SizedBox(height: 20),
+                _ClientProfileGroup(title: t(tk: 'Kömek', ru: 'Помощь', en: 'Help'), children: helpRows),
+                const SizedBox(height: 20),
+                _ClientLogoutButton(t: t),
+                Center(
+                  child: TextButton(
+                    onPressed: () => _confirmDeleteAccount(context),
+                    child: Text(
+                      t(tk: 'Hasaby poz', ru: 'Удалить аккаунт', en: 'Delete account'),
+                      style: TextStyle(color: tokens.textSecondary, fontSize: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: Text('KÖMEKÇI · v1.0.0', style: TextStyle(fontSize: 11.5, color: tokens.textSecondary)),
+                ),
+              ],
             ),
-            const SizedBox(height: 18),
-            Center(
-              child: Text(
-                'KÖMEKÇI · v1.0.0',
-                style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
-              ),
-            ),
-          ],
           ),
         );
       },
@@ -135,7 +120,7 @@ void _showLanguageSheet(BuildContext context) {
   final authProvider = context.read<AuthProvider>();
   showModalBottomSheet(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.appTokens.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -189,7 +174,7 @@ void _showThemeSheet(BuildContext context) {
   final authProvider = context.read<AuthProvider>();
   showModalBottomSheet(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.appTokens.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),

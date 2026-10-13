@@ -16,9 +16,10 @@ class DayTimelineScreen extends StatelessWidget {
     final tokens = context.appTokens;
     final bookingProvider = context.watch<BookingProvider>();
     final customerProvider = context.watch<CustomerProvider>();
+    final schedule = context.watch<ScheduleProvider>().schedule;
     bookingProvider.prefetch(day);
     final dayAppointments = bookingProvider.onDay(day);
-    final entries = _buildTimeline(dayAppointments, day);
+    final entries = _buildTimeline(dayAppointments, day, schedule);
 
     return Scaffold(
       backgroundColor: tokens.surface,

@@ -113,6 +113,24 @@ Future<DateTime?> _pickAppointmentDateTime(
   });
   final tokens = context.appTokens;
 
+  DateTime candidateFor(TimeOfDay time) => DateTime(
+    selectedDate.year,
+    selectedDate.month,
+    selectedDate.day,
+    time.hour,
+    time.minute,
+  );
+
+  bool canChoose(TimeOfDay time) {
+    final candidate = candidateFor(time);
+    return appointmentFitsWorkingTime(
+          context.read<ScheduleProvider>().schedule,
+          candidate,
+          minutes,
+        ) &&
+        !bookingProvider.hasConflict(candidate, minutes, excludeId: excludeId);
+  }
+
   return showModalBottomSheet<DateTime>(
     context: context,
     backgroundColor: tokens.surface,
@@ -208,18 +226,7 @@ Future<DateTime?> _pickAppointmentDateTime(
                     final selected =
                         selectedTime.hour == t.hour &&
                         selectedTime.minute == t.minute;
-                    final candidate = DateTime(
-                      selectedDate.year,
-                      selectedDate.month,
-                      selectedDate.day,
-                      t.hour,
-                      t.minute,
-                    );
-                    final taken = bookingProvider.hasConflict(
-                      candidate,
-                      minutes,
-                      excludeId: excludeId,
-                    );
+                    final taken = !canChoose(t);
                     return GestureDetector(
                       onTap: taken
                           ? null
@@ -272,18 +279,10 @@ Future<DateTime?> _pickAppointmentDateTime(
                     ru: 'Подтвердить',
                     en: 'Confirm',
                   ),
-                  enabled: true,
+                  enabled: canChoose(selectedTime),
                   leading: Icons.check,
-                  onTap: () => Navigator.pop(
-                    sheetContext,
-                    DateTime(
-                      selectedDate.year,
-                      selectedDate.month,
-                      selectedDate.day,
-                      selectedTime.hour,
-                      selectedTime.minute,
-                    ),
-                  ),
+                  onTap: () =>
+                      Navigator.pop(sheetContext, candidateFor(selectedTime)),
                 ),
               ],
             ),
@@ -311,35 +310,38 @@ class _ChoiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.all(13),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: selected ? freeSlotBg : tokens.surface,
-          borderRadius: BorderRadius.circular(14),
+          color: selected
+              ? tokens.accent.withValues(alpha: .08)
+              : tokens.surfaceElevated,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? _freeSlotColor : tokens.border,
-            width: selected ? 1.4 : 1,
+            color: selected ? tokens.accent : tokens.border,
+            width: selected ? 1.5 : 1,
           ),
         ),
         child: Row(
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 40,
+              height: 40,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: selected
-                    ? _freeSlotColor.withValues(alpha: .15)
-                    : tokens.surfaceElevated,
-                shape: BoxShape.circle,
+                    ? tokens.accent.withValues(alpha: .14)
+                    : tokens.surface,
+                borderRadius: BorderRadius.circular(12),
               ),
               child: AppIcon(
                 icon,
                 size: 16,
-                color: selected ? freeSlotColorDark : tokens.textPrimary,
+                color: selected ? tokens.accent : tokens.textPrimary,
               ),
             ),
             const SizedBox(width: 12),
@@ -352,7 +354,7 @@ class _ChoiceCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
-                      color: selected ? freeSlotColorDark : tokens.textPrimary,
+                      color: tokens.textPrimary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -360,9 +362,9 @@ class _ChoiceCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11.5,
-                      color: Colors.black45,
+                      color: tokens.textSecondary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -370,7 +372,11 @@ class _ChoiceCard extends StatelessWidget {
                 ],
               ),
             ),
-            const AppIcon(Icons.chevron_right, size: 16, color: Colors.black26),
+            AppIcon(
+              selected ? Icons.check_circle : Icons.chevron_right,
+              size: selected ? 20 : 17,
+              color: selected ? tokens.accent : tokens.textSecondary,
+            ),
           ],
         ),
       ),
@@ -405,24 +411,28 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final query = _controller.text.trim().toLowerCase();
-    final digits = query.replaceAll(RegExp(r'\s+'), '');
+    final digits = query.replaceAll(RegExp(r'\D'), '');
     final results = query.isEmpty
         ? widget.customers
         : widget.customers
               .where(
                 (c) =>
                     c.name.toLowerCase().contains(query) ||
-                    c.phone.replaceAll(' ', '').contains(digits),
+                    (digits.isNotEmpty &&
+                        c.phone.replaceAll(RegExp(r'\D'), '').contains(digits)),
               )
               .toList();
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     return SafeArea(
+      top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+        padding: EdgeInsets.only(bottom: keyboardInset),
         child: SizedBox(
-          height: MediaQuery.of(context).size.height * .72,
+          height: (MediaQuery.sizeOf(context).height - keyboardInset) * .82,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 12),
               Center(
                 child: Container(
                   width: 40,
@@ -433,84 +443,287 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                t(
-                  tk: 'Müşderi saýlaň',
-                  ru: 'Выберите клиента',
-                  en: 'Choose a customer',
-                ),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 12, 18),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            t(
+                              tk: 'Müşderi saýlaň',
+                              ru: 'Выберите клиента',
+                              en: 'Choose a customer',
+                            ),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: tokens.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            t(
+                              tk: 'Ýazgy üçin müşderini tapyň',
+                              ru: 'Найдите клиента для записи',
+                              en: 'Find a customer for this booking',
+                            ),
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: tokens.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: t(tk: 'Ýap', ru: 'Закрыть', en: 'Close'),
+                      onPressed: () => Navigator.pop(context),
+                      icon: AppIcon(
+                        Icons.close,
+                        size: 20,
+                        color: tokens.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 14),
-              _SearchField(
-                controller: _controller,
-                hint: t(
-                  tk: 'Müşderi gözlemek',
-                  ru: 'Поиск клиента',
-                  en: 'Search customer',
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  height: 52,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: tokens.surfaceElevated,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: tokens.border),
+                  ),
+                  child: TextField(
+                    controller: _controller,
+                    onChanged: (_) => setState(() {}),
+                    textInputAction: TextInputAction.search,
+                    style: TextStyle(fontSize: 14, color: tokens.textPrimary),
+                    decoration: InputDecoration(
+                      filled: false,
+                      hintText: t(
+                        tk: 'Ady ýa-da telefon belgisi',
+                        ru: 'Имя или номер телефона',
+                        en: 'Name or phone number',
+                      ),
+                      hintStyle: TextStyle(color: tokens.textSecondary),
+                      prefixIcon: Center(
+                        widthFactor: 1,
+                        heightFactor: 1,
+                        child: SizedBox.square(
+                          dimension: 18,
+                          child: AppIcon(
+                            Icons.search,
+                            size: 18,
+                            color: tokens.textSecondary,
+                          ),
+                        ),
+                      ),
+                      prefixIconConstraints: const BoxConstraints(
+                        minWidth: 44,
+                        minHeight: 44,
+                      ),
+                      suffixIcon: query.isEmpty
+                          ? null
+                          : IconButton(
+                              tooltip: t(
+                                tk: 'Arassala',
+                                ru: 'Очистить',
+                                en: 'Clear',
+                              ),
+                              onPressed: () {
+                                _controller.clear();
+                                setState(() {});
+                              },
+                              icon: AppIcon(
+                                Icons.close,
+                                size: 18,
+                                color: tokens.textSecondary,
+                              ),
+                            ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
                 ),
-                onChanged: (_) => setState(() {}),
               ),
-              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
+                child: Row(
+                  children: [
+                    Text(
+                      query.isEmpty
+                          ? t(
+                              tk: 'Ähli müşderiler',
+                              ru: 'Все клиенты',
+                              en: 'All customers',
+                            )
+                          : t(
+                              tk: 'Gözleg netijeleri',
+                              ru: 'Результаты поиска',
+                              en: 'Search results',
+                            ),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: tokens.textPrimary,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: tokens.surfaceElevated,
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                      child: Text(
+                        '${results.length}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: tokens.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               Expanded(
                 child: results.isEmpty
                     ? Center(
-                        child: Text(
-                          t(
-                            tk: 'Müşderi tapylmady',
-                            ru: 'Клиенты не найдены',
-                            en: 'No customers found',
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: tokens.surfaceElevated,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: AppIcon(
+                                  query.isEmpty
+                                      ? Icons.people_outline
+                                      : Icons.person_search_outlined,
+                                  size: 27,
+                                  color: tokens.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                t(
+                                  tk: 'Müşderi tapylmady',
+                                  ru: 'Клиенты не найдены',
+                                  en: 'No customers found',
+                                ),
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: tokens.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                query.isEmpty
+                                    ? t(
+                                        tk: 'Entek müşderi goşulmady',
+                                        ru: 'Клиенты ещё не добавлены',
+                                        en: 'No customers added yet',
+                                      )
+                                    : t(
+                                        tk: 'Başga at ýa-da belgi bilen gözläň',
+                                        ru: 'Попробуйте другое имя или номер',
+                                        en: 'Try another name or number',
+                                      ),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: tokens.textSecondary,
+                                ),
+                              ),
+                            ],
                           ),
-                          style: const TextStyle(color: Colors.black45),
                         ),
                       )
                     : ListView.builder(
+                        padding: EdgeInsets.fromLTRB(
+                          20,
+                          0,
+                          20,
+                          16 + MediaQuery.paddingOf(context).bottom,
+                        ),
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
                         itemCount: results.length,
                         itemBuilder: (_, i) {
                           final c = results[i];
-                          return InkWell(
-                            onTap: () => Navigator.pop(context, c),
-                            borderRadius: BorderRadius.circular(14),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 9),
-                              child: Row(
-                                children: [
-                                  _CustomerAvatar(customer: c, radius: 19),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          c.name,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        Text(
-                                          c.phone,
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.black54,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Material(
+                              color: tokens.surfaceElevated,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: BorderSide(color: tokens.border),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: InkWell(
+                                onTap: () => Navigator.pop(context, c),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 11,
                                   ),
-                                  _StatusBadge2(
-                                    label: _statusLabel(c.status, tk),
-                                    color: _statusColor(c.status),
-                                    bg: _statusBg(c.status),
+                                  child: Row(
+                                    children: [
+                                      _CustomerAvatar(customer: c, radius: 22),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              c.name,
+                                              style: TextStyle(
+                                                fontSize: 14.5,
+                                                fontWeight: FontWeight.w700,
+                                                color: tokens.textPrimary,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            Text(
+                                              c.phone,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: tokens.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      _StatusBadge2(
+                                        label: _statusLabel(c.status, tk),
+                                        color: _statusColor(c.status),
+                                        bg: _statusBg(c.status),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           );

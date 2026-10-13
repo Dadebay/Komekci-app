@@ -61,47 +61,34 @@ class _BookingPageState extends State<BookingPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const AppIcon(Icons.arrow_back),
-          onPressed: () => Navigator.maybePop(context),
-        ),
-      ),
+      backgroundColor: tokens.surface,
       body: SafeArea(
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 18),
-              child: _WizardSteps(
-                current: 1,
-                labels: [
-                  t(tk: 'Hyzmat', ru: 'Услуга', en: 'Service'),
-                  t(tk: 'Wagt', ru: 'Время', en: 'Time'),
-                  t(tk: 'Tassykla', ru: 'Подтв.', en: 'Confirm'),
-                ],
-              ),
+            _BookingHeader(
+              master: widget.master,
+              current: 1,
+              labels: [
+                t(tk: 'Hyzmat', ru: 'Услуга', en: 'Service'),
+                t(tk: 'Wagt', ru: 'Время', en: 'Time'),
+                t(tk: 'Tassykla', ru: 'Подтв.', en: 'Confirm'),
+              ],
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                 children: [
-                  Text(
-                    t(
-                      tk: 'Hyzmaty saýlaň',
-                      ru: 'Выберите услугу',
-                      en: 'Select a service',
-                    ),
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  _BookingTitle(
+                    title: t(tk: 'Hyzmaty saýlaň', ru: 'Выберите услугу', en: 'Select a service'),
+                    subtitle: services == null || services.isEmpty
+                        ? null
+                        : t(
+                            tk: '${services.length} hyzmat elýeterli',
+                            ru: 'Доступно услуг: ${services.length}',
+                            en: '${services.length} services available',
+                          ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    widget.master.name,
-                    style: TextStyle(color: tokens.textSecondary),
-                  ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
                   if (_error != null)
                     RetryErrorState(
                       title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
@@ -157,38 +144,20 @@ class _BookingPageState extends State<BookingPage> {
           ],
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 10, 24, 14),
-          child: SizedBox(
-            height: 56,
-            child: FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: tokens.textPrimary,
-                shape: const StadiumBorder(),
+      bottomNavigationBar: _BookingBottomBar(
+        caption: selected == null
+            ? t(tk: 'Hyzmat saýlaň', ru: 'Выберите услугу', en: 'Pick a service')
+            : '${selected.durationMin} ${t(tk: 'min', ru: 'мин', en: 'min')}',
+        value: selected == null
+            ? '—'
+            : '${formatMoney(selected.price)} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
+        label: t(tk: 'Dowam et', ru: 'Далее', en: 'Continue'),
+        onPressed: selected == null
+            ? null
+            : () => Navigator.push(
+                context,
+                pageRoute(BookingDateTimeScreen(service: selected!, master: widget.master)),
               ),
-              onPressed: selected == null
-                  ? null
-                  : () => Navigator.push(
-                      context,
-                      pageRoute(
-                        BookingDateTimeScreen(
-                          service: selected!,
-                          master: widget.master,
-                        ),
-                      ),
-                    ),
-              child: Text(
-                t(tk: 'Dowam et', ru: 'Далее', en: 'Continue'),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -209,85 +178,84 @@ class _ServiceOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.appTokens;
-    return InkWell(
+    final language = context.watch<LanguageProvider>().language;
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: selected ? t.surfaceElevated : t.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: selected ? t.accent : t.border,
-            width: selected ? 1.5 : 1,
-          ),
-        ),
+        decoration: _bookingCardDecoration(t, selected: selected),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: ServiceThumb(service: service, size: 66),
+              borderRadius: BorderRadius.circular(16),
+              child: ServiceThumb(service: service, size: 72),
             ),
-            const SizedBox(width: 13),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    service.name,
-                    style: const TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          service.name,
+                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, height: 1.2),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 180),
+                        child: AppIcon(
+                          selected ? Icons.check_circle : Icons.circle_outlined,
+                          key: ValueKey(selected),
+                          color: selected ? t.accent : t.disabled,
+                          size: 22,
+                        ),
+                      ),
+                    ],
                   ),
                   if (service.description.isNotEmpty) ...[
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 4),
                     Text(
                       service.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        color: t.textSecondary,
-                        height: 1.3,
-                      ),
+                      style: TextStyle(fontSize: 12, color: t.textSecondary, height: 1.3),
                     ),
                   ],
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
-                      AppIcon(
-                        Icons.schedule_outlined,
-                        size: 13,
-                        color: t.textSecondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${service.minutes} ${pickTr(context.watch<LanguageProvider>().language, tk: "min", ru: "мин", en: "min")}',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          color: t.textSecondary,
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                        decoration: BoxDecoration(color: t.surfaceElevated, borderRadius: BorderRadius.circular(10)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AppIcon(Icons.schedule_outlined, size: 12, color: t.textSecondary),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${service.minutes} ${pickTr(language, tk: "min", ru: "мин", en: "min")}',
+                              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: t.textSecondary),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const Spacer(),
                       Text(
-                        '${service.price} ${context.watch<AppSettingsProvider>().currencyLabel(context.watch<LanguageProvider>().language)}',
-                        style: const TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        '${service.price} $currency',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: t.accent),
                       ),
                     ],
                   ),
                 ],
               ),
-            ),
-            AppIcon(
-              selected ? Icons.check_circle : Icons.circle_outlined,
-              color: selected ? t.accent : t.disabled,
-              size: 22,
             ),
           ],
         ),
@@ -295,4 +263,3 @@ class _ServiceOption extends StatelessWidget {
     );
   }
 }
-
