@@ -39,7 +39,7 @@ class _OtpScreenState extends State<OtpScreen> {
   @override
   void initState() {
     super.initState();
-    _startCountdown();
+    _startCountdown(context.read<AuthProvider>().lastOtpRetryAfter);
     _listenForSms();
   }
 
@@ -75,7 +75,7 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   Future<void> _resend() async {
-    if (_resending) return;
+    if (_resending || _secondsLeft > 0) return;
     final language = context.read<LanguageProvider>().language;
     final auth = context.read<AuthProvider>();
     setState(() {
@@ -88,7 +88,7 @@ class _OtpScreenState extends State<OtpScreen> {
       _code.clear();
       _focus.requestFocus();
       setState(() => _resending = false);
-      _startCountdown();
+      _startCountdown(auth.lastOtpRetryAfter);
       // A new SMS is on its way: listen for it.
       widget.smsListener.cancel().then((_) => _listenForSms());
     } catch (error) {
@@ -140,7 +140,7 @@ class _OtpScreenState extends State<OtpScreen> {
     String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final shownPhone = displayPhone(widget.phone);
-    final countdown = '00:${_secondsLeft.toString().padLeft(2, '0')}';
+    final countdown = '${(_secondsLeft ~/ 60).toString().padLeft(2, '0')}:${(_secondsLeft % 60).toString().padLeft(2, '0')}';
 
     return Scaffold(
       backgroundColor: tokens.surface,

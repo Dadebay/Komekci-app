@@ -153,6 +153,7 @@ void _showLanguageSheet(BuildContext context) {
                     selected: language == option.language,
                     onTap: () {
                       languageProvider.select(option.language);
+                      context.read<AppSettingsProvider>().load(locale: option.language);
                       authProvider.savePreferences(locale: option.language.name);
                       Navigator.maybePop(sheetContext);
                     },
@@ -181,6 +182,7 @@ void _showThemeSheet(BuildContext context) {
     builder: (sheetContext) {
       final language = sheetContext.watch<LanguageProvider>().language;
       final selected = sheetContext.watch<ThemeProvider>().selected;
+      final enabledThemes = sheetContext.watch<AppSettingsProvider>().themes;
       String t({required String tk, required String ru, required String en}) =>
           pickTr(language, tk: tk, ru: ru, en: en);
       final tokens = sheetContext.appTokens;
@@ -224,7 +226,7 @@ void _showThemeSheet(BuildContext context) {
                   const Color(0xffB0757C),
                   KomekciTheme.rose,
                 ),
-              ].map(
+              ].where((swatch) => enabledThemes.contains(swatch.$4)).map(
                 (swatch) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: InkWell(

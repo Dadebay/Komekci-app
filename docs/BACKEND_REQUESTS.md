@@ -145,7 +145,9 @@ a day of app work; no change to the connection flow.
 
 ## 3. A master sends a push message to their clients
 
-Status: **requested, not built.** The API has no endpoint for this today.
+Update (2026-10-13): the backend now documents `POST /me/notifications/send` with numeric `account_ids`. The older `/me/messages` proposal below is superseded. Flutter's remaining requirement is a numeric `account_id` in `GET /me/clients` for connected customers; see `docs/FLUTTER_API_INTEGRATION_STATUS.md`.
+
+Historical status: this section was written before the new endpoint was added.
 
 ### What exists now
 

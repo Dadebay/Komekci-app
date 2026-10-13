@@ -24,10 +24,27 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
   String? _newPhone;
   bool _busy = false;
   String? _error;
+  int _secondsLeft = 0;
+  Timer? _resendTimer;
+
+  void _startCountdown(int seconds) {
+    _resendTimer?.cancel();
+    setState(() => _secondsLeft = seconds);
+    if (seconds <= 0) return;
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted || _secondsLeft <= 1) {
+        timer.cancel();
+        if (mounted) setState(() => _secondsLeft = 0);
+      } else {
+        setState(() => _secondsLeft--);
+      }
+    });
+  }
 
   @override
   void dispose() {
     _sms.cancel();
+    _resendTimer?.cancel();
     _phoneController.dispose();
     _codeController.dispose();
     super.dispose();
@@ -47,6 +64,9 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
         _busy = false;
         _error = apiErrorMessage(error, language);
       });
+      if (error is ApiException && error.retryAfterSeconds != null) {
+        _startCountdown(error.retryAfterSeconds!);
+      }
       return;
     }
     if (mounted) setState(() => _busy = false);
@@ -66,8 +86,11 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
     final phone = toApiPhone(digits);
     final auth = context.read<AuthProvider>();
     await _run(() async {
-      await auth.requestPhoneChange(phone);
-      if (mounted) setState(() => _newPhone = phone);
+      final retryAfter = await auth.requestPhoneChange(phone);
+      if (mounted) {
+        setState(() => _newPhone = phone);
+        _startCountdown(retryAfter);
+      }
     });
     if (_newPhone != null) _listenForSms();
   }
@@ -84,6 +107,7 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
   /// Back to the number field (typed it wrong).
   void _editNumber() {
     _sms.cancel();
+    _resendTimer?.cancel();
     _codeController.clear();
     setState(() {
       _newPhone = null;
@@ -94,7 +118,11 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
   Future<void> _resend() async {
     final auth = context.read<AuthProvider>();
     final phone = _newPhone!;
-    await _run(() => auth.requestPhoneChange(phone));
+    if (_secondsLeft > 0) return;
+    await _run(() async {
+      final retryAfter = await auth.requestPhoneChange(phone);
+      if (mounted) _startCountdown(retryAfter);
+    });
     if (mounted && _error == null) _listenForSms();
   }
 
@@ -179,8 +207,10 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
                     child: Text(t(tk: 'Belgini üýtget', ru: 'Изменить номер', en: 'Change number')),
                   ),
                   TextButton(
-                    onPressed: _busy ? null : _resend,
-                    child: Text(t(tk: 'Kody täzeden iber', ru: 'Отправить код снова', en: 'Resend code')),
+                    onPressed: _busy || _secondsLeft > 0 ? null : _resend,
+                    child: Text(_secondsLeft > 0
+                        ? '${t(tk: 'Kody täzeden iber', ru: 'Отправить код снова', en: 'Resend code')} ($_secondsLeft s)'
+                        : t(tk: 'Kody täzeden iber', ru: 'Отправить код снова', en: 'Resend code')),
                   ),
                 ],
               ),

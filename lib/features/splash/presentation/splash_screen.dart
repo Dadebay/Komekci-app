@@ -31,17 +31,21 @@ class _SplashScreenState extends State<SplashScreen>
     final language = context.read<LanguageProvider>();
     final theme = context.read<ThemeProvider>();
     final auth = context.read<AuthProvider>();
+    final requestedLocale = language.language;
     final result = await Future.wait<Object?>([
       Connectivity().checkConnectivity(),
       _minimumDuration(),
-      settings.load(),
+      settings.load(locale: language.language),
       auth.restoreSession(),
     ]);
     final restore = result[3] as SessionRestore;
     // The backend decides which languages exist; don't leave the app on one
     // it has switched off.
-    if (!settings.locales.contains(language.language)) {
+    if (settings.locales.isNotEmpty && !settings.locales.contains(language.language)) {
       language.select(settings.locales.first);
+    }
+    if (settings.themes.isNotEmpty && !settings.themes.contains(theme.selected)) {
+      theme.select(settings.themes.first);
     }
     final networks = result.first as List<ConnectivityResult>;
     _isOnline = networks.any((value) => value != ConnectivityResult.none);
@@ -52,9 +56,19 @@ class _SplashScreenState extends State<SplashScreen>
       for (final candidate in settings.locales) {
         if (candidate.name == me.locale) language.select(candidate);
       }
-      for (final candidate in KomekciTheme.values) {
+      for (final candidate in settings.themes) {
         if (candidate.name == me.theme) theme.select(candidate);
       }
+      if ((settings.locales.isNotEmpty && me.locale != language.language.name) ||
+          (settings.themes.isNotEmpty && me.theme != theme.selected.name)) {
+        await auth.savePreferences(
+          locale: settings.locales.isEmpty ? null : language.language.name,
+          theme: settings.themes.isEmpty ? null : theme.selected.name,
+        );
+      }
+    }
+    if (requestedLocale != language.language) {
+      await settings.load(locale: language.language);
     }
     if (mounted) {
       setState(

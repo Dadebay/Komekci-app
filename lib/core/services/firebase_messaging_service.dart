@@ -12,6 +12,8 @@ typedef FcmMessageHandler = void Function(RemoteMessage message);
 
 class FirebaseMessagingService {
   FirebaseMessagingService({required this.onToken, this.onMessage});
+  static FirebaseMessagingService? _active;
+  static bool _listenersRegistered = false;
   final FcmTokenHandler onToken;
 
   /// Fired for every message that carries a [RemoteMessage.notification] —
@@ -26,15 +28,19 @@ class FirebaseMessagingService {
   static const _apnsWait = Duration(seconds: 6);
 
   Future<void> initialize() async {
+    _active = this;
     await LocalNotificationsService.instance.initialize();
     await FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-    // The OS already showed these in the notification tray — just record them.
-    FirebaseMessaging.onMessageOpenedApp.listen(_recordMessage);
+    if (!_listenersRegistered) {
+      _listenersRegistered = true;
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+      FirebaseMessaging.onMessage.listen((message) => _active?._handleForegroundMessage(message));
+      // The OS already showed these in the notification tray — just record them.
+      FirebaseMessaging.onMessageOpenedApp.listen((message) => _active?._recordMessage(message));
+      FirebaseMessaging.instance.onTokenRefresh.listen((token) => _active?.onToken(token));
+    }
     final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) _recordMessage(initialMessage);
-    FirebaseMessaging.instance.onTokenRefresh.listen(onToken);
     // Not awaited: waiting for APNs can take seconds (and never ends on a
     // simulator), which must not hold up the splash screen.
     unawaited(_registerDevice());

@@ -1,8 +1,9 @@
 part of '../../../app/komekci_app.dart';
 
 class SelectedClientsScreen extends StatefulWidget {
-  const SelectedClientsScreen({super.key, this.initialSelection = const []});
+  const SelectedClientsScreen({super.key, this.initialSelection = const [], this.forPush = true});
   final List<String> initialSelection;
+  final bool forPush;
 
   @override
   State<SelectedClientsScreen> createState() => _SelectedClientsScreenState();
@@ -24,16 +25,15 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final query = _searchController.text.trim().toLowerCase();
-    final clients = _mockClients
+    final clients = context.watch<CustomerProvider>().customers
         .where(
           (c) =>
-              query.isEmpty ||
-              c.name.toLowerCase().contains(query) ||
-              c.phone.contains(query),
+              (widget.forPush ? !c.offline && c.accountId != null : c.phone.isNotEmpty) &&
+              (query.isEmpty || c.name.toLowerCase().contains(query) || c.phone.contains(query)),
         )
         .toList();
     final allSelected =
-        clients.isNotEmpty && clients.every((c) => _selected.contains(c.name));
+        clients.isNotEmpty && clients.every((c) => _selected.contains(c.id));
     final tokens = context.appTokens;
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -117,11 +117,11 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                         onTap: () => setState(() {
                           if (allSelected) {
                             for (final c in clients) {
-                              _selected.remove(c.name);
+                              _selected.remove(c.id);
                             }
                           } else {
                             for (final c in clients) {
-                              _selected.add(c.name);
+                              _selected.add(c.id);
                             }
                           }
                         }),
@@ -147,18 +147,19 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                   ),
                   const SizedBox(height: 10),
                   ...clients.map((c) {
-                    final checked = _selected.contains(c.name);
+                    final checked = _selected.contains(c.id);
                     return _ClientListTile(
                       name: c.name,
                       phone: c.phone,
-                      subtitle:
-                          '${t(tk: "Soňky gezek", ru: "Последний визит", en: "Last visit")}: ${c.lastVisitDate}',
+                      subtitle: c.lastVisit == null
+                          ? ''
+                          : '${t(tk: "Soňky gezek", ru: "Последний визит", en: "Last visit")}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
                       checked: checked,
                       onTap: () => setState(() {
                         if (checked) {
-                          _selected.remove(c.name);
+                          _selected.remove(c.id);
                         } else {
-                          _selected.add(c.name);
+                          _selected.add(c.id);
                         }
                       }),
                     );
@@ -171,7 +172,7 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
               child: _MasterActionButton(
                 label:
                     '${t(tk: "Dowam et", ru: "Продолжить", en: "Continue")} (${_selected.length})',
-                enabled: _selected.isNotEmpty,
+                enabled: _selected.isNotEmpty && _selected.length <= 50,
                 onTap: () => Navigator.pop(context, _selected.toList()),
               ),
             ),

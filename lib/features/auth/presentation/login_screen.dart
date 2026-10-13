@@ -124,6 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _continueToOtp() async {
+    if (_busy) return;
     final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
     if (digits.length != 8) {
       setState(() => _showPhoneError = true);

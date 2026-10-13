@@ -8,14 +8,30 @@ class SendMessageScreen extends StatefulWidget {
 }
 
 class _SendMessageScreenState extends State<SendMessageScreen> {
+  final _titleController = TextEditingController();
   final _messageController = TextEditingController();
   int _audience = 0; // 0 = all, 1 = selected, 2 = recent
-  var _selectedNames = <String>[];
-  var _recentNames = <String>[];
+  var _selectedIds = <String>[];
+  var _recentIds = <String>[];
   bool _pushChannel = true;
+  bool _sending = false;
+
+  List<Customer> get _eligibleClients => context.read<CustomerProvider>().customers
+      .where((c) => _pushChannel ? !c.offline && c.accountId != null : c.phone.isNotEmpty)
+      .toList();
+
+  List<Customer> get _recipients {
+    final clients = _eligibleClients;
+    return switch (_audience) {
+      1 => clients.where((c) => _selectedIds.contains(c.id)).toList(),
+      2 => clients.where((c) => _recentIds.contains(c.id)).toList(),
+      _ => clients,
+    };
+  }
 
   @override
   void dispose() {
+    _titleController.dispose();
     _messageController.dispose();
     super.dispose();
   }
@@ -26,33 +42,33 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
     switch (index) {
       case 0:
         return t(
-          tk: 'Ähli müşderilere iberiler ($_mockTotalClients adam).',
-          ru: 'Будет отправлено всем клиентам ($_mockTotalClients чел.).',
-          en: 'Will be sent to all clients ($_mockTotalClients people).',
+          tk: 'Ähli müşderilere iberiler (${_eligibleClients.length} adam).',
+          ru: 'Будет отправлено всем клиентам (${_eligibleClients.length} чел.).',
+          en: 'Will be sent to all clients (${_eligibleClients.length} people).',
         );
       case 1:
-        return _selectedNames.isEmpty
+        return _selectedIds.isEmpty
             ? t(
                 tk: 'Müşderileri saýlap iberiň.',
                 ru: 'Выберите клиентов для отправки.',
                 en: 'Choose clients to send to.',
               )
             : t(
-                tk: '${_selectedNames.length} müşderi saýlandy.',
-                ru: 'Выбрано клиентов: ${_selectedNames.length}.',
-                en: '${_selectedNames.length} clients selected.',
+                tk: '${_selectedIds.length} müşderi saýlandy.',
+                ru: 'Выбрано клиентов: ${_selectedIds.length}.',
+                en: '${_selectedIds.length} clients selected.',
               );
       default:
-        return _recentNames.isEmpty
+        return _recentIds.isEmpty
             ? t(
                 tk: 'Belli bir wagtyň içinde ýazylan müşderiler.',
                 ru: 'Клиенты за определённый период.',
                 en: 'Clients within a specific time period.',
               )
             : t(
-                tk: '${_recentNames.length} müşderi saýlandy.',
-                ru: 'Выбрано клиентов: ${_recentNames.length}.',
-                en: '${_recentNames.length} clients selected.',
+                tk: '${_recentIds.length} müşderi saýlandy.',
+                ru: 'Выбрано клиентов: ${_recentIds.length}.',
+                en: '${_recentIds.length} clients selected.',
               );
     }
   }
@@ -61,24 +77,24 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
     if (index == 1) {
       final result = await Navigator.push<List<String>>(
         context,
-        pageRoute(SelectedClientsScreen(initialSelection: _selectedNames)),
+        pageRoute(SelectedClientsScreen(initialSelection: _selectedIds, forPush: _pushChannel)),
       );
       if (result == null) return;
       setState(() {
         _audience = 1;
-        _selectedNames = result;
+        _selectedIds = result;
       });
       return;
     }
     if (index == 2) {
       final result = await Navigator.push<List<String>>(
         context,
-        pageRoute(RecentClientsScreen(initialSelection: _recentNames)),
+        pageRoute(RecentClientsScreen(initialSelection: _recentIds, forPush: _pushChannel)),
       );
       if (result == null) return;
       setState(() {
         _audience = 2;
-        _recentNames = result;
+        _recentIds = result;
       });
       return;
     }
@@ -87,27 +103,33 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
 
   /// Shows who the message will actually reach and asks for a final confirmation before sending.
   Future<void> _confirmAndSend(AppLanguage language) async {
+    final recipients = _recipients;
+    if (_sending || recipients.isEmpty || recipients.length > 50 ||
+        _messageController.text.trim().isEmpty ||
+        (_pushChannel && _titleController.text.trim().isEmpty)) {
+      return;
+    }
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final int recipientCount;
     final String recipientLabel;
     switch (_audience) {
       case 0:
-        recipientCount = _mockTotalClients;
+        recipientCount = recipients.length;
         recipientLabel = t(
           tk: 'ähli müşderilere',
           ru: 'всем клиентам',
           en: 'to all clients',
         );
       case 1:
-        recipientCount = _selectedNames.length;
+        recipientCount = recipients.length;
         recipientLabel = t(
           tk: 'saýlanan müşderilere',
           ru: 'выбранным клиентам',
           en: 'to selected clients',
         );
       default:
-        recipientCount = _recentNames.length;
+        recipientCount = recipients.length;
         recipientLabel = t(
           tk: 'soňky wagt aralygyndaky müşderilere',
           ru: 'клиентам за период',
@@ -195,43 +217,59 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
     );
     if (confirmed != true || !mounted) return;
 
-    // Real SMS delivery is only possible on Android, and only for audiences whose phone
-    // numbers we actually know (the "all clients" count is a mock total with no directory).
     if (!_pushChannel && Platform.isAndroid) {
       final numbers = _resolvePhoneNumbers();
       if (numbers.isNotEmpty) {
-        await _sendRealSms(language, numbers);
+        setState(() => _sending = true);
+        try {
+          await _sendRealSms(language, numbers);
+        } catch (_) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(
+              tk: 'SMS iberilip bilmedi.',
+              ru: 'Не удалось отправить SMS.',
+              en: 'Could not send the SMS.',
+            ))));
+          }
+        } finally {
+          if (mounted) setState(() => _sending = false);
+        }
         return;
       }
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          t(
-            tk: 'Habar $recipientCount adama iberildi.',
-            ru: 'Сообщение отправлено $recipientCount получателям.',
-            en: 'Message sent to $recipientCount recipients.',
-          ),
-        ),
-      ),
-    );
-    Navigator.pop(context);
+    if (!_pushChannel) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(
+        tk: 'SMS ibermek üçin Android we müşderiniň telefon belgisi gerek.',
+        ru: 'Для SMS нужен Android и номер телефона клиента.',
+        en: 'SMS requires Android and a client phone number.',
+      ))));
+      return;
+    }
+    setState(() => _sending = true);
+    try {
+      final response = await context.read<MeRepository>().sendClientNotification(
+        title: _titleController.text.trim(),
+        body: _messageController.text.trim(),
+        accountIds: recipients.map((c) => c.accountId!).toSet().toList(),
+      );
+      if (!mounted) return;
+      final sent = (response['sent'] as List? ?? const []).length;
+      final skipped = (response['skipped'] as List? ?? const []).length;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(
+        tk: '$sent habar iberildi, $skipped iberilmedi.',
+        ru: 'Отправлено: $sent, пропущено: $skipped.',
+        en: 'Sent: $sent, skipped: $skipped.',
+      ))));
+      Navigator.pop(context);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
+      setState(() => _sending = false);
+    }
   }
 
   List<String> _resolvePhoneNumbers() {
-    switch (_audience) {
-      case 1:
-        return _selectedNames
-            .map((name) => _mockClients.firstWhere((c) => c.name == name).phone)
-            .toList();
-      case 2:
-        return _recentNames
-            .map((name) => _mockClients.firstWhere((c) => c.name == name).phone)
-            .toList();
-      default:
-        return const [];
-    }
+    return _recipients.map((c) => c.phone).where((phone) => phone.isNotEmpty).toSet().toList();
   }
 
   Future<void> _sendRealSms(AppLanguage language, List<String> numbers) async {
@@ -377,9 +415,11 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
       AppLanguage.en => ['All clients', 'Selected clients', 'Recent clients'],
     };
     final ready =
+        !_sending &&
+        (!_pushChannel || _titleController.text.trim().isNotEmpty) &&
         _messageController.text.trim().isNotEmpty &&
-        (_audience != 1 || _selectedNames.isNotEmpty) &&
-        (_audience != 2 || _recentNames.isNotEmpty);
+        _recipients.isNotEmpty &&
+        _recipients.length <= 50;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
@@ -408,6 +448,28 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                       en: 'Send a short message to selected clients. This can be an SMS or a push notification.',
                     ),
                   ),
+                  if (_eligibleClients.isEmpty) ...[
+                    const SizedBox(height: 10),
+                    _InfoBanner(
+                      icon: Icons.info_outline,
+                      text: t(
+                        tk: 'Habar ibermek üçin elýeterli müşderi ýok.',
+                        ru: 'Нет доступных клиентов для отправки.',
+                        en: 'No clients are available for messaging.',
+                      ),
+                    ),
+                  ],
+                  if (_recipients.length > 50) ...[
+                    const SizedBox(height: 10),
+                    _InfoBanner(
+                      icon: Icons.info_outline,
+                      text: t(
+                        tk: 'Bir gezekde iň köp 50 müşderini saýlaň.',
+                        ru: 'Выберите не более 50 клиентов за раз.',
+                        en: 'Choose up to 50 clients at a time.',
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   _FieldLabel(
                     text: t(
@@ -499,6 +561,20 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                     );
                   }),
                   const SizedBox(height: 8),
+                  if (_pushChannel) ...[
+                    _FieldLabel(
+                      text: t(tk: 'Sözbaşy', ru: 'Заголовок', en: 'Title'),
+                      required: true,
+                    ),
+                    const SizedBox(height: 8),
+                    _FormField(
+                      controller: _titleController,
+                      hint: t(tk: 'Habaryň sözbaşysy', ru: 'Заголовок сообщения', en: 'Message title'),
+                      maxLength: 80,
+                      onChanged: () => setState(() {}),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
                   _FieldLabel(
                     text: t(
                       tk: 'Habar teksti',
@@ -516,7 +592,7 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                       en: 'Write your message...',
                     ),
                     maxLines: 5,
-                    maxLength: 160,
+                    maxLength: 300,
                     onChanged: () => setState(() {}),
                   ),
                   const SizedBox(height: 18),

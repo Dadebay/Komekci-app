@@ -1,57 +1,8 @@
 part of '../../../app/komekci_app.dart';
 
-const _mockTotalClients = 128;
-
 /// Cabinet cards sit on the elevated surface, so their outline is softer
 /// than the app default.
 Color _softLine(AppThemeTokens tokens) => tokens.border.withValues(alpha: .55);
-
-/// Mock client used across the notification / messaging screens.
-typedef _MockClient = ({
-  String name,
-  String phone,
-  String lastVisitDate,
-  String lastVisitTime,
-});
-
-const _mockClients = <_MockClient>[
-  (
-    name: 'Aýgül Annagulyýewa',
-    phone: '+993 65 123456',
-    lastVisitDate: '03.06.2025',
-    lastVisitTime: '14:30',
-  ),
-  (
-    name: 'Maksat Geldiýew',
-    phone: '+993 64 987654',
-    lastVisitDate: '31.05.2025',
-    lastVisitTime: '16:45',
-  ),
-  (
-    name: 'Selbi Atajanowa',
-    phone: '+993 65 555111',
-    lastVisitDate: '29.05.2025',
-    lastVisitTime: '11:00',
-  ),
-  (
-    name: 'Oguljahan Muhammedowa',
-    phone: '+993 63 222333',
-    lastVisitDate: '27.05.2025',
-    lastVisitTime: '13:20',
-  ),
-  (
-    name: 'Dowletmyrat Ýazmammedow',
-    phone: '+993 61 777888',
-    lastVisitDate: '25.05.2025',
-    lastVisitTime: '09:15',
-  ),
-  (
-    name: 'Maral Rejepowa',
-    phone: '+993 65 444777',
-    lastVisitDate: '24.05.2025',
-    lastVisitTime: '10:05',
-  ),
-];
 
 TimeOfDay _parseTime(String value) {
   final parts = value.split(':');

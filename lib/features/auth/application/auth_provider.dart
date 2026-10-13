@@ -76,15 +76,17 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Creates the account and sends the first SMS code.
+  int lastOtpRetryAfter = 60;
+
   Future<void> register(RegistrationData data) async {
-    await _auth.register(data);
+    lastOtpRetryAfter = await _auth.register(data);
     _step = AuthStep.otpSent;
     notifyListeners();
   }
 
   /// Sign-in code for an existing account.
   Future<void> requestOtp(String phone) async {
-    await _auth.requestOtp(phone);
+    lastOtpRetryAfter = await _auth.requestOtp(phone);
     _step = AuthStep.otpSent;
     notifyListeners();
   }
@@ -127,7 +129,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Step 1 of changing the phone number: SMS to the new number.
-  Future<void> requestPhoneChange(String phone) =>
+  Future<int> requestPhoneChange(String phone) =>
       _meRepository.requestPhoneChange(phone);
 
   /// Step 2: confirms the SMS code; the account now carries the new number.

@@ -108,6 +108,7 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
   }
 
   Future<void> _continue(String Function({required String tk, required String ru, required String en}) t) async {
+    if (_submitting) return;
     if (!_complete) {
       setState(() => _showErrors = true);
       return;
@@ -138,7 +139,7 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
       name: _text(_nameIndex),
       nickname: nickname,
       phone: widget.phone,
-      locale: language.name,
+      locale: context.read<AppSettingsProvider>().locales.isEmpty ? null : language.name,
       photoPath: _photo?.path,
       address: _text(_addressIndex),
       description: _text(_aboutIndex),

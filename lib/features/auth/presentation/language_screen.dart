@@ -105,7 +105,10 @@ class LanguageScreen extends StatelessWidget {
                       primary: option.primary,
                       secondary: option.secondary,
                       selected: language.language == option.language,
-                      onTap: () => language.select(option.language),
+                      onTap: () {
+                        language.select(option.language);
+                        settings.load(locale: option.language);
+                      },
                     ),
                   ),
                 const Spacer(),

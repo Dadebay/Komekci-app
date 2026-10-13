@@ -53,8 +53,9 @@ class MeRepository {
   }
 
   /// Step 1 of changing the phone number: sends an SMS to the new number.
-  Future<void> requestPhoneChange(String phone) async {
-    await _api.post('/me/phone', json: {'phone': phone});
+  Future<int> requestPhoneChange(String phone) async {
+    final response = await _api.post('/me/phone', json: {'phone': phone});
+    return parseIntOrNull(asMap(response)['retry_after']) ?? 60;
   }
 
   /// Step 2: confirms the code; returns the updated account.
@@ -77,6 +78,17 @@ class MeRepository {
   Future<void> markNotificationRead(int id) async {
     await _api.post('/me/notifications/$id/read');
   }
+
+  /// Sends a personal inbox message and push to accepted, connected accounts.
+  Future<Map<String, dynamic>> sendClientNotification({
+    required String title,
+    required String body,
+    required List<int> accountIds,
+  }) async => asMap(await _api.post('/me/notifications/send', json: {
+    'title': title,
+    'body': body,
+    'account_ids': accountIds,
+  }));
 
   /// [platform] is `android` or `ios`.
   Future<void> registerDevice(String token, String platform) async {

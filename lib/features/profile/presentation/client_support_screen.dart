@@ -1,9 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-const _supportPhone = '+993 12 345678';
-const _supportTelegram = 'https://t.me/komekci_support';
-const _supportEmail = 'support@komekci.app';
-
 /// Opens the support contact configured on the server
 /// (`support_contact` of `GET /settings/public`): a link, an e-mail address
 /// or a phone number.
@@ -24,6 +20,62 @@ Future<void> _openSupportContact(String contact) {
   return launchUrl(Uri(scheme: 'tel', path: value.replaceAll(' ', '')));
 }
 
+List<Widget> _configuredContactRows(BuildContext context, AppContact contact) {
+  final language = context.read<LanguageProvider>().language;
+  String t({required String tk, required String ru, required String en}) =>
+      pickTr(language, tk: tk, ru: ru, en: en);
+  return [
+    if (contact.phone case final phone?)
+      _ContactRow(
+        icon: Icons.phone_outlined,
+        title: t(tk: 'Telefon', ru: 'Телефон', en: 'Phone'),
+        value: phone,
+        onTap: () => launchUrl(Uri(scheme: 'tel', path: phone)),
+      ),
+    if (contact.email case final email?)
+      _ContactRow(
+        icon: Icons.mail_outline,
+        title: t(tk: 'E-poçta', ru: 'Эл. почта', en: 'Email'),
+        value: email,
+        onTap: () => launchUrl(Uri(scheme: 'mailto', path: email)),
+      ),
+    if (contact.whatsapp case final whatsapp?)
+      _ContactRow(
+        icon: Icons.chat_bubble_outline,
+        title: 'WhatsApp',
+        value: whatsapp,
+        onTap: () => launchUrl(
+          Uri.parse('https://wa.me/${whatsapp.replaceAll(RegExp(r'\D'), '')}'),
+          mode: LaunchMode.externalApplication,
+        ),
+      ),
+    if (contact.imo case final imo?)
+      _ContactRow(
+        icon: Icons.forum_outlined,
+        title: 'IMO',
+        value: imo,
+        onTap: () async {
+          await Clipboard.setData(ClipboardData(text: imo));
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(
+              tk: 'IMO belgisi nusgalandy.',
+              ru: 'Контакт IMO скопирован.',
+              en: 'IMO contact copied.',
+            ))));
+          }
+          await launchUrl(Uri.parse('https://imo.im/'), mode: LaunchMode.externalApplication);
+        },
+      ),
+    if (contact.address case final address?)
+      _ContactRow(
+        icon: Icons.location_on_outlined,
+        title: t(tk: 'Salgy', ru: 'Адрес', en: 'Address'),
+        value: address,
+        onTap: null,
+      ),
+  ];
+}
+
 /// Real support content — an FAQ accordion plus tappable contact rows —
 /// replacing the old generic `SettingsScreen` stub that had no actual
 /// answers or contact info.
@@ -37,6 +89,7 @@ class ClientSupportScreen extends StatelessWidget {
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final supportContact = context.watch<AppSettingsProvider>().supportContact;
+    final contact = context.watch<AppSettingsProvider>().contact;
 
     final faqs = <(String, String)>[
       (
@@ -121,32 +174,15 @@ class ClientSupportScreen extends StatelessWidget {
                 title: t(tk: 'Goldaw', ru: 'Поддержка', en: 'Support'),
                 value: supportContact,
                 onTap: () => _openSupportContact(supportContact),
-              )
-            else ...[
-            _ContactRow(
-              icon: Icons.phone_outlined,
-              title: t(tk: 'Jaň ediň', ru: 'Позвонить', en: 'Call us'),
-              value: _supportPhone,
-              onTap: () => launchUrl(
-                Uri(scheme: 'tel', path: _supportPhone.replaceAll(' ', '')),
               ),
-            ),
+            ..._configuredContactRows(context, contact),
+            const SizedBox(height: 16),
             _ContactRow(
-              icon: Icons.send_outlined,
-              title: 'Telegram',
-              value: '@komekci_support',
-              onTap: () => launchUrl(
-                Uri.parse(_supportTelegram),
-                mode: LaunchMode.externalApplication,
-              ),
+              icon: Icons.info_outline,
+              title: t(tk: 'Biz barada', ru: 'О нас', en: 'About us'),
+              value: '',
+              onTap: () => Navigator.push(context, pageRoute(const AboutScreen())),
             ),
-            _ContactRow(
-              icon: Icons.chat_bubble_outline,
-              title: t(tk: 'E-poçta', ru: 'Эл. почта', en: 'Email'),
-              value: _supportEmail,
-              onTap: () => launchUrl(Uri(scheme: 'mailto', path: _supportEmail)),
-            ),
-            ],
           ],
         ),
       ),
@@ -204,12 +240,12 @@ class _ContactRow extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.value,
-    required this.onTap,
+    this.onTap,
   });
   final IconData icon;
   final String title;
   final String value;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

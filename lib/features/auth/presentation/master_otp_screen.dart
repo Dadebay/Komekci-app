@@ -38,7 +38,7 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
   @override
   void initState() {
     super.initState();
-    _startCountdown();
+    _startCountdown(context.read<AuthProvider>().lastOtpRetryAfter);
     _listenForSms();
   }
 
@@ -74,7 +74,7 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
   }
 
   Future<void> _resend() async {
-    if (_resending) return;
+    if (_resending || _secondsLeft > 0) return;
     final auth = context.read<AuthProvider>();
     final language = context.read<LanguageProvider>().language;
     setState(() {
@@ -97,7 +97,7 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
       _code.clear();
       _focus.requestFocus();
       setState(() => _resending = false);
-      _startCountdown();
+      _startCountdown(auth.lastOtpRetryAfter);
       widget.smsListener.cancel().then((_) => _listenForSms());
     } catch (error) {
       if (!mounted) return;

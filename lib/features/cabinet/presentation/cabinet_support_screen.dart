@@ -10,6 +10,7 @@ class SupportScreen extends StatelessWidget {
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final supportContact = context.watch<AppSettingsProvider>().supportContact;
+    final contact = context.watch<AppSettingsProvider>().contact;
     final faq = switch (language) {
       AppLanguage.tk => [
         (
@@ -90,6 +91,15 @@ class SupportScreen extends StatelessWidget {
               enabled: supportContact.isNotEmpty,
               leading: Icons.chat_bubble_outline,
               onTap: () => _openSupportContact(supportContact),
+            ),
+            const SizedBox(height: 14),
+            ..._configuredContactRows(context, contact),
+            const SizedBox(height: 14),
+            _ContactRow(
+              icon: Icons.info_outline,
+              title: t(tk: 'Biz barada', ru: 'О нас', en: 'About us'),
+              value: '',
+              onTap: () => Navigator.push(context, pageRoute(const AboutScreen())),
             ),
           ],
         ),

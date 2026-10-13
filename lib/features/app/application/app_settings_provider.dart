@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/localization/language_provider.dart';
+import '../../../core/theme/theme_provider.dart';
 import '../../../data/models/app_settings.dart';
 import '../../../data/repositories/settings_repository.dart';
 
@@ -25,6 +26,10 @@ class AppSettingsProvider extends ChangeNotifier {
   String get currency => _settings.currency;
   String get supportContact => _settings.supportContact;
   List<AppLanguage> get locales => _settings.locales;
+  List<KomekciTheme> get themes => _settings.themes;
+  AppContact get contact => _settings.contact;
+  AppAbout get about => _settings.about;
+  int _loadGeneration = 0;
 
   /// Currency as written in UI copy: Turkmen manat is spelled out in Turkmen
   /// and Russian, anything else shows the ISO code the API sent.
@@ -36,13 +41,21 @@ class AppSettingsProvider extends ChangeNotifier {
   }
 
   /// Never throws: on failure the current (fallback) settings stay in place.
-  Future<void> load() async {
+  Future<void> load({AppLanguage locale = AppLanguage.tk}) async {
+    final generation = ++_loadGeneration;
     try {
-      _settings = await _repository.fetchPublic();
+      final settings = await _repository.fetchPublic(locale: locale.name);
+      if (generation != _loadGeneration) return;
+      _settings = settings;
       _loaded = true;
       notifyListeners();
     } catch (error) {
       debugPrint('Public settings request failed: $error');
+      final cached = await _repository.cached();
+      if (cached != null && generation == _loadGeneration) {
+        _settings = cached;
+        notifyListeners();
+      }
     }
   }
 }

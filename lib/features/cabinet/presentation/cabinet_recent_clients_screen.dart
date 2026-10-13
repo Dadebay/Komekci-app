@@ -1,8 +1,9 @@
 part of '../../../app/komekci_app.dart';
 
 class RecentClientsScreen extends StatefulWidget {
-  const RecentClientsScreen({super.key, this.initialSelection = const []});
+  const RecentClientsScreen({super.key, this.initialSelection = const [], this.forPush = true});
   final List<String> initialSelection;
+  final bool forPush;
 
   @override
   State<RecentClientsScreen> createState() => _RecentClientsScreenState();
@@ -12,7 +13,7 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
   int _period = 0; // 0:7d 1:30d 2:3m 3:6m
   late final _selected = Set<String>.of(widget.initialSelection);
 
-  static const _periodCounts = [5, 6, 6, 6];
+  static const _periodDays = [7, 30, 90, 180];
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,10 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
       AppLanguage.ru => ['7 дней', '30 дней', '3 мес.', '6 мес.'],
       AppLanguage.en => ['7 days', '30 days', '3 mo.', '6 mo.'],
     };
-    final clients = _mockClients.take(_periodCounts[_period]).toList();
+    final cutoff = DateTime.now().subtract(Duration(days: _periodDays[_period]));
+    final clients = context.watch<CustomerProvider>().customers
+        .where((c) => (widget.forPush ? !c.offline && c.accountId != null : c.phone.isNotEmpty) && c.lastVisit != null && !c.lastVisit!.isBefore(cutoff))
+        .toList();
     final tokens = context.appTokens;
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -124,18 +128,18 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
                   ),
                   const SizedBox(height: 10),
                   ...clients.map((c) {
-                    final checked = _selected.contains(c.name);
+                    final checked = _selected.contains(c.id);
                     return _ClientListTile(
                       name: c.name,
                       phone: c.phone,
                       subtitle:
-                          '${t(tk: "Soňky sapar", ru: "Последний визит", en: "Last visit")}: ${c.lastVisitDate} ${c.lastVisitTime}',
+                          '${t(tk: "Soňky sapar", ru: "Последний визит", en: "Last visit")}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
                       checked: checked,
                       onTap: () => setState(() {
                         if (checked) {
-                          _selected.remove(c.name);
+                          _selected.remove(c.id);
                         } else {
-                          _selected.add(c.name);
+                          _selected.add(c.id);
                         }
                       }),
                     );
@@ -144,9 +148,9 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
                   _InfoBanner(
                     icon: Icons.info_outline,
                     text: t(
-                      tk: 'Maksimum 100 müşdera çenli habar iberip bilersiňiz.',
-                      ru: 'Вы можете отправить сообщение максимум 100 клиентам.',
-                      en: 'You can send a message to up to 100 clients.',
+                      tk: 'Bir gezekde 50 müşdera çenli habar iberip bilersiňiz.',
+                      ru: 'За раз можно отправить сообщение максимум 50 клиентам.',
+                      en: 'You can message up to 50 clients at a time.',
                     ),
                   ),
                 ],
@@ -157,7 +161,7 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
               child: _MasterActionButton(
                 label:
                     '${t(tk: "Dowam et", ru: "Продолжить", en: "Continue")} (${_selected.length})',
-                enabled: _selected.isNotEmpty,
+                enabled: _selected.isNotEmpty && _selected.length <= 50,
                 onTap: () => Navigator.pop(context, _selected.toList()),
               ),
             ),

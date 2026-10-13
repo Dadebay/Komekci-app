@@ -304,6 +304,7 @@ class _ClientRegistrationScreenState extends State<ClientRegistrationScreen> {
   }
 
   Future<void> _submit(_Tr t) async {
+    if (_submitting) return;
     final nameError = _validateName(t);
     final nicknameError = _validateNickname(t);
     final phoneError = _validatePhone(t);
@@ -325,7 +326,7 @@ class _ClientRegistrationScreenState extends State<ClientRegistrationScreen> {
     final authRepository = context.read<AuthRepository>();
     final phone = toApiPhone(_phoneController.text);
     final nickname = _nickname;
-    final data = RegistrationData(role: 'client', name: _nameController.text.trim(), nickname: nickname, phone: phone, locale: language.name, photoPath: _photo?.path);
+    final data = RegistrationData(role: 'client', name: _nameController.text.trim(), nickname: nickname, phone: phone, locale: context.read<AppSettingsProvider>().locales.isEmpty ? null : language.name, photoPath: _photo?.path);
     setState(() => _submitting = true);
     try {
       final check = await authRepository.nicknameAvailable(nickname);
@@ -487,6 +488,7 @@ class _PhoneTakenNoticeState extends State<PhoneTakenNotice> {
   String? _message;
 
   Future<void> _signIn() async {
+    if (_busy) return;
     final auth = context.read<AuthProvider>();
     final language = context.read<LanguageProvider>().language;
     setState(() {

@@ -282,6 +282,7 @@ class ClientSummary {
     this.nickname,
     this.phone,
     this.photoUrl,
+    this.accountId,
     this.appointment,
     this.lastVisit,
     this.visits = 0,
@@ -297,6 +298,9 @@ class ClientSummary {
   final String? nickname;
   final String? phone;
   final String? photoUrl;
+  /// Numeric account ID needed by `POST /me/notifications/send`.
+  /// The `c12` row ID is a connection ID and must not be used here.
+  final int? accountId;
   final ClientAppointmentRef? appointment;
   final DateTime? lastVisit;
   final int visits;
@@ -313,6 +317,7 @@ class ClientSummary {
       nickname: json['nickname'] as String?,
       phone: json['phone'] as String?,
       photoUrl: json['photo_url'] as String?,
+      accountId: parseIntOrNull(json['account_id']),
       appointment: appt is Map<String, dynamic> ? ClientAppointmentRef.fromJson(appt) : null,
       lastVisit: parseApiTime(json['last_visit']),
       visits: parseIntOrNull(json['visits']) ?? 0,
