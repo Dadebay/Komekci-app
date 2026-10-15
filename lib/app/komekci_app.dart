@@ -119,6 +119,7 @@ part '../features/auth/presentation/role_screen.dart';
 part '../features/auth/presentation/role_screen_widgets.dart';
 part '../features/cabinet/presentation/cabinet_shared.dart';
 part '../features/cabinet/presentation/cabinet_home_screen.dart';
+part '../features/cabinet/presentation/cabinet_settings_screen.dart';
 part '../features/cabinet/presentation/cabinet_widgets.dart';
 part '../features/cabinet/presentation/cabinet_profile_screen.dart';
 part '../features/cabinet/presentation/cabinet_working_hours_screen.dart';

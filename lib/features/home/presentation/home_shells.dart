@@ -168,7 +168,7 @@ class PageViewData extends StatelessWidget {
             child: Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: const Color(0xffE6D2B1),
+                  backgroundColor: tokens.accent.withValues(alpha: .18),
                   child: AppIcon(
                     Icons.person_outline,
                     color: tokens.textPrimary,

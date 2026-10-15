@@ -8,6 +8,7 @@ class _PaymentMethodTile extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.enabled = true,
+    this.compact = false,
   });
   final IconData icon;
   final String title;
@@ -17,6 +18,7 @@ class _PaymentMethodTile extends StatelessWidget {
 
   /// False greys the tile out and ignores taps (method not available now).
   final bool enabled;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -24,74 +26,86 @@ class _PaymentMethodTile extends StatelessWidget {
     return Opacity(
       opacity: enabled ? 1 : .45,
       child: GestureDetector(
-      onTap: enabled ? onTap : null,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: selected ? tokens.surfaceElevated : tokens.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: selected ? tokens.accent : tokens.border,
-            width: selected ? 1.6 : 1,
+        onTap: enabled ? onTap : null,
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: compact ? 10 : 14,
           ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: tokens.border),
-              ),
-              child: AppIcon(icon, color: tokens.textPrimary, size: 20),
+          decoration: BoxDecoration(
+            color: selected ? tokens.surfaceElevated : tokens.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selected ? tokens.accent : tokens.border,
+              width: selected ? 1.6 : 1,
             ),
-            const SizedBox(width: 13),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    subtitle,
-                    style: TextStyle(color: tokens.textSecondary, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 22,
-              height: 22,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: selected ? tokens.accent : tokens.border,
-                  width: 1.6,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: compact ? 36 : 42,
+                height: compact ? 36 : 42,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: tokens.border),
+                ),
+                child: AppIcon(
+                  icon,
+                  color: tokens.textPrimary,
+                  size: compact ? 18 : 20,
                 ),
               ),
-              child: selected
-                  ? Container(
-                      width: 11,
-                      height: 11,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: tokens.accent,
+              SizedBox(width: compact ? 10 : 13),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: compact ? 14 : 14.5,
+                        fontWeight: FontWeight.w700,
                       ),
-                    )
-                  : null,
-            ),
-          ],
+                    ),
+                    SizedBox(height: compact ? 1 : 3),
+                    Text(
+                      subtitle,
+                      maxLines: compact ? 1 : null,
+                      overflow: compact ? TextOverflow.ellipsis : null,
+                      style: TextStyle(
+                        color: tokens.textSecondary,
+                        fontSize: compact ? 11.5 : 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 22,
+                height: 22,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: selected ? tokens.accent : tokens.border,
+                    width: 1.6,
+                  ),
+                ),
+                child: selected
+                    ? Container(
+                        width: 11,
+                        height: 11,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: tokens.accent,
+                        ),
+                      )
+                    : null,
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -113,7 +127,6 @@ class _PaymentResultPanel extends StatelessWidget {
   final String amount;
   final VoidCallback onContinue;
   final VoidCallback onRetry;
-
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +216,11 @@ class _PaymentResultPanel extends StatelessWidget {
             label: isSuccess
                 ? t(tk: 'Dowam et', ru: 'Продолжить', en: 'Continue')
                 : outcome == _PaymentOutcome.pending
-                ? t(tk: 'Täzeden barla', ru: 'Проверить снова', en: 'Check again')
+                ? t(
+                    tk: 'Täzeden barla',
+                    ru: 'Проверить снова',
+                    en: 'Check again',
+                  )
                 : t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
             enabled: true,
             onTap: isSuccess ? onContinue : onRetry,

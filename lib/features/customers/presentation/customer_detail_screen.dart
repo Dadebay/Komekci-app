@@ -36,8 +36,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     }
     final recentVisits = customer.visits.take(4).toList();
 
-    final statusColor = _statusColor(customer.status);
     final tokens = context.appTokens;
+    final statusColor = _statusColor(customer.status, tokens);
 
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -59,7 +59,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          _statusBg(customer.status),
+                          _statusBg(customer.status, tokens),
                           tokens.surfaceElevated,
                         ],
                       ),
@@ -101,10 +101,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                   const SizedBox(height: 5),
                                   Row(
                                     children: [
-                                      const AppIcon(
+                                      AppIcon(
                                         Icons.phone_outlined,
                                         size: 12,
-                                        color: Colors.black45,
+                                        color: tokens.textSecondary,
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
@@ -201,7 +201,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       Expanded(
                         child: _InfoTile(
                           icon: Icons.calendar_month_outlined,
-                          accent: _statusColor(CustomerStatus.newClient),
+                          accent: _statusColor(CustomerStatus.newClient, tokens),
                           label: tk ? 'Indiki ýazgy' : 'Следующая запись',
                           value: customer.nextVisit == null
                               ? (tk ? 'Ýok' : 'Нет')
@@ -223,7 +223,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: const Color(0xffFAF7F0),
+                        color: tokens.surfaceElevated,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: tokens.border),
                       ),

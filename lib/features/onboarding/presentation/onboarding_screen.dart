@@ -40,9 +40,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Container(
                 width: 180,
                 height: 180,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xffF3E7D2),
+                  color: tokens.accent.withValues(alpha: .16),
                 ),
                 child: AppIcon(item.$3, size: 70, color: tokens.textPrimary),
               ),
@@ -59,7 +59,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Text(
                 item.$2,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black54, height: 1.5),
+                style: TextStyle(color: tokens.textSecondary, height: 1.5),
               ),
               const Spacer(),
               Row(

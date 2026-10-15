@@ -542,7 +542,7 @@ class _FieldLabel extends StatelessWidget {
       if (optionalLabel != null)
         Padding(
           padding: const EdgeInsets.only(left: 5),
-          child: Text(optionalLabel!, style: const TextStyle(fontSize: 12.5, color: Colors.black38)),
+          child: Text(optionalLabel!, style: TextStyle(fontSize: 12.5, color: context.appTokens.textSecondary)),
         ),
     ],
   );
@@ -594,10 +594,10 @@ class _FormField extends StatelessWidget {
         hintText: hint,
         prefixIcon: prefixIcon,
         prefixIconConstraints: prefixIcon == null ? null : phonePrefixConstraints,
-        hintStyle: const TextStyle(color: Colors.black38, fontSize: 14, fontWeight: FontWeight.w400),
+        hintStyle: TextStyle(color: tokens.textSecondary, fontSize: 14, fontWeight: FontWeight.w400),
         errorText: invalid ? pickTr(language, tk: 'Bu meýdan hökmany', ru: 'Обязательное поле', en: 'This field is required') : null,
         errorStyle: const TextStyle(fontSize: 11.5),
-        counterStyle: const TextStyle(fontSize: 11, color: Colors.black38),
+        counterStyle: TextStyle(fontSize: 11, color: tokens.textSecondary),
         filled: true,
         fillColor: tokens.surfaceElevated,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

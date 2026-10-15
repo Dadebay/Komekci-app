@@ -72,7 +72,7 @@ class GlassNavBar extends StatelessWidget {
                 height: barHeight,
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: .82),
+                  color: t.surface.withValues(alpha: .9),
                   borderRadius: BorderRadius.circular(26),
                   border: Border.all(color: t.textPrimary.withValues(alpha: .10), width: 1),
                 ),
@@ -359,7 +359,7 @@ class _DockedSlotState extends State<_DockedSlot> with SingleTickerProviderState
         curve: Curves.easeOutCubic,
         tween: Tween(end: widget.selected ? 1 : 0),
         builder: (context, t, _) {
-          final color = Color.lerp(idle, tokens.accent, t)!;
+          final color = Color.lerp(idle, tokens.accentOn, t)!;
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -367,7 +367,7 @@ class _DockedSlotState extends State<_DockedSlot> with SingleTickerProviderState
                 width: 52,
                 height: 32,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .14 * t), borderRadius: BorderRadius.circular(16)),
+                decoration: BoxDecoration(color: tokens.accent.withValues(alpha: t), borderRadius: BorderRadius.circular(16)),
                 child: AnimatedBuilder(
                   animation: _draw,
                   builder: (context, _) {

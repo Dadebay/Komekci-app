@@ -180,12 +180,12 @@ class _NotificationPrefRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.surfaceElevated,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: .05)),
+        border: Border.all(color: tokens.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: .07),
+            color: tokens.textPrimary.withValues(alpha: .07),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),

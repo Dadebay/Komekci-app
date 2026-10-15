@@ -42,8 +42,8 @@ class _CabinetScreenState extends State<CabinetScreen> {
         const WorkingHoursScreen(),
       ),
       (
-        Icons.notifications_none,
-        t(tk: 'Bildiriş', ru: 'Уведомления', en: 'Notifications'),
+        Icons.send_outlined,
+        t(tk: 'Müşderilere habar', ru: 'Сообщения клиентам', en: 'Client messages'),
         const ClientNotifyScreen(),
       ),
       (
@@ -75,7 +75,16 @@ class _CabinetScreenState extends State<CabinetScreen> {
           children: [
             Row(
               children: [
-                const SizedBox(width: 40),
+                Tooltip(
+                  message: t(tk: 'Sazlamalar', ru: 'Настройки', en: 'Settings'),
+                  child: _RoundIconButton(
+                    icon: Icons.settings_outlined,
+                    onTap: () => Navigator.push(
+                      context,
+                      pageRoute(const CabinetSettingsScreen()),
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: Text(
                     t(tk: 'KABINET', ru: 'КАБИНЕТ', en: 'CABINET'),
@@ -91,7 +100,7 @@ class _CabinetScreenState extends State<CabinetScreen> {
                   icon: Icons.notifications_none,
                   onTap: () => Navigator.push(
                     context,
-                    pageRoute(const ClientNotifyScreen()),
+                    pageRoute(const ClientNotificationSettingsScreen()),
                   ),
                 ),
               ],
@@ -216,9 +225,9 @@ class _MasterCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         '@${profile.nickname}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: Colors.black45,
+                          color: tokens.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -234,9 +243,9 @@ class _MasterCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const AppIcon(
+                AppIcon(
                   Icons.chevron_right,
-                  color: Colors.black26,
+                  color: tokens.textSecondary,
                   size: 18,
                 ),
               ],
@@ -251,7 +260,7 @@ class _MasterCard extends StatelessWidget {
                   height: 38,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: const Color(0xffFDF9F2),
+                    color: tokens.accent.withValues(alpha: .1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: AppIcon(
@@ -267,9 +276,9 @@ class _MasterCard extends StatelessWidget {
                     children: [
                       Text(
                         t(tk: 'Balans', ru: 'Баланс', en: 'Balance'),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11.5,
-                          color: Colors.black45,
+                          color: tokens.textSecondary,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -329,7 +338,7 @@ class _MetaLine extends StatelessWidget {
       Expanded(
         child: Text(
           text,
-          style: const TextStyle(fontSize: 12.5, color: Colors.black54),
+          style: TextStyle(fontSize: 12.5, color: context.appTokens.textSecondary),
           overflow: TextOverflow.ellipsis,
         ),
       ),
@@ -371,7 +380,7 @@ class _CabinetRow extends StatelessWidget {
               height: 42,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: const Color(0xffFDF9F2),
+                color: tokens.accent.withValues(alpha: .1),
                 borderRadius: BorderRadius.circular(13),
               ),
               child: AppIcon(icon, color: tokens.accent, size: 20),
@@ -402,7 +411,7 @@ class _CabinetRow extends StatelessWidget {
               ),
               const SizedBox(width: 8),
             ],
-            const AppIcon(Icons.chevron_right, color: Colors.black26, size: 18),
+            AppIcon(Icons.chevron_right, color: tokens.textSecondary, size: 18),
           ],
         ),
       ),
@@ -423,10 +432,10 @@ class _HelpCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
         decoration: BoxDecoration(
-          color: const Color(0xffFDF9F2),
+          color: tokens.accent.withValues(alpha: .1),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: const Color(0xffF0E4CE).withValues(alpha: .6),
+            color: tokens.border,
           ),
         ),
         child: Row(
@@ -447,7 +456,7 @@ class _HelpCard extends StatelessWidget {
                 ),
               ),
             ),
-            const AppIcon(Icons.chevron_right, color: Colors.black26, size: 18),
+            AppIcon(Icons.chevron_right, color: tokens.textSecondary, size: 18),
           ],
         ),
       ),

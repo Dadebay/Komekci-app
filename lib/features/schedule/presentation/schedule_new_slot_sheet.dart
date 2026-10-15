@@ -388,15 +388,15 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: freeSlotBg,
+                                    color: freeSlotSurface(tokens),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
                                     t(tk: 'Boş', ru: 'Свободно', en: 'Free'),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
-                                      color: freeSlotColorDark,
+                                      color: freeSlotForeground(tokens),
                                     ),
                                   ),
                                 ),

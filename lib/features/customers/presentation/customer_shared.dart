@@ -1,17 +1,34 @@
 part of '../../../app/komekci_app.dart';
 
 
-Color _statusColor(CustomerStatus status) => switch (status) {
-  CustomerStatus.vip => const Color(0xff9C6B14),
-  CustomerStatus.regular => const Color(0xff2F7D4F),
-  CustomerStatus.newClient => const Color(0xff2A5DB0),
-};
+Color _statusColor(CustomerStatus status, [AppThemeTokens? tokens]) {
+  if (tokens?.brightness == Brightness.dark) {
+    return switch (status) {
+      CustomerStatus.vip => tokens!.warning,
+      CustomerStatus.regular => tokens!.success,
+      CustomerStatus.newClient => tokens!.accent,
+    };
+  }
+  return switch (status) {
+    CustomerStatus.vip => const Color(0xff9C6B14),
+    CustomerStatus.regular => const Color(0xff2F7D4F),
+    CustomerStatus.newClient => const Color(0xff2A5DB0),
+  };
+}
 
-Color _statusBg(CustomerStatus status) => switch (status) {
-  CustomerStatus.vip => const Color(0xffFBF1D8),
-  CustomerStatus.regular => const Color(0xffE3F3E7),
-  CustomerStatus.newClient => const Color(0xffE6EEFB),
-};
+Color _statusBg(CustomerStatus status, [AppThemeTokens? tokens]) {
+  if (tokens?.brightness == Brightness.dark) {
+    return Color.alphaBlend(
+      _statusColor(status, tokens).withValues(alpha: .16),
+      tokens!.surfaceElevated,
+    );
+  }
+  return switch (status) {
+    CustomerStatus.vip => const Color(0xffFBF1D8),
+    CustomerStatus.regular => const Color(0xffE3F3E7),
+    CustomerStatus.newClient => const Color(0xffE6EEFB),
+  };
+}
 
 IconData _statusIcon(CustomerStatus status) => switch (status) {
   CustomerStatus.vip => Icons.emoji_events_outlined,
@@ -58,9 +75,8 @@ Future<bool> _showConfirmDialog(
               height: 56,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: danger
-                    ? const Color(0xffFDF0EE)
-                    : const Color(0xffFBF1D8),
+                color: (danger ? tokens.danger : tokens.accent)
+                    .withValues(alpha: .14),
                 shape: BoxShape.circle,
               ),
               child: AppIcon(

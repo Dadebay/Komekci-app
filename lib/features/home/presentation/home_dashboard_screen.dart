@@ -82,7 +82,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           );
 
     return Scaffold(
-      backgroundColor: const Color(0xffFAFAF8),
+      backgroundColor: tokens.surface,
       body: SafeArea(
         bottom: false,
         child: ListView(

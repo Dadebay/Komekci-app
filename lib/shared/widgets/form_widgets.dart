@@ -77,7 +77,7 @@ class FormScreen extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 48,
-                  backgroundColor: const Color(0xffE6D2B1),
+                  backgroundColor: context.appTokens.accent.withValues(alpha: .18),
                   child: AppIcon(Icons.person_outline, size: 42, color: context.appTokens.textPrimary),
                 ),
                 Positioned(

@@ -70,15 +70,15 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                     style: const TextStyle(fontSize: 14),
                     decoration: InputDecoration(
                       hintText: t(tk: 'Gözleg', ru: 'Поиск', en: 'Search'),
-                      hintStyle: const TextStyle(
-                        color: Colors.black38,
+                      hintStyle: TextStyle(
+                        color: tokens.textSecondary,
                         fontSize: 14,
                       ),
-                      prefixIcon: const Padding(
+                      prefixIcon: Padding(
                         padding: EdgeInsets.all(13),
                         child: AppIcon(
                           Icons.search,
-                          color: Colors.black38,
+                          color: tokens.textSecondary,
                           size: 18,
                         ),
                       ),
@@ -133,9 +133,9 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                                 ru: 'Выбрать всех',
                                 en: 'Select all',
                               ),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12.5,
-                                color: Colors.black54,
+                                color: tokens.textSecondary,
                               ),
                             ),
                             const SizedBox(width: 8),

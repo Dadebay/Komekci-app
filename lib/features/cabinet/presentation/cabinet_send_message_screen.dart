@@ -111,6 +111,9 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
     }
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
+    final methodLabel = _pushChannel
+        ? t(tk: 'Push habar', ru: 'Push-уведомление', en: 'Push notification')
+        : 'SMS';
     final int recipientCount;
     final String recipientLabel;
     switch (_audience) {
@@ -166,13 +169,13 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                 const SizedBox(height: 10),
                 Text(
                   t(
-                    tk: 'Habar $recipientLabel iberiler · $recipientCount adam. Dowam etmek isleýärsiňizmi?',
-                    ru: 'Сообщение будет отправлено $recipientLabel · $recipientCount чел. Продолжить?',
-                    en: 'The message will be sent $recipientLabel · $recipientCount people. Continue?',
+                    tk: '$methodLabel $recipientLabel iberiler · $recipientCount adam. Dowam etmek isleýärsiňizmi?',
+                    ru: '$methodLabel будет отправлено $recipientLabel · $recipientCount чел. Продолжить?',
+                    en: '$methodLabel will be sent $recipientLabel · $recipientCount people. Continue?',
                   ),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: Colors.black54,
+                    color: tokens.textSecondary,
                     height: 1.45,
                   ),
                 ),
@@ -293,26 +296,44 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
     }
     final message = _messageController.text.trim();
     var sent = 0;
+    var unknown = 0;
     for (final number in numbers) {
       final result = await BackgroundSms.sendMessage(
         phoneNumber: number,
         message: message,
       );
-      if (result == SmsStatus.sent) sent++;
+      if (result == SmsStatus.sent) {
+        sent++;
+      } else if (result == SmsStatus.unknown) {
+        unknown++;
+      }
     }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        duration: Duration(seconds: unknown > 0 ? 8 : 4),
         content: Text(
-          t(
-            tk: '$sent/${numbers.length} SMS iberildi.',
-            ru: 'Отправлено SMS: $sent из ${numbers.length}.',
-            en: '$sent/${numbers.length} SMS sent.',
-          ),
+          unknown > 0
+              ? t(
+                  tk: '$sent/${numbers.length} SMS iberilendigi tassyklandy. $unknown SMS-iň netijesi näbelli; gaýtadan ibermezden öň SMS taryhyny barlaň.',
+                  ru: 'Подтверждено SMS: $sent из ${numbers.length}. Результат $unknown неизвестен; проверьте историю SMS перед повторной отправкой.',
+                  en: '$sent/${numbers.length} SMS confirmed sent. $unknown unconfirmed; check SMS history before retrying.',
+                )
+              : sent == numbers.length
+                  ? t(
+                      tk: '$sent/${numbers.length} SMS iberilendigi tassyklandy.',
+                      ru: 'Подтверждено SMS: $sent из ${numbers.length}.',
+                      en: '$sent/${numbers.length} SMS confirmed sent.',
+                    )
+                  : t(
+                      tk: '$sent/${numbers.length} SMS iberildi, galanlaryny iberip bolmady.',
+                      ru: 'Отправлено SMS: $sent из ${numbers.length}; остальные не отправлены.',
+                      en: '$sent/${numbers.length} SMS sent; the rest failed.',
+                    ),
         ),
       ),
     );
-    Navigator.pop(context);
+    if (sent == numbers.length) Navigator.pop(context);
   }
 
   Future<void> _pickChannel(AppLanguage language) async {
@@ -492,7 +513,7 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: selected
-                              ? const Color(0xffFDF9F2)
+                              ? tokens.accent.withValues(alpha: .1)
                               : tokens.surface,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
@@ -541,18 +562,18 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                                   const SizedBox(height: 3),
                                   Text(
                                     _audienceSubtitle(language, index),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11.5,
-                                      color: Colors.black45,
+                                      color: tokens.textSecondary,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             if (index != 0)
-                              const AppIcon(
+                              AppIcon(
                                 Icons.chevron_right,
-                                color: Colors.black26,
+                                color: tokens.textSecondary,
                                 size: 17,
                               ),
                           ],
@@ -623,7 +644,7 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                             height: 34,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: const Color(0xffFDF9F2),
+                              color: tokens.accent.withValues(alpha: .1),
                               borderRadius: BorderRadius.circular(11),
                             ),
                             child: AppIcon(
@@ -665,17 +686,17 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                                           ru: 'Клиентам придёт SMS.',
                                           en: 'Clients will receive an SMS.',
                                         ),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
-                                    color: Colors.black45,
+                                    color: tokens.textSecondary,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const AppIcon(
+                          AppIcon(
                             Icons.expand_more,
-                            color: Colors.black38,
+                            color: tokens.textSecondary,
                             size: 18,
                           ),
                         ],
@@ -688,11 +709,9 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: _MasterActionButton(
-                label: t(
-                  tk: 'Habar ibermek',
-                  ru: 'Отправить',
-                  en: 'Send message',
-                ),
+                label: _pushChannel
+                    ? t(tk: 'Push iber', ru: 'Отправить push', en: 'Send push')
+                    : t(tk: 'SMS iber', ru: 'Отправить SMS', en: 'Send SMS'),
                 enabled: ready,
                 leading: Icons.send_outlined,
                 onTap: () => _confirmAndSend(language),

@@ -165,21 +165,39 @@ String _scheduleCustomerLabel(CustomerStatus status, AppLanguage language) =>
       ),
     };
 
-Color _apptStatusBg(AppointmentStatus status) => switch (status) {
-  AppointmentStatus.expected => const Color(0xffFCEDD9),
-  AppointmentStatus.arrived => const Color(0xffDCF3E3),
-  AppointmentStatus.completed => const Color(0xffEDEDEA),
-  AppointmentStatus.cancelled ||
-  AppointmentStatus.noShow => const Color(0xffFBE3E0),
-};
+Color _apptStatusBg(AppointmentStatus status, AppThemeTokens tokens) {
+  if (tokens.brightness == Brightness.dark) {
+    return Color.alphaBlend(
+      _apptStatusColor(status, tokens).withValues(alpha: .16),
+      tokens.surfaceElevated,
+    );
+  }
+  return switch (status) {
+    AppointmentStatus.expected => const Color(0xffFCEDD9),
+    AppointmentStatus.arrived => const Color(0xffDCF3E3),
+    AppointmentStatus.completed => const Color(0xffEDEDEA),
+    AppointmentStatus.cancelled ||
+    AppointmentStatus.noShow => const Color(0xffFBE3E0),
+  };
+}
 
-Color _apptStatusColor(AppointmentStatus status) => switch (status) {
-  AppointmentStatus.expected => const Color(0xffB8720C),
-  AppointmentStatus.arrived => const Color(0xff1F8A4C),
-  AppointmentStatus.completed => Colors.black54,
-  AppointmentStatus.cancelled ||
-  AppointmentStatus.noShow => const Color(0xffC0392B),
-};
+Color _apptStatusColor(AppointmentStatus status, AppThemeTokens tokens) {
+  if (tokens.brightness == Brightness.dark) {
+    return switch (status) {
+      AppointmentStatus.expected => tokens.warning,
+      AppointmentStatus.arrived => tokens.success,
+      AppointmentStatus.completed => tokens.textSecondary,
+      AppointmentStatus.cancelled || AppointmentStatus.noShow => tokens.danger,
+    };
+  }
+  return switch (status) {
+    AppointmentStatus.expected => const Color(0xffB8720C),
+    AppointmentStatus.arrived => const Color(0xff1F8A4C),
+    AppointmentStatus.completed => Colors.black54,
+    AppointmentStatus.cancelled ||
+    AppointmentStatus.noShow => const Color(0xffC0392B),
+  };
+}
 
 String _apptStatusLabel(AppointmentStatus status, AppLanguage language) =>
     switch (status) {
@@ -334,7 +352,7 @@ void _openAppointmentActions(
                 customer == null
                     ? CircleAvatar(
                         radius: 20,
-                        backgroundColor: const Color(0xffE6D2B1),
+                        backgroundColor: tokens.accent.withValues(alpha: .2),
                         child: AppIcon(
                           Icons.person_outline,
                           size: 18,
@@ -357,16 +375,16 @@ void _openAppointmentActions(
                       if (customer != null)
                         Text(
                           _handleFor(customer),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11.5,
-                            color: Colors.black45,
+                            color: tokens.textSecondary,
                           ),
                         ),
                       Text(
                         appointment.serviceName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12.5,
-                          color: Colors.black54,
+                          color: tokens.textSecondary,
                         ),
                       ),
                     ],
@@ -377,8 +395,8 @@ void _openAppointmentActions(
                     padding: const EdgeInsets.only(left: 8),
                     child: _StatusBadge2(
                       label: _scheduleCustomerLabel(customer.status, language),
-                      color: _statusColor(customer.status),
-                      bg: _statusBg(customer.status),
+                      color: _statusColor(customer.status, tokens),
+                      bg: _statusBg(customer.status, tokens),
                     ),
                   ),
               ],

@@ -134,8 +134,8 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
                             ru: 'Особые дни ещё не добавлены.',
                             en: 'No special days added yet.',
                           ),
-                          style: const TextStyle(
-                            color: Colors.black45,
+                          style: TextStyle(
+                            color: tokens.textSecondary,
                             fontSize: 13,
                           ),
                         ),
@@ -180,9 +180,9 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
                                 context,
                                 () => context.read<ScheduleProvider>().removeOverride(o.id),
                               ),
-                              child: const AppIcon(
+                              child: AppIcon(
                                 Icons.close,
-                                color: Colors.black38,
+                                color: tokens.textSecondary,
                                 size: 18,
                               ),
                             ),

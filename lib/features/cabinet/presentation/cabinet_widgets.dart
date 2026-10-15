@@ -58,9 +58,9 @@ class _BalanceChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: const Color(0xffFDF9F2),
+        color: tokens.accent.withValues(alpha: .1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xffF0E4CE)),
+        border: Border.all(color: tokens.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -92,7 +92,7 @@ class _InfoBanner extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: const Color(0xffF6F5F2),
+      color: context.appTokens.surfaceElevated,
       borderRadius: BorderRadius.circular(16),
     ),
     child: Row(
@@ -112,9 +112,9 @@ class _InfoBanner extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12.5,
-              color: Colors.black54,
+              color: context.appTokens.textSecondary,
               height: 1.45,
             ),
           ),
@@ -171,7 +171,7 @@ class _SettingRow extends StatelessWidget {
                   height: 38,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: const Color(0xffFDF9F2),
+                    color: tokens.accent.withValues(alpha: .1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: AppIcon(icon, color: tokens.accent, size: 17),
@@ -192,9 +192,9 @@ class _SettingRow extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           subtitle!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11.5,
-                            color: Colors.black45,
+                            color: tokens.textSecondary,
                             height: 1.3,
                           ),
                         ),
@@ -206,10 +206,10 @@ class _SettingRow extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     value!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black54,
+                      color: tokens.textSecondary,
                     ),
                   ),
                 ],
@@ -227,9 +227,9 @@ class _SettingRow extends StatelessWidget {
                 ],
                 if (showChevron) ...[
                   const SizedBox(width: 2),
-                  const AppIcon(
+                  AppIcon(
                     Icons.chevron_right,
-                    color: Colors.black26,
+                    color: tokens.textSecondary,
                     size: 17,
                   ),
                 ],
@@ -287,7 +287,7 @@ class _PickerField extends StatelessWidget {
                   ),
                 ),
               ),
-              AppIcon(trailingIcon, color: Colors.black38, size: 18),
+              AppIcon(trailingIcon, color: context.appTokens.textSecondary, size: 18),
             ],
           ),
         ),
@@ -377,7 +377,7 @@ class _ClientListTile extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 20,
-              backgroundColor: const Color(0xffE6D2B1),
+              backgroundColor: tokens.accent.withValues(alpha: .2),
               child: Text(
                 name.substring(0, 1),
                 style: TextStyle(
@@ -401,12 +401,12 @@ class _ClientListTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     phone,
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                    style: TextStyle(fontSize: 12, color: tokens.textSecondary),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(fontSize: 11, color: Colors.black38),
+                    style: TextStyle(fontSize: 11, color: tokens.textSecondary),
                   ),
                 ],
               ),
@@ -439,7 +439,7 @@ class _SubscriptionDateRow extends StatelessWidget {
         height: 32,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: const Color(0xffFDF9F2),
+          color: context.appTokens.accent.withValues(alpha: .1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: AppIcon(icon, color: context.appTokens.accent, size: 15),
@@ -448,7 +448,7 @@ class _SubscriptionDateRow extends StatelessWidget {
       Expanded(
         child: Text(
           label,
-          style: const TextStyle(fontSize: 13, color: Colors.black54),
+          style: TextStyle(fontSize: 13, color: context.appTokens.textSecondary),
         ),
       ),
       Text(

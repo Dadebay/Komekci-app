@@ -200,14 +200,16 @@ class _FaqTile extends StatelessWidget {
     final tokens = context.appTokens;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
+      child: Material(
         color: tokens.surfaceElevated,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: tokens.border),
-      ),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: tokens.border),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
           tilePadding: const EdgeInsets.symmetric(horizontal: 14),
           childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
           iconColor: tokens.accent,
@@ -229,6 +231,7 @@ class _FaqTile extends StatelessWidget {
               ),
             ),
           ],
+          ),
         ),
       ),
     );
@@ -288,18 +291,23 @@ class _ContactRow extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        value,
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          color: tokens.textSecondary,
+                      if (value.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          value,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: tokens.textSecondary,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
-                AppIcon(Icons.arrow_outward, size: 15, color: tokens.disabled),
+                if (onTap != null)
+                  AppIcon(Icons.arrow_outward, size: 15, color: tokens.disabled),
               ],
             ),
           ),

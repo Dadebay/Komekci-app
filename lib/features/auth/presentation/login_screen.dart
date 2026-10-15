@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final isTurkmen = context.watch<LanguageProvider>().isTurkmen;
     final tokens = context.appTokens;
     return Scaffold(
-      backgroundColor: tokens.textPrimary,
+      backgroundColor: tokens.surface,
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                         decoration: InputDecoration(
                           hintText: '65 65 65 65',
-                          hintStyle: const TextStyle(color: Colors.black38),
+                          hintStyle: TextStyle(color: tokens.textSecondary),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           prefixIcon: phonePrefix(context, fontSize: 17),
                           prefixIconConstraints: phonePrefixConstraints,
@@ -109,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           isTurkmen ? 'Dowam etmek bilen hyzmat şertlerini kabul edýärsiňiz.' : 'Продолжая, вы принимаете условия сервиса.',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.black45, fontSize: 11, height: 1.35),
+                          style: TextStyle(color: tokens.textSecondary, fontSize: 11, height: 1.35),
                         ),
                       ),
                     ],

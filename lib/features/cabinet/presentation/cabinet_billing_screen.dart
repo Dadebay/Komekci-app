@@ -10,8 +10,9 @@ class BillingScreen extends StatelessWidget {
         pickTr(language, tk: tk, ru: ru, en: en);
     final billing = context.watch<BillingProvider>();
     final settings = context.watch<AppSettingsProvider>();
-    final recentHistory = billing.history.take(3).toList();
+    final recentHistory = billing.history.take(2).toList();
     final tokens = context.appTokens;
+    final currency = settings.currencyLabel(language);
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
@@ -20,198 +21,218 @@ class BillingScreen extends StatelessWidget {
           ru: 'Оплата и подписка',
           en: 'Billing & subscription',
         ),
-        action: const _BalanceChip(),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-          children: [
-            Text(
-              t(
-                tk: '1. Häzirki abuna',
-                ru: '1. Текущая подписка',
-                en: '1. Current subscription',
-              ),
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: tokens.surfaceElevated,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: _softLine(tokens)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+        child: RefreshIndicator(
+          onRefresh: billing.refresh,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+            children: [
+              if (!billing.loaded)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 80),
+                  child: Center(
+                    child: billing.error == null
+                        ? const CircularProgressIndicator()
+                        : Column(
+                            children: [
+                              Text(
+                                t(
+                                  tk: 'Töleg maglumatlaryny ýükläp bolmady.',
+                                  ru: 'Не удалось загрузить данные об оплате.',
+                                  en: 'Could not load billing details.',
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: billing.refresh,
+                                child: Text(
+                                  t(
+                                    tk: 'Gaýtadan synanyş',
+                                    ru: 'Повторить',
+                                    en: 'Retry',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                )
+              else ...[
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: tokens.surfaceElevated,
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: tokens.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              t(
+                                tk: 'Häzirki balans',
+                                ru: 'Текущий баланс',
+                                en: 'Current balance',
+                              ),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: tokens.textSecondary,
+                              ),
+                            ),
+                          ),
+                          _SubscriptionStatusChip(
+                            status: billing.status,
+                            language: language,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${billing.balance} $currency',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
                           color: tokens.textPrimary,
                         ),
-                        child: Text(
-                          '♔',
-                          style: TextStyle(fontSize: 20, color: tokens.accent),
-                        ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
+                      const SizedBox(height: 18),
+                      Divider(height: 1, color: tokens.border),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
                               t(
-                                tk: 'Master abuna',
-                                ru: 'Подписка мастера',
-                                en: 'Master subscription',
+                                tk: 'Abuna bahasy',
+                                ru: 'Стоимость подписки',
+                                en: 'Subscription price',
                               ),
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${settings.monthlyFee} ${settings.currencyLabel(language)} / ${t(tk: "aý", ru: "мес.", en: "mo.")}',
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                color: Colors.black54,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: tokens.textSecondary,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          Text(
+                            '${settings.monthlyFee} $currency / ${t(tk: "aý", ru: "мес.", en: "mo.")}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: tokens.textPrimary,
+                            ),
+                          ),
+                        ],
                       ),
-                      _SubscriptionStatusChip(status: billing.status, language: language),
+                      if (billing.nextChargeAt != null) ...[
+                        const SizedBox(height: 12),
+                        _SubscriptionDateRow(
+                          icon: Icons.calendar_month_outlined,
+                          label: t(
+                            tk: 'Indiki töleg',
+                            ru: 'Следующий платёж',
+                            en: 'Next payment',
+                          ),
+                          value: formatDate(billing.nextChargeAt!),
+                        ),
+                      ],
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Divider(color: _softLine(tokens), height: 1),
-                  const SizedBox(height: 14),
-                  _SubscriptionDateRow(
-                    icon: Icons.calendar_today_outlined,
-                    label: t(
-                      tk: 'Soňky töleg',
-                      ru: 'Последний платёж',
-                      en: 'Last payment',
-                    ),
-                    value: billing.lastChargeAt == null
-                        ? '—'
-                        : formatDate(billing.lastChargeAt!),
-                  ),
-                  const SizedBox(height: 10),
-                  _SubscriptionDateRow(
-                    icon: Icons.calendar_month_outlined,
-                    label: t(
-                      tk: 'Indiki töleg',
-                      ru: 'Следующий платёж',
-                      en: 'Next payment',
-                    ),
-                    value: billing.nextChargeAt == null
-                        ? '—'
-                        : formatDate(billing.nextChargeAt!),
+                ),
+                if (billing.status != SubscriptionStatus.active) ...[
+                  const SizedBox(height: 12),
+                  _InfoBanner(
+                    icon: Icons.info_outline,
+                    text: _renewalText(billing, language),
                   ),
                 ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            _InfoBanner(
-              icon: Icons.info_outline,
-              text: _renewalText(billing, language),
-            ),
-            const SizedBox(height: 26),
-            Text(
-              t(
-                tk: '2. Balans doldurmak',
-                ru: '2. Пополнение баланса',
-                en: '2. Top up balance',
-              ),
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 12),
-            _MasterActionButton(
-              label: t(
-                tk: 'Balans doldurmak',
-                ru: 'Пополнить баланс',
-                en: 'Top up balance',
-              ),
-              enabled: true,
-              leading: Icons.add,
-              onTap: () => Navigator.push(
-                context,
-                pageRoute(const MasterSubscriptionScreen(onboarding: false)),
-              ),
-            ),
-            const SizedBox(height: 26),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    t(
-                      tk: '3. Töleg taryhy',
-                      ru: '3. История платежей',
-                      en: '3. Payment history',
-                    ),
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
+                const SizedBox(height: 16),
+                _MasterActionButton(
+                  label: t(
+                    tk: 'Balans doldur',
+                    ru: 'Пополнить баланс',
+                    en: 'Top up balance',
                   ),
-                ),
-                GestureDetector(
+                  enabled: true,
+                  leading: Icons.add,
                   onTap: () => Navigator.push(
                     context,
-                    pageRoute(const BillingHistoryScreen()),
+                    pageRoute(
+                      const MasterSubscriptionScreen(onboarding: false),
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      Text(
+                ),
+                const SizedBox(height: 30),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
                         t(
-                          tk: 'Ählisini görmek',
-                          ru: 'Смотреть все',
-                          en: 'View all',
+                          tk: 'Töleg taryhy',
+                          ru: 'История платежей',
+                          en: 'Payment history',
                         ),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black45,
-                          fontWeight: FontWeight.w600,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: tokens.textPrimary,
                         ),
                       ),
-                      const AppIcon(
-                        Icons.chevron_right,
-                        color: Colors.black26,
-                        size: 15,
+                    ),
+                    if (recentHistory.isNotEmpty)
+                      TextButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          pageRoute(const BillingHistoryScreen()),
+                        ),
+                        child: Text(t(tk: 'Ählisi', ru: 'Все', en: 'View all')),
                       ),
-                    ],
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (recentHistory.isEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: tokens.surfaceElevated,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: tokens.border),
+                    ),
+                    child: Row(
+                      children: [
+                        AppIcon(
+                          Icons.receipt_long_outlined,
+                          color: tokens.accent,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            t(
+                              tk: 'Entek töleg ýok. Tölegleriňiz şu ýerde görkeziler.',
+                              ru: 'Платежей пока нет. Они появятся здесь.',
+                              en: 'No payments yet. They will appear here.',
+                            ),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: tokens.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ...recentHistory.map(
+                    (entry) =>
+                        _LedgerEntryTile(entry: entry, language: language),
                   ),
-                ),
               ],
-            ),
-            const SizedBox(height: 12),
-            if (recentHistory.isEmpty)
-              EmptyState(
-                icon: Icons.receipt_long_outlined,
-                title: t(
-                  tk: 'Töleg taryhy boş',
-                  ru: 'История платежей пуста',
-                  en: 'No payment history',
-                ),
-                text: t(
-                  tk: 'Töleg edeniňizden soň, ol şu ýerde görüner.',
-                  ru: 'После оплаты она появится здесь.',
-                  en: 'Once you make a payment, it will appear here.',
-                ),
-              )
-            else
-              ...recentHistory.map(
-                (entry) => _LedgerEntryTile(entry: entry, language: language),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -266,11 +287,21 @@ class _SubscriptionStatusChip extends StatelessWidget {
         tokens.success,
       ),
       SubscriptionStatus.grace => (
-        pickTr(language, tk: 'Töleg wagty', ru: 'Льготный период', en: 'Grace period'),
+        pickTr(
+          language,
+          tk: 'Töleg wagty',
+          ru: 'Льготный период',
+          en: 'Grace period',
+        ),
         tokens.warning,
       ),
       SubscriptionStatus.suspended => (
-        pickTr(language, tk: 'Duruzylan', ru: 'Приостановлена', en: 'Suspended'),
+        pickTr(
+          language,
+          tk: 'Duruzylan',
+          ru: 'Приостановлена',
+          en: 'Suspended',
+        ),
         tokens.danger,
       ),
     };
@@ -282,7 +313,11 @@ class _SubscriptionStatusChip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
       ),
     );
   }

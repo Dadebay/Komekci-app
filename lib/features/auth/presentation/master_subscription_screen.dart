@@ -51,50 +51,93 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
 
     return Scaffold(
       backgroundColor: tokens.surface,
-      appBar: _MasterSetupHeader(
-        title: t(
-          tk: 'ABUNA WE TÖLEG',
-          ru: 'ПОДПИСКА И ОПЛАТА',
-          en: 'SUBSCRIPTION & PAYMENT',
-        ),
-      ),
+      appBar: widget.onboarding
+          ? _MasterSetupHeader(
+              title: t(
+                tk: 'ABUNA WE TÖLEG',
+                ru: 'ПОДПИСКА И ОПЛАТА',
+                en: 'SUBSCRIPTION & PAYMENT',
+              ),
+            )
+          : CabinetAppBar(
+              title: t(
+                tk: 'Balans doldur',
+                ru: 'Пополнить баланс',
+                en: 'Top up balance',
+              ),
+            ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+          padding: EdgeInsets.fromLTRB(
+            widget.onboarding ? 24 : 20,
+            8,
+            widget.onboarding ? 24 : 20,
+            20,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (widget.onboarding) ...[
                 const _MasterProgressIndicator(step: 4),
                 const SizedBox(height: 22),
-              ],
-              if (billing.loaded) ...[
-                _SubscriptionStatusStrip(billing: billing, cur: cur),
-                const SizedBox(height: 16),
-              ],
-              _PlanCard(fee: fee, cur: cur),
-              const SizedBox(height: 28),
-              Text(
-                t(tk: 'Näçe aýa tölemeli?', ru: 'На сколько месяцев оплатить?', en: 'How many months?'),
-                style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                t(
-                  tk: 'Töleg balansyňyza goşulýar, abuna aýlyk awtomatik tutulýar.',
-                  ru: 'Сумма зачисляется на баланс, подписка списывается ежемесячно.',
-                  en: 'The amount goes to your balance; the subscription is charged monthly.',
+                if (billing.loaded) ...[
+                  _SubscriptionStatusStrip(billing: billing, cur: cur),
+                  const SizedBox(height: 16),
+                ],
+                _PlanCard(fee: fee, cur: cur),
+                const SizedBox(height: 28),
+              ] else ...[
+                _TopUpBalanceSummary(
+                  balance: billing.loaded ? billing.balance : '—',
+                  fee: fee,
+                  cur: cur,
                 ),
-                style: TextStyle(color: tokens.textSecondary, fontSize: 12.5, height: 1.4),
+                const SizedBox(height: 22),
+              ],
+              Text(
+                widget.onboarding
+                    ? t(
+                        tk: 'Näçe aýa tölemeli?',
+                        ru: 'На сколько месяцев оплатить?',
+                        en: 'How many months?',
+                      )
+                    : t(
+                        tk: 'Möçberi saýlaň',
+                        ru: 'Выберите сумму',
+                        en: 'Choose an amount',
+                      ),
+                style: const TextStyle(
+                  fontSize: 16.5,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 6),
+              Text(
+                widget.onboarding
+                    ? t(
+                        tk: 'Töleg balansyňyza goşulýar, abuna aýlyk awtomatik tutulýar.',
+                        ru: 'Сумма зачисляется на баланс, подписка списывается ежемесячно.',
+                        en: 'The amount goes to your balance; the subscription is charged monthly.',
+                      )
+                    : t(
+                        tk: 'Pul balansyňyza goşulýar. Abuna üçin her aý $fee $cur tutulýar.',
+                        ru: 'Деньги поступят на баланс. Подписка списывает $fee $cur каждый месяц.',
+                        en: 'Money goes to your balance. The subscription charges $fee $cur monthly.',
+                      ),
+                style: TextStyle(
+                  color: tokens.textSecondary,
+                  fontSize: 12.5,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 12),
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 1.95,
+                mainAxisSpacing: widget.onboarding ? 10 : 8,
+                crossAxisSpacing: widget.onboarding ? 10 : 8,
+                childAspectRatio: widget.onboarding ? 1.95 : 2.45,
                 children: [
                   for (var i = 0; i < _monthChoices.length; i++)
                     _AmountOption(
@@ -102,19 +145,27 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                       months: _monthChoices[i],
                       cur: cur,
                       selected: i == _monthsIndex,
+                      compact: !widget.onboarding,
                       onTap: () => setState(() => _monthsIndex = i),
                     ),
                 ],
               ),
-              const SizedBox(height: 28),
+              SizedBox(height: widget.onboarding ? 28 : 22),
               Text(
                 t(tk: 'Töleg usuly', ru: 'Способ оплаты', en: 'Payment method'),
-                style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 16.5,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
               _PaymentMethodTile(
                 icon: Icons.smartphone_outlined,
-                title: t(tk: 'Telefon balansy', ru: 'Баланс телефона', en: 'Phone balance'),
+                title: t(
+                  tk: 'Telefon balansy',
+                  ru: 'Баланс телефона',
+                  en: 'Phone balance',
+                ),
                 subtitle: phoneAvailable
                     ? t(
                         tk: 'SIM kartyňyzyň balansyndan geçiriň',
@@ -122,24 +173,32 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                         en: 'Transfer from your SIM card balance',
                       )
                     : t(
-                        tk: 'Häzirlikçe elýeterli däl',
-                        ru: 'Сейчас недоступно',
-                        en: 'Not available right now',
+                        tk: 'Töleg üçin telefon belgisi elýeterli däl',
+                        ru: 'Нет доступного номера для оплаты',
+                        en: 'No payment phone number is available',
                       ),
                 enabled: phoneAvailable,
                 selected: byPhone,
+                compact: !widget.onboarding,
                 onTap: () => setState(() => _payByPhone = true),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               _PaymentMethodTile(
                 icon: Icons.credit_card_outlined,
-                title: t(tk: 'Bank kartasy', ru: 'Банковская карта', en: 'Bank card'),
+                title: t(
+                  tk: 'Bank kartasy',
+                  ru: 'Банковская карта',
+                  en: 'Bank card',
+                ),
                 subtitle: 'Halkbank, Rysgal, Senagat',
                 selected: !byPhone,
+                compact: !widget.onboarding,
                 onTap: () => setState(() => _payByPhone = false),
               ),
-              const SizedBox(height: 20),
-              _HowBalanceWorks(fee: fee, cur: cur),
+              if (widget.onboarding) ...[
+                const SizedBox(height: 20),
+                _HowBalanceWorks(fee: fee, cur: cur),
+              ],
             ],
           ),
         ),
@@ -161,12 +220,18 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                   children: [
                     Text(
                       t(tk: 'Tölenmeli', ru: 'К оплате', en: 'To pay'),
-                      style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: tokens.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '$amount $cur',
-                      style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                        fontSize: 21,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     Text(
                       t(
@@ -174,14 +239,23 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                         ru: 'за $months мес.',
                         en: 'for $months month${months == 1 ? '' : 's'}',
                       ),
-                      style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: tokens.textSecondary,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(width: 18),
                 Expanded(
                   child: _MasterActionButton(
-                    label: t(tk: 'Tölegi töle', ru: 'Оплатить', en: 'Pay'),
+                    label: widget.onboarding
+                        ? t(tk: 'Tölegi töle', ru: 'Оплатить', en: 'Pay')
+                        : t(
+                            tk: 'Tölege geç',
+                            ru: 'Перейти к оплате',
+                            en: 'Continue to pay',
+                          ),
                     enabled: true,
                     trailingArrow: true,
                     onTap: () => _pay(amount, byPhone),
@@ -205,6 +279,83 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
   }
 }
 
+class _TopUpBalanceSummary extends StatelessWidget {
+  const _TopUpBalanceSummary({
+    required this.balance,
+    required this.fee,
+    required this.cur,
+  });
+
+  final String balance;
+  final int fee;
+  final String cur;
+
+  @override
+  Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>().language;
+    final tokens = context.appTokens;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: tokens.surfaceElevated,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: tokens.border),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  pickTr(language, tk: 'Balans', ru: 'Баланс', en: 'Balance'),
+                  style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$balance $cur',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: tokens.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(width: 1, height: 40, color: tokens.border),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                pickTr(
+                  language,
+                  tk: 'Aýlyk abuna',
+                  ru: 'В месяц',
+                  en: 'Monthly',
+                ),
+                style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$fee $cur',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: tokens.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Balance and subscription state at a glance.
 class _SubscriptionStatusStrip extends StatelessWidget {
   const _SubscriptionStatusStrip({required this.billing, required this.cur});
@@ -218,9 +369,22 @@ class _SubscriptionStatusStrip extends StatelessWidget {
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final (label, color) = switch (billing.status) {
-      SubscriptionStatus.active => (t(tk: 'Abuna işjeň', ru: 'Подписка активна', en: 'Subscription active'), tokens.success),
-      SubscriptionStatus.grace => (t(tk: 'Töleg wagty ýetdi', ru: 'Пора оплатить', en: 'Payment due'), tokens.warning),
-      SubscriptionStatus.suspended => (t(tk: 'Abuna işjeň däl', ru: 'Подписка не активна', en: 'Subscription inactive'), tokens.danger),
+      SubscriptionStatus.active => (
+        t(tk: 'Abuna işjeň', ru: 'Подписка активна', en: 'Subscription active'),
+        tokens.success,
+      ),
+      SubscriptionStatus.grace => (
+        t(tk: 'Töleg wagty ýetdi', ru: 'Пора оплатить', en: 'Payment due'),
+        tokens.warning,
+      ),
+      SubscriptionStatus.suspended => (
+        t(
+          tk: 'Abuna işjeň däl',
+          ru: 'Подписка не активна',
+          en: 'Subscription inactive',
+        ),
+        tokens.danger,
+      ),
     };
     final until = billing.paidUntil;
     return Container(
@@ -241,11 +405,25 @@ class _SubscriptionStatusStrip extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: color)),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: color,
+                  ),
+                ),
                 if (until != null)
                   Text(
-                    t(tk: '${formatDate(until)} çenli', ru: 'до ${formatDate(until)}', en: 'until ${formatDate(until)}'),
-                    style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
+                    t(
+                      tk: '${formatDate(until)} çenli',
+                      ru: 'до ${formatDate(until)}',
+                      en: 'until ${formatDate(until)}',
+                    ),
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: tokens.textSecondary,
+                    ),
                   ),
               ],
             ),
@@ -253,8 +431,17 @@ class _SubscriptionStatusStrip extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(t(tk: 'Balans', ru: 'Баланс', en: 'Balance'), style: TextStyle(fontSize: 11, color: tokens.textSecondary)),
-              Text('${billing.balance} $cur', style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800)),
+              Text(
+                t(tk: 'Balans', ru: 'Баланс', en: 'Balance'),
+                style: TextStyle(fontSize: 11, color: tokens.textSecondary),
+              ),
+              Text(
+                '${billing.balance} $cur',
+                style: const TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ],
           ),
         ],
@@ -276,9 +463,21 @@ class _PlanCard extends StatelessWidget {
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final perks = [
-      t(tk: 'Onlaýn ýazgylary kabul ediň', ru: 'Принимайте онлайн-записи', en: 'Accept online bookings'),
-      t(tk: 'Müşderi bazaňyzy dolandyryň', ru: 'Ведите базу клиентов', en: 'Manage your client list'),
-      t(tk: 'Iş wagtyňyzy we dynç günlerini sazlaň', ru: 'Настраивайте график и выходные', en: 'Set your hours and days off'),
+      t(
+        tk: 'Onlaýn ýazgylary kabul ediň',
+        ru: 'Принимайте онлайн-записи',
+        en: 'Accept online bookings',
+      ),
+      t(
+        tk: 'Müşderi bazaňyzy dolandyryň',
+        ru: 'Ведите базу клиентов',
+        en: 'Manage your client list',
+      ),
+      t(
+        tk: 'Iş wagtyňyzy we dynç günlerini sazlaň',
+        ru: 'Настраивайте график и выходные',
+        en: 'Set your hours and days off',
+      ),
     ];
     return Container(
       width: double.infinity,
@@ -296,7 +495,11 @@ class _PlanCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  t(tk: 'MASTER ABUNA', ru: 'ПОДПИСКА МАСТЕРА', en: 'MASTER SUBSCRIPTION'),
+                  t(
+                    tk: 'MASTER ABUNA',
+                    ru: 'ПОДПИСКА МАСТЕРА',
+                    en: 'MASTER SUBSCRIPTION',
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -313,7 +516,15 @@ class _PlanCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('$fee', style: TextStyle(fontSize: 46, height: 1, fontWeight: FontWeight.w800, color: tokens.surface)),
+              Text(
+                '$fee',
+                style: TextStyle(
+                  fontSize: 46,
+                  height: 1,
+                  fontWeight: FontWeight.w800,
+                  color: tokens.surface,
+                ),
+              ),
               const SizedBox(width: 8),
               Flexible(
                 child: Padding(
@@ -322,7 +533,11 @@ class _PlanCard extends StatelessWidget {
                     '$cur / ${t(tk: 'aý', ru: 'мес.', en: 'month')}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: tokens.surface.withValues(alpha: .8)),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: tokens.surface.withValues(alpha: .8),
+                    ),
                   ),
                 ),
               ),
@@ -337,7 +552,13 @@ class _PlanCard extends StatelessWidget {
                   AppIcon(Icons.check_circle, size: 18, color: tokens.accent),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(perk, style: TextStyle(fontSize: 13.5, color: tokens.surface.withValues(alpha: .92))),
+                    child: Text(
+                      perk,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        color: tokens.surface.withValues(alpha: .92),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -356,12 +577,14 @@ class _AmountOption extends StatelessWidget {
     required this.cur,
     required this.selected,
     required this.onTap,
+    this.compact = false,
   });
   final int amount;
   final int months;
   final String cur;
   final bool selected;
   final VoidCallback onTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -378,7 +601,7 @@ class _AmountOption extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 14),
         decoration: BoxDecoration(
           color: selected ? tokens.surfaceElevated : tokens.surface,
           borderRadius: BorderRadius.circular(18),
@@ -387,7 +610,13 @@ class _AmountOption extends StatelessWidget {
             width: selected ? 1.8 : 1,
           ),
           boxShadow: selected
-              ? [BoxShadow(color: tokens.accent.withValues(alpha: .18), blurRadius: 14, offset: const Offset(0, 5))]
+              ? [
+                  BoxShadow(
+                    color: tokens.accent.withValues(alpha: .18),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
+                  ),
+                ]
               : null,
         ),
         child: Row(
@@ -397,20 +626,37 @@ class _AmountOption extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      '$amount $cur',
+                  if (compact)
+                    Text(
+                      monthsLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 15,
                         fontWeight: FontWeight.w800,
                         color: selected ? tokens.accent : tokens.textPrimary,
                       ),
+                    )
+                  else
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '$amount $cur',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: selected ? tokens.accent : tokens.textPrimary,
+                        ),
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 2),
-                  Text(monthsLabel, style: TextStyle(fontSize: 12, color: tokens.textSecondary)),
+                  Text(
+                    compact ? '$amount $cur' : monthsLabel,
+                    maxLines: compact ? 1 : null,
+                    overflow: compact ? TextOverflow.ellipsis : null,
+                    style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+                  ),
                 ],
               ),
             ),
@@ -422,9 +668,14 @@ class _AmountOption extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: selected ? tokens.accent : Colors.transparent,
-                border: Border.all(color: selected ? tokens.accent : tokens.border, width: 1.5),
+                border: Border.all(
+                  color: selected ? tokens.accent : tokens.border,
+                  width: 1.5,
+                ),
               ),
-              child: selected ? AppIcon(Icons.check, size: 13, color: tokens.accentOn) : null,
+              child: selected
+                  ? AppIcon(Icons.check, size: 13, color: tokens.accentOn)
+                  : null,
             ),
           ],
         ),
@@ -462,7 +713,11 @@ class _HowBalanceWorks extends StatelessWidget {
           childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           leading: AppIcon(Icons.info_outline, color: tokens.accent, size: 20),
           title: Text(
-            t(tk: 'Balans nähili işleýär?', ru: 'Как работает баланс?', en: 'How does the balance work?'),
+            t(
+              tk: 'Balans nähili işleýär?',
+              ru: 'Как работает баланс?',
+              en: 'How does the balance work?',
+            ),
             style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
           ),
           children: [
@@ -474,7 +729,11 @@ class _HowBalanceWorks extends StatelessWidget {
                   ru: 'Внесённые деньги хранятся на балансе. Каждый месяц за подписку автоматически списывается $fee $cur. Например, при пополнении на $example $cur: $fee $cur спишется в первый месяц, ещё $fee — во второй, оставшиеся $left останутся на балансе.',
                   en: 'Money you add is kept on your balance. Each month, $fee $cur is automatically deducted for the subscription. For example, if you top up $example $cur, $fee $cur is deducted the first month, another $fee $cur the next, and the remaining $left $cur stays on your balance.',
                 ),
-                style: TextStyle(color: tokens.textSecondary, fontSize: 12.5, height: 1.5),
+                style: TextStyle(
+                  color: tokens.textSecondary,
+                  fontSize: 12.5,
+                  height: 1.5,
+                ),
               ),
             ),
           ],

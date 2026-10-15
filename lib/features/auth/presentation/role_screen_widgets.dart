@@ -18,7 +18,9 @@ class RoleCard extends StatelessWidget {
         height: 230,
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xffFFFCF6) : tokens.surfaceElevated,
+          color: selected
+              ? Color.alphaBlend(tokens.accent.withValues(alpha: .1), tokens.surfaceElevated)
+              : tokens.surfaceElevated,
           borderRadius: BorderRadius.circular(28),
           border: Border.all(color: selected ? tokens.accent : tokens.border, width: selected ? 1.6 : 1),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .025), blurRadius: 8, offset: const Offset(0, 3))],
@@ -35,7 +37,7 @@ class RoleCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(28),
 
-                border: Border.all(color: selected ? tokens.accent : const Color(0xffF8F3E9), width: selected ? 2.5 : 1),
+                border: Border.all(color: selected ? tokens.accent : tokens.border, width: selected ? 2.5 : 1),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(26),
@@ -91,7 +93,10 @@ class _RoleContinueButtonState extends State<RoleContinueButton> with SingleTick
       borderRadius: BorderRadius.circular(32),
       child: Container(
         height: 58,
-        decoration: BoxDecoration(color: tokens.textPrimary, borderRadius: BorderRadius.circular(32)),
+        decoration: BoxDecoration(
+          color: tokens.brightness == Brightness.dark ? tokens.accent : tokens.textPrimary,
+          borderRadius: BorderRadius.circular(32),
+        ),
         child: LayoutBuilder(
           builder: (context, constraints) => Stack(
             children: [
@@ -118,16 +123,16 @@ class _RoleContinueButtonState extends State<RoleContinueButton> with SingleTick
               ),
               Align(
                 alignment: Alignment.centerRight,
-                child: const SizedBox(
+                child: SizedBox(
                   width: 84,
                   child: Center(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        AppIcon(Icons.chevron_right, color: Color(0xffF7E4BE), size: 16),
-                        AppIcon(Icons.chevron_right, color: Color(0xffF7E4BE), size: 16),
-                        AppIcon(Icons.chevron_right, color: Color(0xffF7E4BE), size: 16),
-                        AppIcon(Icons.chevron_right, color: Color(0xffF7E4BE), size: 16),
+                        AppIcon(Icons.chevron_right, color: tokens.brightness == Brightness.dark ? tokens.accentOn : tokens.surface, size: 16),
+                        AppIcon(Icons.chevron_right, color: tokens.brightness == Brightness.dark ? tokens.accentOn : tokens.surface, size: 16),
+                        AppIcon(Icons.chevron_right, color: tokens.brightness == Brightness.dark ? tokens.accentOn : tokens.surface, size: 16),
+                        AppIcon(Icons.chevron_right, color: tokens.brightness == Brightness.dark ? tokens.accentOn : tokens.surface, size: 16),
                       ],
                     ),
                   ),

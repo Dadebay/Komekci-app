@@ -80,12 +80,14 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
     if (!mounted) return;
     setState(() => _saving = false);
     if (!ok) return;
-    toast.success(pickTr(
-            language,
-            tk: 'Iş wagty ýatda saklandy.',
-            ru: 'График сохранён.',
-            en: 'Working hours saved.',
-          ));
+    toast.success(
+      pickTr(
+        language,
+        tk: 'Iş wagty ýatda saklandy.',
+        ru: 'График сохранён.',
+        en: 'Working hours saved.',
+      ),
+    );
     navigator.pop();
   }
 
@@ -169,6 +171,13 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
         'Sunday',
       ],
     };
+    final shortNames = switch (language) {
+      AppLanguage.tk => ['Du', 'Si', 'Ça', 'Pe', 'An', 'Şe', 'Ýe'],
+      AppLanguage.ru => ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+      AppLanguage.en => ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+    };
+    final openDays = _days.where((day) => day.open).length;
+    final waitingForSchedule = schedule.loading || schedule.error == null;
     final nextVacation = schedule.nextVacation;
     final vacationValue = nextVacation != null
         ? '${formatDate(nextVacation.start)} - ${formatDate(nextVacation.end)}'
@@ -189,217 +198,565 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                 children: [
-                  _InfoBanner(
-                    icon: Icons.schedule_outlined,
-                    text: t(
-                      tk: 'Siziň iş wagtyňyz müşderilere siziň boş wagtlaryňyzy görkezmek üçin ulanylýar.',
-                      ru: 'Ваш график используется, чтобы показывать клиентам свободное время.',
-                      en: "Your working hours are used to show clients your available times.",
+                  if (!schedule.loaded)
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: tokens.surfaceElevated,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: _softLine(tokens)),
+                      ),
+                      child: Column(
+                        children: [
+                          AppIcon(
+                            waitingForSchedule
+                                ? Icons.schedule_outlined
+                                : Icons.wifi_off_outlined,
+                            color: tokens.accent,
+                            size: 28,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            waitingForSchedule
+                                ? t(
+                                    tk: 'Iş wagty ýüklenýär...',
+                                    ru: 'Загружаем график...',
+                                    en: 'Loading working hours...',
+                                  )
+                                : t(
+                                    tk: 'Iş wagtyny ýükläp bolmady.',
+                                    ru: 'Не удалось загрузить график.',
+                                    en: 'Could not load working hours.',
+                                  ),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: tokens.textPrimary,
+                            ),
+                          ),
+                          if (!waitingForSchedule) ...[
+                            const SizedBox(height: 12),
+                            TextButton.icon(
+                              onPressed: schedule.load,
+                              icon: const Icon(Icons.refresh, size: 18),
+                              label: Text(
+                                t(
+                                  tk: 'Täzeden synanyş',
+                                  ru: 'Повторить',
+                                  en: 'Try again',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    )
+                  else ...[
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: tokens.textPrimary,
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: tokens.accent.withValues(alpha: .18),
+                                  borderRadius: BorderRadius.circular(13),
+                                ),
+                                child: AppIcon(
+                                  Icons.calendar_month_outlined,
+                                  color: tokens.accent,
+                                  size: 21,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      t(
+                                        tk: 'Hepdelik tertip',
+                                        ru: 'Неделя',
+                                        en: 'Your week',
+                                      ),
+                                      style: TextStyle(
+                                        color: tokens.surface.withValues(
+                                          alpha: .72,
+                                        ),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      '$openDays / 7 ${t(tk: 'iş güni', ru: 'рабочих дней', en: 'working days')}',
+                                      style: TextStyle(
+                                        color: tokens.surface,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              for (var i = 0; i < 7; i++)
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      right: i == 6 ? 0 : 7,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          shortNames[i],
+                                          style: TextStyle(
+                                            color: _days[i].open
+                                                ? tokens.surface
+                                                : tokens.surface.withValues(
+                                                    alpha: .48,
+                                                  ),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 7),
+                                        Container(
+                                          height: 4,
+                                          decoration: BoxDecoration(
+                                            color: _days[i].open
+                                                ? tokens.accent
+                                                : tokens.surface.withValues(
+                                                    alpha: .24,
+                                                  ),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
+                    const SizedBox(height: 12),
+                    Text(
+                      t(
+                        tk: 'Bu tertip müşderilere görünýän boş wagtlary kesgitleýär.',
+                        ru: 'Этот график определяет доступное клиентам время.',
+                        en: 'This schedule sets the times clients can book.',
+                      ),
+                      style: TextStyle(
+                        color: tokens.textSecondary,
+                        fontSize: 12.5,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Wrap(
+                      alignment: WrapAlignment.spaceBetween,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 2,
+                      children: [
+                        Text(
                           t(
                             tk: 'Hepdäniň iş günleri',
                             ru: 'Рабочие дни недели',
                             en: 'Working days of the week',
                           ),
-                          style: const TextStyle(
+                          style: TextStyle(
+                            color: tokens.textPrimary,
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                      ),
-                      TextButton(
-                        onPressed: () => _applyToAllDays(language),
-                        child: Text(
-                          t(
-                            tk: 'Hemme güne ulan',
-                            ru: 'Применить ко всем',
-                            en: 'Apply to all',
-                          ),
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ...List.generate(names.length, (index) {
-                    final day = _days[index];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: tokens.surfaceElevated,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: day.open
-                              ? tokens.border
-                              : const Color(0xffF0EEE9),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            names[index],
+                        TextButton(
+                          onPressed: () => _applyToAllDays(language),
+                          child: Text(
+                            t(
+                              tk: 'Hemme güne ulan',
+                              ru: 'Применить ко всем',
+                              en: 'Apply to all',
+                            ),
                             style: const TextStyle(
-                              fontSize: 14.5,
+                              fontSize: 12.5,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          Transform.scale(
-                            scale: .78,
-                            child: Switch(
-                              value: day.open,
-                              activeThumbColor: tokens.surface,
-                              activeTrackColor: tokens.textPrimary,
-                              onChanged: (value) => setState(() {
-                                final updated = List.of(_days);
-                                updated[index] = (
-                                  open: value,
-                                  start: day.start,
-                                  end: day.end,
-                                );
-                                _days = updated;
-                              }),
-                            ),
-                          ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: day.open
-                                ? () => _editDay(index, language, names)
-                                : null,
-                            child: Row(
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ...List.generate(names.length, (index) {
+                      final day = _days[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: tokens.surfaceElevated,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: _softLine(tokens)),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(18),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: Column(
                               children: [
-                                if (day.open) ...[
-                                  _TimeChip(text: day.start),
-                                  const Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                    ),
-                                    child: Text(
-                                      '–',
-                                      style: TextStyle(color: Colors.black38),
-                                    ),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    14,
+                                    11,
+                                    8,
+                                    11,
                                   ),
-                                  _TimeChip(text: day.end),
-                                ] else
-                                  Text(
-                                    t(
-                                      tk: 'Dynç güni',
-                                      ru: 'Выходной',
-                                      en: 'Day off',
-                                    ),
-                                    style: const TextStyle(
-                                      fontSize: 12.5,
-                                      color: Colors.black38,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 38,
+                                        height: 38,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: day.open
+                                              ? tokens.accent.withValues(
+                                                  alpha: .14,
+                                                )
+                                              : tokens.border.withValues(
+                                                  alpha: .42,
+                                                ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${index + 1}'.padLeft(2, '0'),
+                                          style: TextStyle(
+                                            color: day.open
+                                                ? tokens.accent
+                                                : tokens.textSecondary,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              names[index],
+                                              style: TextStyle(
+                                                color: tokens.textPrimary,
+                                                fontSize: 14.5,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              day.open
+                                                  ? t(
+                                                      tk: 'Iş güni',
+                                                      ru: 'Рабочий день',
+                                                      en: 'Working day',
+                                                    )
+                                                  : t(
+                                                      tk: 'Dynç güni',
+                                                      ru: 'Выходной',
+                                                      en: 'Day off',
+                                                    ),
+                                              style: TextStyle(
+                                                color: tokens.textSecondary,
+                                                fontSize: 11.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Semantics(
+                                        label: names[index],
+                                        child: Switch(
+                                          value: day.open,
+                                          activeThumbColor: tokens.surface,
+                                          activeTrackColor: tokens.textPrimary,
+                                          onChanged: (value) => setState(() {
+                                            final updated = List.of(_days);
+                                            updated[index] = (
+                                              open: value,
+                                              start: day.start,
+                                              end: day.end,
+                                            );
+                                            _days = updated;
+                                          }),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                const SizedBox(width: 6),
-                                AppIcon(
-                                  Icons.chevron_right,
-                                  color: day.open
-                                      ? Colors.black26
-                                      : Colors.black12,
-                                  size: 17,
                                 ),
+                                if (day.open) ...[
+                                  Divider(height: 1, color: _softLine(tokens)),
+                                  InkWell(
+                                    onTap: () =>
+                                        _editDay(index, language, names),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 12,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          AppIcon(
+                                            Icons.schedule_outlined,
+                                            color: tokens.accent,
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Text(
+                                              '${day.start} – ${day.end}',
+                                              style: TextStyle(
+                                                color: tokens.textPrimary,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ),
+                                          AppIcon(
+                                            Icons.chevron_right,
+                                            color: tokens.textSecondary,
+                                            size: 18,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: 22),
-                  Text(
-                    t(
-                      tk: 'Goşmaça sazlamalar',
-                      ru: 'Дополнительные настройки',
-                      en: 'Additional settings',
-                    ),
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _SettingRow(
-                    icon: Icons.coffee_outlined,
-                    title: t(
-                      tk: 'Arakesme wagty',
-                      ru: 'Время перерыва',
-                      en: 'Break time',
-                    ),
-                    value: _breakEnabled
-                        ? '$_breakStart - $_breakEnd'
-                        : t(tk: 'Ýok', ru: 'Нет', en: 'None'),
-                    switchValue: _breakEnabled,
-                    onSwitchChanged: (v) => setState(() => _breakEnabled = v),
-                    onTap: () async {
-                      final result = await _pickTimeRange(
-                        context,
-                        language: language,
-                        title: t(
-                          tk: 'Arakesme wagty',
-                          ru: 'Время перерыва',
-                          en: 'Break time',
                         ),
-                        start: _breakStart,
-                        end: _breakEnd,
                       );
-                      if (result != null) {
-                        setState(() {
-                          _breakStart = result.$1;
-                          _breakEnd = result.$2;
-                          _breakEnabled = true;
-                        });
-                      }
-                    },
-                  ),
-                  _SettingRow(
-                    icon: Icons.event_busy_outlined,
-                    title: t(tk: 'Dynç alyş ', ru: 'Отпуск', en: 'Vacation'),
-                    subtitle: schedule.vacations.length > 1
-                        ? '${schedule.vacations.length} ${t(tk: "döwür", ru: "периодов", en: "periods")}'
-                        : null,
-                    value: vacationValue,
-                    showChevron: true,
-                    onTap: () => Navigator.push(
-                      context,
-                      pageRoute(const VacationScreen()),
+                    }),
+                    const SizedBox(height: 22),
+                    Text(
+                      t(
+                        tk: 'Goşmaça sazlamalar',
+                        ru: 'Дополнительные настройки',
+                        en: 'Additional settings',
+                      ),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  _SettingRow(
-                    icon: Icons.event_busy_outlined,
-                    title: t(
-                      tk: 'Aýratyn günler',
-                      ru: 'Особые дни',
-                      en: 'Special days',
+                    const SizedBox(height: 12),
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      decoration: BoxDecoration(
+                        color: tokens.surfaceElevated,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: _softLine(tokens)),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  14,
+                                  11,
+                                  8,
+                                  11,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 38,
+                                      height: 38,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: tokens.accent.withValues(
+                                          alpha: .14,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: AppIcon(
+                                        Icons.coffee_outlined,
+                                        color: tokens.accent,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            t(
+                                              tk: 'Arakesme wagty',
+                                              ru: 'Время перерыва',
+                                              en: 'Break time',
+                                            ),
+                                            style: TextStyle(
+                                              color: tokens.textPrimary,
+                                              fontSize: 14.5,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            _breakEnabled
+                                                ? t(
+                                                    tk: 'Iş günlerinde',
+                                                    ru: 'В рабочие дни',
+                                                    en: 'On working days',
+                                                  )
+                                                : t(
+                                                    tk: 'Goşulmady',
+                                                    ru: 'Не добавлен',
+                                                    en: 'Not set',
+                                                  ),
+                                            style: TextStyle(
+                                              color: tokens.textSecondary,
+                                              fontSize: 11.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Semantics(
+                                      label: t(
+                                        tk: 'Arakesme wagty',
+                                        ru: 'Время перерыва',
+                                        en: 'Break time',
+                                      ),
+                                      child: Switch(
+                                        value: _breakEnabled,
+                                        activeThumbColor: tokens.surface,
+                                        activeTrackColor: tokens.textPrimary,
+                                        onChanged: (value) => setState(
+                                          () => _breakEnabled = value,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (_breakEnabled) ...[
+                                Divider(height: 1, color: _softLine(tokens)),
+                                InkWell(
+                                  onTap: () async {
+                                    final result = await _pickTimeRange(
+                                      context,
+                                      language: language,
+                                      title: t(
+                                        tk: 'Arakesme wagty',
+                                        ru: 'Время перерыва',
+                                        en: 'Break time',
+                                      ),
+                                      start: _breakStart,
+                                      end: _breakEnd,
+                                    );
+                                    if (result != null) {
+                                      setState(() {
+                                        _breakStart = result.$1;
+                                        _breakEnd = result.$2;
+                                      });
+                                    }
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        AppIcon(
+                                          Icons.schedule_outlined,
+                                          color: tokens.accent,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            '$_breakStart – $_breakEnd',
+                                            style: TextStyle(
+                                              color: tokens.textPrimary,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                        AppIcon(
+                                          Icons.chevron_right,
+                                          color: tokens.textSecondary,
+                                          size: 18,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                    subtitle: t(
-                      tk: 'Goşmaça günleri ýa-da üýtgeşmeleri belläň',
-                      ru: 'Отметьте дополнительные дни или изменения',
-                      en: 'Mark additional days or changes',
+                    _SettingRow(
+                      icon: Icons.event_busy_outlined,
+                      title: t(tk: 'Dynç alyş', ru: 'Отпуск', en: 'Vacation'),
+                      subtitle: schedule.vacations.length > 1
+                          ? '${schedule.vacations.length} ${t(tk: "döwür", ru: "периодов", en: "periods")}'
+                          : null,
+                      value: vacationValue,
+                      showChevron: true,
+                      onTap: () => Navigator.push(
+                        context,
+                        pageRoute(const VacationScreen()),
+                      ),
                     ),
-                    value:
-                        '${schedule.overrides.length} ${t(tk: "gün", ru: "дн.", en: "days")}',
-                    showChevron: true,
-                    onTap: () => Navigator.push(
-                      context,
-                      pageRoute(const SpecialDaysScreen()),
+                    _SettingRow(
+                      icon: Icons.event_busy_outlined,
+                      title: t(
+                        tk: 'Aýratyn günler',
+                        ru: 'Особые дни',
+                        en: 'Special days',
+                      ),
+                      subtitle: t(
+                        tk: 'Goşmaça günleri ýa-da üýtgeşmeleri belläň',
+                        ru: 'Отметьте дополнительные дни или изменения',
+                        en: 'Mark additional days or changes',
+                      ),
+                      value:
+                          '${schedule.overrides.length} ${t(tk: "gün", ru: "дн.", en: "days")}',
+                      showChevron: true,
+                      onTap: () => Navigator.push(
+                        context,
+                        pageRoute(const SpecialDaysScreen()),
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

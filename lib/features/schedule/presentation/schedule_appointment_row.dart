@@ -41,7 +41,7 @@ class _AppointmentRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    final statusColor = _apptStatusColor(appointment.status);
+    final statusColor = _apptStatusColor(appointment.status, tokens);
     final phone = customer?.phone ?? appointment.clientPhone;
     final canCall =
         appointment.status == AppointmentStatus.expected &&
@@ -91,7 +91,7 @@ class _AppointmentRow extends StatelessWidget {
                     _StatusBadge2(
                       label: _apptStatusLabel(appointment.status, language),
                       color: statusColor,
-                      bg: _apptStatusBg(appointment.status),
+                      bg: _apptStatusBg(appointment.status, tokens),
                     ),
                   ],
                 ),
@@ -242,8 +242,6 @@ class _AppointmentRow extends StatelessWidget {
   }
 }
 
-const _freeSlotColor = Color(0xff2FAE60);
-
 class _FreeSlotRow extends StatelessWidget {
   const _FreeSlotRow({
     required this.start,
@@ -268,9 +266,9 @@ class _FreeSlotRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: freeSlotBg,
+          color: freeSlotSurface(context.appTokens),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _freeSlotColor.withValues(alpha: .6)),
+          border: Border.all(color: freeSlotForeground(context.appTokens).withValues(alpha: .6)),
         ),
         child: Row(
           children: [
@@ -279,35 +277,35 @@ class _FreeSlotRow extends StatelessWidget {
               height: 26,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: _freeSlotColor.withValues(alpha: .16),
+                color: freeSlotForeground(context.appTokens).withValues(alpha: .16),
                 shape: BoxShape.circle,
               ),
-              child: const AppIcon(
+              child: AppIcon(
                 Icons.schedule_outlined,
                 size: 13,
-                color: freeSlotColorDark,
+                color: freeSlotForeground(context.appTokens),
               ),
             ),
             const SizedBox(width: 10),
             Text(
               '${formatTime(TimeOfDay.fromDateTime(start))} - ${formatTime(TimeOfDay.fromDateTime(end))}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
-                color: freeSlotColorDark,
+                color: freeSlotForeground(context.appTokens),
               ),
             ),
             const SizedBox(width: 6),
             Text(
               '· ${pickTr(language, tk: "Boş wagt", ru: "Свободно", en: "Free")}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: freeSlotColorDark,
+                color: freeSlotForeground(context.appTokens),
               ),
             ),
             const Spacer(),
-            const AppIcon(Icons.add, size: 15, color: freeSlotColorDark),
+            AppIcon(Icons.add, size: 15, color: freeSlotForeground(context.appTokens)),
           ],
         ),
       ),

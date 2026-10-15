@@ -340,9 +340,9 @@ class _MonthCalendar extends StatelessWidget {
                     child: Center(
                       child: Text(
                         d,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: Colors.black45,
+                          color: tokens.textSecondary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -382,7 +382,7 @@ class _MonthCalendar extends StatelessWidget {
                           : FontWeight.w500,
                       color: isSelected
                           ? tokens.surface
-                          : (inMonth ? tokens.textPrimary : Colors.black26),
+                          : (inMonth ? tokens.textPrimary : tokens.disabled),
                     ),
                   ),
                 ),

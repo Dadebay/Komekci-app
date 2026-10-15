@@ -118,7 +118,7 @@ class _RoleOnboardingScreenState extends State<RoleOnboardingScreen>
           ];
     final item = slides[page];
     return Scaffold(
-      backgroundColor: const Color(0xffFBF1E7),
+      backgroundColor: tokens.surface,
       body: SafeArea(
         child: GestureDetector(
           onHorizontalDragEnd: (details) {
@@ -160,7 +160,7 @@ class _RoleOnboardingScreenState extends State<RoleOnboardingScreen>
                 Text(
                   item.$2,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.black54, height: 1.45),
+                  style: TextStyle(color: tokens.textSecondary, height: 1.45),
                 ),
                 const Spacer(),
                 Row(

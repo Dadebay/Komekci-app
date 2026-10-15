@@ -38,10 +38,17 @@ class _DashboardHero extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xff5B3E24), Color(0xffB6803D)],
+                  colors: [
+                    tokens.brightness == Brightness.dark
+                        ? tokens.surfaceElevated
+                        : Color.lerp(tokens.textPrimary, tokens.accent, .25)!,
+                    tokens.brightness == Brightness.dark
+                        ? Color.lerp(tokens.surfaceElevated, tokens.accent, .5)!
+                        : tokens.accent,
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(26),
               ),
@@ -50,18 +57,10 @@ class _DashboardHero extends StatelessWidget {
                 children: [
                   _HeroChip(
                     icon: Icons.chat_bubble_outline,
-                    label: t(tk: 'Habarlaşmak', ru: 'Написать', en: 'Message'),
+                    label: t(tk: 'Habarlaşmak', ru: 'Связаться', en: 'Contact us'),
                     onTap: () => Navigator.push(
                       context,
-                      pageRoute(
-                        SettingsScreen(
-                          title: t(
-                            tk: 'Goldaw',
-                            ru: 'Поддержка',
-                            en: 'Support',
-                          ),
-                        ),
-                      ),
+                      pageRoute(const SupportScreen()),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -74,6 +73,10 @@ class _DashboardHero extends StatelessWidget {
                         currency: context
                             .watch<AppSettingsProvider>()
                             .currencyLabel(language),
+                        onTap: () => Navigator.push(
+                          context,
+                          pageRoute(const BillingScreen()),
+                        ),
                       ),
                     ),
                   ),
@@ -93,7 +96,7 @@ class _DashboardHero extends StatelessWidget {
                   ),
                   child: CircleAvatar(
                     radius: _avatarRadius - 4,
-                    backgroundColor: const Color(0xffE6D2B1),
+                    backgroundColor: tokens.accent.withValues(alpha: .22),
                     child: AppIcon(
                       Icons.person_outline,
                       size: 28,
@@ -163,20 +166,20 @@ class _HeroChip extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.appTokens.surfaceElevated,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AppIcon(icon, size: 15, color: const Color(0xff5B3E24)),
+          AppIcon(icon, size: 15, color: context.appTokens.textPrimary),
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w700,
-              color: Color(0xff5B3E24),
+              color: context.appTokens.textPrimary,
             ),
           ),
         ],
@@ -191,61 +194,67 @@ class _HeroBalanceChip extends StatelessWidget {
     required this.label,
     required this.amount,
     required this.currency,
+    required this.onTap,
   });
   final String label;
   final String amount;
   final String currency;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    decoration: BoxDecoration(
-      color: Colors.white,
+  Widget build(BuildContext context) => Material(
+    color: context.appTokens.surfaceElevated,
+    borderRadius: BorderRadius.circular(14),
+    child: InkWell(
+      onTap: onTap,
       borderRadius: BorderRadius.circular(14),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(fontSize: 9, color: Colors.black45),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(fontSize: 9, color: context.appTokens.textSecondary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    '$amount $currency',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: context.appTokens.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-              Text(
-                '$amount $currency',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xff5B3E24),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 26,
+              height: 26,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: context.appTokens.accent.withValues(alpha: .14),
+                shape: BoxShape.circle,
               ),
-            ],
-          ),
+              child: AppIcon(
+                Icons.account_balance_wallet_outlined,
+                size: 13,
+                color: context.appTokens.accent,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 8),
-        Container(
-          width: 26,
-          height: 26,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: const Color(0xffFBF1D8),
-            shape: BoxShape.circle,
-          ),
-          child: AppIcon(
-            Icons.account_balance_wallet_outlined,
-            size: 13,
-            color: const Color(0xff5B3E24),
-          ),
-        ),
-      ],
+      ),
     ),
   );
 }
@@ -268,12 +277,12 @@ class _HomeStatCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: context.appTokens.surfaceElevated,
       borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: Colors.black.withValues(alpha: .05)),
+      border: Border.all(color: context.appTokens.border),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withValues(alpha: .06),
+          color: context.appTokens.textPrimary.withValues(alpha: .06),
           blurRadius: 16,
           offset: const Offset(0, 6),
         ),
@@ -298,9 +307,9 @@ class _HomeStatCard extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: Colors.black54,
+                  color: context.appTokens.textSecondary,
                   fontWeight: FontWeight.w600,
                 ),
                 maxLines: 1,
@@ -323,7 +332,7 @@ class _HomeStatCard extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           hint,
-          style: const TextStyle(fontSize: 10.5, color: Colors.black45),
+          style: TextStyle(fontSize: 10.5, color: context.appTokens.textSecondary),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -367,10 +376,7 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
   Widget build(BuildContext context) => Container(
     clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
-      // Explicit white, not the theme's surfaceElevated token — the header
-      // band above (explicit `cream`) needs a color it visibly differs from
-      // in every theme, not just the ones where surfaceElevated isn't cream.
-      color: Colors.white,
+      color: context.appTokens.surfaceElevated,
       borderRadius: BorderRadius.circular(18),
       border: Border.all(color: context.appTokens.border),
       boxShadow: [
@@ -390,7 +396,9 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: widget.accentBg,
+                color: context.appTokens.brightness == Brightness.dark
+                    ? Color.alphaBlend(widget.accent.withValues(alpha: .14), context.appTokens.surfaceElevated)
+                    : widget.accentBg,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
@@ -398,7 +406,9 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
                   AppIcon(
                     Icons.calendar_month_outlined,
                     size: 15,
-                    color: widget.accent,
+                    color: context.appTokens.brightness == Brightness.dark
+                        ? context.appTokens.success
+                        : widget.accent,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -407,7 +417,9 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
-                        color: widget.accent,
+                        color: context.appTokens.brightness == Brightness.dark
+                            ? context.appTokens.success
+                            : widget.accent,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -418,14 +430,18 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: widget.accent,
+                        color: context.appTokens.brightness == Brightness.dark
+                            ? context.appTokens.success
+                            : widget.accent,
                     ),
                   ),
                   const SizedBox(width: 6),
                   AppIcon(
                     _expanded ? Icons.expand_less : Icons.expand_more,
                     size: 16,
-                    color: widget.accent,
+                    color: context.appTokens.brightness == Brightness.dark
+                        ? context.appTokens.success
+                        : widget.accent,
                   ),
                 ],
               ),
@@ -547,7 +563,7 @@ class _ApptListHead extends StatelessWidget {
           vertical: 9,
         ),
         decoration: BoxDecoration(
-          color: cream,
+          color: tokens.accent.withValues(alpha: .1),
           border: Border(
             bottom: BorderSide(
               color: tokens.accent.withValues(alpha: .55),
@@ -649,7 +665,7 @@ class _HomeApptRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    final (statusColor, statusBg, statusIcon) = switch (appointment.status) {
+    final (lightStatusColor, lightStatusBg, statusIcon) = switch (appointment.status) {
       AppointmentStatus.completed => (
         freeSlotColorDark,
         freeSlotBg,
@@ -671,6 +687,12 @@ class _HomeApptRow extends StatelessWidget {
         Icons.close,
       ),
     };
+    final statusColor = tokens.brightness == Brightness.dark
+        ? _apptStatusColor(appointment.status, tokens)
+        : lightStatusColor;
+    final statusBg = tokens.brightness == Brightness.dark
+        ? _apptStatusBg(appointment.status, tokens)
+        : lightStatusBg;
     // Mirrors the reference design's single highlighted "in progress" row —
     // the client is on-site right now, so it's the one row worth calling out.
     final highlighted = appointment.status == AppointmentStatus.arrived;
@@ -733,7 +755,7 @@ class _HomeApptRow extends StatelessWidget {
                       customer == null
                           ? CircleAvatar(
                               radius: 16,
-                              backgroundColor: const Color(0xffE6D2B1),
+                              backgroundColor: tokens.accent.withValues(alpha: .18),
                               child: AppIcon(
                                 Icons.person_outline,
                                 size: 15,
@@ -925,7 +947,9 @@ class _HomeFreeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    const freeColor = Color(0xff2A5DB0);
+    final freeColor = tokens.brightness == Brightness.dark
+        ? tokens.success
+        : const Color(0xff2A5DB0);
     final minutes = end.difference(start).inMinutes;
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -933,7 +957,9 @@ class _HomeFreeRow extends StatelessWidget {
         horizontal: _apptRowInset,
       ),
       decoration: BoxDecoration(
-        color: freeSlotBg.withValues(alpha: .5),
+        color: tokens.brightness == Brightness.dark
+            ? freeSlotSurface(tokens)
+            : freeSlotBg.withValues(alpha: .5),
         border: showDivider
             ? Border(bottom: BorderSide(color: tokens.border))
             : null,
@@ -952,7 +978,7 @@ class _HomeFreeRow extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   formatTime(TimeOfDay.fromDateTime(start)),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w800,
                     color: freeColor,
@@ -968,7 +994,7 @@ class _HomeFreeRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const AppIcon(
+                    AppIcon(
                       Icons.schedule_outlined,
                       size: 14,
                       color: freeColor,
@@ -982,7 +1008,7 @@ class _HomeFreeRow extends StatelessWidget {
                           ru: 'Свободно',
                           en: 'Free slot',
                         ),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,
                           color: freeColor,
@@ -1011,8 +1037,8 @@ class _HomeFreeRow extends StatelessWidget {
             onPressed: onTap,
             style: OutlinedButton.styleFrom(
               foregroundColor: freeColor,
-              side: const BorderSide(color: freeColor),
-              backgroundColor: Colors.white,
+              side: BorderSide(color: freeColor),
+              backgroundColor: context.appTokens.surfaceElevated,
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               visualDensity: VisualDensity.compact,

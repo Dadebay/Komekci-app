@@ -32,14 +32,14 @@ class _SheetAction extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: danger
-                    ? const Color(0xffFDF0EE)
+                    ? tokens.danger.withValues(alpha: .14)
                     : tokens.surfaceElevated,
                 shape: BoxShape.circle,
               ),
               child: AppIcon(
                 icon,
                 size: 17,
-                color: danger ? const Color(0xffC0392B) : tokens.textPrimary,
+                color: danger ? tokens.danger : tokens.textPrimary,
               ),
             ),
             const SizedBox(width: 12),
@@ -52,17 +52,15 @@ class _SheetAction extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: danger
-                          ? const Color(0xffC0392B)
-                          : tokens.textPrimary,
+                      color: danger ? tokens.danger : tokens.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11.5,
-                      color: Colors.black45,
+                      color: tokens.textSecondary,
                     ),
                   ),
                 ],
@@ -81,10 +79,10 @@ class _SheetAction extends StatelessWidget {
                 ),
               )
             else
-              const AppIcon(
+              AppIcon(
                 Icons.chevron_right,
                 size: 16,
-                color: Colors.black26,
+                color: tokens.textSecondary,
               ),
           ],
         ),
@@ -718,8 +716,8 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
                                       const SizedBox(width: 8),
                                       _StatusBadge2(
                                         label: _statusLabel(c.status, tk),
-                                        color: _statusColor(c.status),
-                                        bg: _statusBg(c.status),
+                                        color: _statusColor(c.status, tokens),
+                                        bg: _statusBg(c.status, tokens),
                                       ),
                                     ],
                                   ),

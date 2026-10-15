@@ -75,13 +75,13 @@ Future<File?> pickCompressedImage(BuildContext context, {AppLanguage language = 
 /// with neither — or when the download fails (a missing file on the server
 /// answers 500) — it shows a placeholder icon instead of throwing.
 class RoundPhoto extends StatelessWidget {
-  const RoundPhoto({super.key, this.file, this.url, this.radius = 24, this.placeholder = Icons.person_outline, this.backgroundColor = const Color(0xffE6D2B1)});
+  const RoundPhoto({super.key, this.file, this.url, this.radius = 24, this.placeholder = Icons.person_outline, this.backgroundColor});
 
   final File? file;
   final String? url;
   final double radius;
   final IconData placeholder;
-  final Color backgroundColor;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +101,7 @@ class RoundPhoto extends StatelessWidget {
       width: radius * 2,
       height: radius * 2,
       child: ClipOval(
-        child: ColoredBox(color: backgroundColor, child: content),
+        child: ColoredBox(color: backgroundColor ?? tokens.accent.withValues(alpha: .18), child: content),
       ),
     );
   }
@@ -128,7 +128,7 @@ class AvatarPicker extends StatelessWidget {
       },
       child: Stack(
         children: [
-          RoundPhoto(file: file, url: networkUrl, radius: radius, backgroundColor: const Color(0xffF1EDE4)),
+          RoundPhoto(file: file, url: networkUrl, radius: radius),
           Positioned(
             right: 0,
             bottom: 0,
@@ -180,7 +180,7 @@ class PhotoUploadBox extends StatelessWidget {
         width: double.infinity,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: const Color(0xffFAF8F4),
+          color: tokens.surfaceElevated,
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(color: _hasImage ? tokens.accent : tokens.border, width: _hasImage ? 1.5 : 1),
         ),
@@ -212,7 +212,7 @@ class PhotoUploadBox extends StatelessWidget {
                   AppIcon(Icons.photo_camera_outlined, color: tokens.textPrimary, size: 28),
                   const SizedBox(height: 10),
                   Text(title, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700)),
-                  if (hint != null) ...[const SizedBox(height: 5), Text(hint!, style: const TextStyle(fontSize: 11.5, color: Colors.black45))],
+                  if (hint != null) ...[const SizedBox(height: 5), Text(hint!, style: TextStyle(fontSize: 11.5, color: tokens.textSecondary))],
                 ],
               ),
       ),

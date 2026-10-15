@@ -173,7 +173,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   child: AppIcon(
                     _showMonth ? Icons.expand_less : Icons.expand_more,
                     size: 16,
-                    color: Colors.black54,
+                    color: tokens.textSecondary,
                   ),
                 ),
               ),
@@ -205,18 +205,18 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             ],
             Row(
               children: [
-                const AppIcon(
+                AppIcon(
                   Icons.calendar_month_outlined,
                   size: 16,
-                  color: Colors.black45,
+                  color: tokens.textSecondary,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   '${_selected.day} ${_byLang(language, _monthsFullTk, _monthsFullRu, _monthsFullEn)[_selected.month - 1]}, ${_selected.year} • ${_byLang(language, _weekdaysFullTk, _weekdaysFullRu, _weekdaysFullEn)[_selected.weekday - 1]}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black54,
+                    color: tokens.textSecondary,
                   ),
                 ),
               ],

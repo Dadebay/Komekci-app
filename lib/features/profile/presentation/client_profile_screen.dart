@@ -242,17 +242,25 @@ void _showThemeSheet(BuildContext context) {
                       decoration: BoxDecoration(
                         color: swatch.$2,
                         borderRadius: BorderRadius.circular(17),
-                        border: Border.all(color: tokens.border),
+                        border: Border.all(
+                          color: selected == swatch.$4 ? swatch.$3 : tokens.border,
+                          width: selected == swatch.$4 ? 2 : 1,
+                        ),
                       ),
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            backgroundColor: swatch.$3,
-                            child: AppIcon(
-                              selected == swatch.$4 ? Icons.check : Icons.circle_outlined,
-                              color: Colors.white,
-                              size: 18,
+                          Container(
+                            width: 30,
+                            height: 30,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: selected == swatch.$4 ? swatch.$3 : Colors.transparent,
+                              border: Border.all(color: swatch.$3, width: 1.8),
                             ),
+                            child: selected == swatch.$4
+                                ? Icon(Icons.check, color: swatch.$2, size: 19)
+                                : null,
                           ),
                           const SizedBox(width: 14),
                           Text(

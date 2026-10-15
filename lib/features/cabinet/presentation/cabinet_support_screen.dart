@@ -9,8 +9,11 @@ class SupportScreen extends StatelessWidget {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
+    final dark = tokens.brightness == Brightness.dark;
     final supportContact = context.watch<AppSettingsProvider>().supportContact;
     final contact = context.watch<AppSettingsProvider>().contact;
+    final contactRows = _configuredContactRows(context, contact);
+    final hasContact = supportContact.isNotEmpty || contactRows.isNotEmpty;
     final faq = switch (language) {
       AppLanguage.tk => [
         (
@@ -47,59 +50,139 @@ class SupportScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
-            ...faq.map(
-              (item) => Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(15),
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: dark ? tokens.surfaceElevated : tokens.textPrimary,
+                borderRadius: BorderRadius.circular(24),
+                border: dark ? Border.all(color: tokens.border) : null,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: tokens.accent.withValues(alpha: .2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: AppIcon(
+                      Icons.support_agent_outlined,
+                      color: tokens.accent,
+                      size: 25,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    t(
+                      tk: 'Size nädip kömek edip bileris?',
+                      ru: 'Чем мы можем помочь?',
+                      en: 'How can we help?',
+                    ),
+                    style: TextStyle(
+                      color: dark ? tokens.textPrimary : tokens.surface,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      height: 1.15,
+                    ),
+                  ),
+                  const SizedBox(height: 9),
+                  Text(
+                    t(
+                      tk: 'Soragyňyza jogap tapyň ýa-da elýeterli usul bilen bize ýüz tutuň.',
+                      ru: 'Найдите ответ на вопрос или свяжитесь с нами удобным способом.',
+                      en: 'Find an answer or reach us using an available contact method.',
+                    ),
+                    style: TextStyle(
+                      color: dark ? tokens.textSecondary : tokens.surface.withValues(alpha: .72),
+                      fontSize: 13,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 28),
+            Text(
+              t(
+                tk: 'Bize habarlaşyň',
+                ru: 'Свяжитесь с нами',
+                en: 'Get in touch',
+              ),
+              style: TextStyle(
+                color: tokens.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (supportContact.isNotEmpty)
+              _ContactRow(
+                icon: Icons.chat_bubble_outline,
+                title: t(
+                  tk: 'Goldaw bilen habarlaş',
+                  ru: 'Связаться с поддержкой',
+                  en: 'Contact support',
+                ),
+                value: supportContact,
+                onTap: () => _openSupportContact(supportContact),
+              ),
+            ...contactRows,
+            if (!hasContact)
+              Container(
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: tokens.surfaceElevated,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: _softLine(tokens)),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      item.$1,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      item.$2,
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: Colors.black54,
-                        height: 1.45,
+                    AppIcon(Icons.info_outline, color: tokens.accent, size: 22),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        t(
+                          tk: 'Aragatnaşyk maglumatlary häzir elýeterli däl.',
+                          ru: 'Контактные данные сейчас недоступны.',
+                          en: 'Contact details are not available right now.',
+                        ),
+                        style: TextStyle(
+                          color: tokens.textSecondary,
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            _MasterActionButton(
-              label: t(
-                tk: 'Goldaw bilen habarlaş',
-                ru: 'Связаться с поддержкой',
-                en: 'Contact support',
+            const SizedBox(height: 28),
+            Text(
+              t(
+                tk: 'Köp soralýan soraglar',
+                ru: 'Частые вопросы',
+                en: 'Frequently asked questions',
               ),
-              enabled: supportContact.isNotEmpty,
-              leading: Icons.chat_bubble_outline,
-              onTap: () => _openSupportContact(supportContact),
+              style: TextStyle(
+                color: tokens.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
             ),
-            const SizedBox(height: 14),
-            ..._configuredContactRows(context, contact),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
+            ...faq.map((item) => _FaqTile(question: item.$1, answer: item.$2)),
+            const SizedBox(height: 18),
             _ContactRow(
               icon: Icons.info_outline,
               title: t(tk: 'Biz barada', ru: 'О нас', en: 'About us'),
               value: '',
-              onTap: () => Navigator.push(context, pageRoute(const AboutScreen())),
+              onTap: () =>
+                  Navigator.push(context, pageRoute(const AboutScreen())),
             ),
           ],
         ),

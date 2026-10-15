@@ -8,9 +8,9 @@ class SettingsScreen extends StatelessWidget {
     title: title,
     child: ListView(
       children: [
-        const Text(
+        Text(
           'Manage your preferences.',
-          style: TextStyle(color: Colors.black54),
+          style: TextStyle(color: context.appTokens.textSecondary),
         ),
         const SizedBox(height: 18),
         ...[

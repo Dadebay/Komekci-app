@@ -159,7 +159,7 @@ class _VacationScreenState extends State<VacationScreen> {
                                 context,
                                 () => context.read<ScheduleProvider>().removeVacation(v.id),
                               ),
-                              child: const AppIcon(Icons.close, color: Colors.black38, size: 18),
+                              child: AppIcon(Icons.close, color: tokens.textSecondary, size: 18),
                             ),
                           ],
                         ),

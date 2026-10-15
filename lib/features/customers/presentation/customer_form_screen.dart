@@ -249,7 +249,7 @@ class _FormBanner extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: const Color(0xffEEF0FB),
+      color: context.appTokens.accent.withValues(alpha: .1),
       borderRadius: BorderRadius.circular(16),
     ),
     child: Row(
@@ -259,14 +259,14 @@ class _FormBanner extends StatelessWidget {
           width: 30,
           height: 30,
           alignment: Alignment.center,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white,
+            color: context.appTokens.surfaceElevated,
           ),
-          child: const AppIcon(
+          child: AppIcon(
             Icons.info_outline,
             size: 15,
-            color: Color(0xff5B5FC7),
+            color: context.appTokens.accent,
           ),
         ),
         const SizedBox(width: 12),

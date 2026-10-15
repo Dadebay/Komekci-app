@@ -80,6 +80,7 @@ class AppIcon extends StatelessWidget {
       Icons.wifi_rounded => HugeIcons.strokeRoundedWifi01,
       Icons.wifi_off_rounded => HugeIcons.strokeRoundedWifiOff01,
       Icons.language => HugeIcons.strokeRoundedLanguageCircle,
+      Icons.settings_outlined => HugeIcons.strokeRoundedSettings01,
       Icons.switch_account_outlined => HugeIcons.strokeRoundedUserSwitch,
       Icons.swap_horiz => HugeIcons.strokeRoundedArrowLeftRight,
       Icons.shield_outlined => HugeIcons.strokeRoundedShield01,

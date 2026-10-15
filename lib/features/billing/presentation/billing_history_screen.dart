@@ -79,7 +79,7 @@ class _LedgerEntryTile extends StatelessWidget {
             height: 38,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: const Color(0xffFDF9F2),
+              color: tokens.accent.withValues(alpha: .12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: AppIcon(
@@ -95,7 +95,7 @@ class _LedgerEntryTile extends StatelessWidget {
               children: [
                 Text(
                   '${formatDate(entry.createdAt)}  ${formatTime(TimeOfDay.fromDateTime(entry.createdAt))}',
-                  style: const TextStyle(fontSize: 12, color: Colors.black45),
+                  style: TextStyle(fontSize: 12, color: tokens.textSecondary),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -141,7 +141,7 @@ class _LedgerEntryTile extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 '${t(tk: "Balans", ru: "Баланс", en: "Balance")}: ${formatMoney(entry.balanceAfter)}',
-                style: const TextStyle(fontSize: 11, color: Colors.black45),
+                style: TextStyle(fontSize: 11, color: tokens.textSecondary),
               ),
             ],
           ),
