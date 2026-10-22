@@ -60,12 +60,14 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
     }
   }
 
-  /// Free start times on [day], as given by the server (`HH:mm`).
+  /// Free start times on [day], as given by the server (`HH:mm`), shown on
+  /// half-hour boundaries in the booking picker.
   List<DateTime> _slotsFor(DateTime day) {
     final raw = _availability?.dates[formatApiDate(day)] ?? const <String>[];
     return [
       for (final s in raw)
-        if (RegExp(r'^\d{1,2}:\d{2}').hasMatch(s))
+        if (RegExp(r'^\d{1,2}:\d{2}').hasMatch(s) &&
+            int.parse(s.split(':')[1]) % 30 == 0)
           DateTime(
             day.year,
             day.month,
@@ -100,7 +102,7 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
     // Free times split into parts of the day, so a long list stays scannable.
     final groups = <(String, List<DateTime>)>[
       (t(tk: 'Irden', ru: 'Утро', en: 'Morning'), [for (final x in slots) if (x.hour < 12) x]),
-      (t(tk: 'Gündiz', ru: 'День', en: 'Afternoon'), [for (final x in slots) if (x.hour >= 12 && x.hour < 17) x]),
+      (t(tk: 'Günorta', ru: 'День', en: 'Afternoon'), [for (final x in slots) if (x.hour >= 12 && x.hour < 17) x]),
       (t(tk: 'Agşam', ru: 'Вечер', en: 'Evening'), [for (final x in slots) if (x.hour >= 17) x]),
     ];
     final slotWidth = (MediaQuery.sizeOf(context).width - 40 - 30) / 4;
@@ -198,7 +200,7 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                             title: t(tk: 'Ýazgy wagtlaýyn ýapyk', ru: 'Запись временно закрыта', en: 'Bookings are paused'),
                             text: availability.message ??
                                 t(
-                                  tk: 'Usta häzirlikçe täze ýazgylary kabul etmeýär.',
+                                  tk: 'Master häzirlikçe täze ýazgylary kabul etmeýär.',
                                   ru: 'Мастер временно не принимает новые записи.',
                                   en: 'This master is not accepting new bookings right now.',
                                 ),

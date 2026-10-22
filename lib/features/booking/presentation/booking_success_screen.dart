@@ -78,7 +78,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
               const SizedBox(height: 26),
               Text(
                 t(
-                  tk: 'Randevu tassyklandy!',
+                  tk: 'Ýazgy tassyklandy!',
                   ru: 'Запись подтверждена!',
                   en: 'Booking confirmed!',
                 ),
@@ -110,24 +110,27 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                     const SizedBox(height: 3),
                     Text(widget.masterName, style: TextStyle(color: tokens.textSecondary, fontSize: 13)),
                     const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _BookingInfoTile(
-                            icon: Icons.calendar_today_outlined,
-                            caption: t(tk: 'Senesi', ru: 'Дата', en: 'Date'),
-                            value: formatDate(a.startsAt),
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: _BookingInfoTile(
+                              icon: Icons.calendar_today_outlined,
+                              caption: t(tk: 'Barmaly senesi', ru: 'Дата', en: 'Date'),
+                              value: formatDate(a.startsAt),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: _BookingInfoTile(
-                            icon: Icons.schedule_outlined,
-                            caption: t(tk: 'Wagty', ru: 'Время', en: 'Time'),
-                            value: '$timeLabel · ${a.minutes} ${t(tk: "min", ru: "мин", en: "min")}',
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _BookingInfoTile(
+                              icon: Icons.schedule_outlined,
+                              caption: t(tk: 'Barmaly wagty', ru: 'Время', en: 'Time'),
+                              value: '$timeLabel · ${a.minutes} ${t(tk: "min", ru: "мин", en: "min")}',
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),

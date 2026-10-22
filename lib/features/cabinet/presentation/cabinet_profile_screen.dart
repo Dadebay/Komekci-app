@@ -433,7 +433,10 @@ class _ProfileHero extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(22),
                       border: Border.all(color: hasBanner ? tokens.accent.withValues(alpha: .6) : tokens.border),
-                      gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [tokens.accent.withValues(alpha: .20), tokens.accent.withValues(alpha: .06)]),
+                      color: tokens.surfaceElevated,
+                      gradient: tokens.surfaceElevated == tokens.surface
+                          ? null
+                          : LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [tokens.accent.withValues(alpha: .20), tokens.accent.withValues(alpha: .06)]),
                     ),
                     child: Stack(
                       fit: StackFit.expand,
@@ -554,12 +557,13 @@ class _ProfileHero extends StatelessWidget {
 
 /// A titled card that groups related fields.
 class _ProfileSection extends StatelessWidget {
-  const _ProfileSection({required this.icon, required this.title, required this.children, this.subtitle});
+  const _ProfileSection({required this.icon, required this.title, required this.children, this.subtitle, this.backgroundColor});
 
   final IconData icon;
   final String title;
   final String? subtitle;
   final List<Widget> children;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -567,7 +571,7 @@ class _ProfileSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
       decoration: BoxDecoration(
-        color: tokens.surfaceElevated,
+        color: backgroundColor ?? tokens.surfaceElevated,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: tokens.border),
       ),

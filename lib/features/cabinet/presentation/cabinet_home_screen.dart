@@ -188,7 +188,7 @@ class _MasterCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: tokens.surfaceElevated,
+          color: tokens.surface,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: _softLine(tokens)),
           boxShadow: [
@@ -369,7 +369,7 @@ class _CabinetRow extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
         decoration: BoxDecoration(
-          color: tokens.surfaceElevated,
+          color: tokens.surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: _softLine(tokens)),
         ),
@@ -432,7 +432,7 @@ class _HelpCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
         decoration: BoxDecoration(
-          color: tokens.accent.withValues(alpha: .1),
+          color: tokens.surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: tokens.border,

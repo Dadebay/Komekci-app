@@ -90,9 +90,9 @@ class _ClientProfileCard extends StatelessWidget {
               children: [
                 stat('${bookings.length}', t(tk: 'Ýazgy', ru: 'Записей', en: 'Bookings')),
                 Container(width: 1, height: 32, color: tokens.border),
-                stat('$upcoming', t(tk: 'Gelejek', ru: 'Предстоящих', en: 'Upcoming')),
+                stat('$upcoming', t(tk: 'Indiki', ru: 'Предстоящих', en: 'Upcoming')),
                 Container(width: 1, height: 32, color: tokens.border),
-                stat('$masters', t(tk: 'Ussa', ru: 'Мастеров', en: 'Masters')),
+                stat('$masters', t(tk: 'Master', ru: 'Мастеров', en: 'Masters')),
               ],
             ),
           ],

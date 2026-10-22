@@ -81,6 +81,7 @@ class _CustomersScreenState extends State<CustomersScreen>
                         padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
                         child: EmptyState(
                           icon: Icons.people_outline,
+                          backgroundColor: tokens.surface,
                           title: tk
                               ? 'Müşderi tapylmady'
                               : 'Клиенты не найдены',
@@ -117,7 +118,7 @@ class _CustomersScreenState extends State<CustomersScreen>
     final tokens = context.appTokens;
     showModalBottomSheet(
       context: context,
-      backgroundColor: tokens.surfaceElevated,
+      backgroundColor: tokens.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -264,6 +265,7 @@ class _CustomerControls extends StatelessWidget {
                     controller: searchController,
                     hint: tk ? 'Müşderi gözlemek' : 'Поиск клиента',
                     onChanged: provider.setQuery,
+                    backgroundColor: tokens.surface,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -276,7 +278,7 @@ class _CustomerControls extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: sheetFilterActive
                           ? tokens.textPrimary
-                          : tokens.surfaceElevated,
+                          : tokens.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: sheetFilterActive
@@ -394,7 +396,7 @@ class _StatCard extends StatelessWidget {
         height: 58,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          color: tokens.surfaceElevated,
+          color: tokens.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: selected ? color.withValues(alpha: .45) : tokens.border,

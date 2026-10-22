@@ -25,10 +25,10 @@ class _ClientMasterCarouselState extends State<_ClientMasterCarousel> {
     if (masters.isEmpty) {
       return EmptyState(
         icon: Icons.groups_outlined,
-        title: pickTr(language, tk: 'Baglanan ussaňyz ýok', ru: 'Связанных мастеров нет', en: 'No connected masters yet'),
+        title: pickTr(language, tk: 'Baglanan masteriňiz ýok', ru: 'Связанных мастеров нет', en: 'No connected masters yet'),
         text: pickTr(
           language,
-          tk: 'Lakamy ýa-da telefon belgisi bilen ussany tapyp baglanyň.',
+          tk: 'Lakamy ýa-da telefon belgisi bilen masteri tapyp baglanyň.',
           ru: 'Найдите мастера по никнейму или телефону и подключитесь.',
           en: 'Find a master by nickname or phone and connect.',
         ),
@@ -74,7 +74,7 @@ class _ClientMasterCard extends StatelessWidget {
         decoration: _bookingCardDecoration(tokens),
         child: Column(
           children: [
-            Container(height: 46, color: Color.alphaBlend(tokens.accent.withValues(alpha: .14), tokens.surface)),
+            Container(height: 46, color: tokens.surfaceElevated),
             // 30px of layout height: the avatar hangs up into the band above.
             SizedBox(
               height: 30,
@@ -191,7 +191,7 @@ class _AddMasterCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              pickTr(language, tk: 'Usta goş', ru: 'Добавить мастера', en: 'Add master'),
+              pickTr(language, tk: 'Master goş', ru: 'Добавить мастера', en: 'Add master'),
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
             ),

@@ -148,6 +148,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                   _ProfileSection(
                     icon: Icons.content_cut,
                     title: t(tk: 'Hyzmat barada', ru: 'Об услуге', en: 'About the service'),
+                    backgroundColor: tokens.surface,
                     children: [
                       _ProfileField(
                         controller: _nameController,
@@ -175,6 +176,7 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                   _ProfileSection(
                     icon: Icons.payments_outlined,
                     title: t(tk: 'Baha we wagt', ru: 'Цена и время', en: 'Price & time'),
+                    backgroundColor: tokens.surface,
                     children: [
                       _ProfileField(
                         controller: _priceController,
@@ -294,9 +296,7 @@ class _ServicePhotoBox extends StatelessWidget {
 
     // What an empty box (or a picture that failed to load) shows.
     final prompt = Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [tokens.accent.withValues(alpha: .16), tokens.accent.withValues(alpha: .05)]),
-      ),
+      decoration: BoxDecoration(color: tokens.surface),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -348,7 +348,7 @@ class _ServicePhotoBox extends StatelessWidget {
             // Clipped to the same rounded shape as the border, so the picture
             // gets rounded corners too ...
             clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(_radius), color: tokens.surfaceElevated),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(_radius), color: tokens.surface),
             // ... and the border is painted on top of it, so the picture can
             // never cover it.
             foregroundDecoration: BoxDecoration(
@@ -560,7 +560,7 @@ class _ErrorText extends StatelessWidget {
 }
 
 class _FormField extends StatelessWidget {
-  const _FormField({required this.controller, required this.hint, required this.onChanged, this.maxLines = 1, this.maxLength, this.keyboardType, this.textInputAction, this.onSubmitted, this.inputFormatters, this.prefixIcon, this.invalid = false, this.enabled = true});
+  const _FormField({required this.controller, required this.hint, required this.onChanged, this.maxLines = 1, this.maxLength, this.keyboardType, this.textInputAction, this.onSubmitted, this.inputFormatters, this.prefixIcon, this.invalid = false, this.enabled = true, this.fillColor});
 
   final TextEditingController controller;
   final String hint;
@@ -574,6 +574,7 @@ class _FormField extends StatelessWidget {
   final Widget? prefixIcon;
   final bool invalid;
   final bool enabled;
+  final Color? fillColor;
 
   @override
   Widget build(BuildContext context) {
@@ -599,7 +600,7 @@ class _FormField extends StatelessWidget {
         errorStyle: const TextStyle(fontSize: 11.5),
         counterStyle: TextStyle(fontSize: 11, color: tokens.textSecondary),
         filled: true,
-        fillColor: tokens.surfaceElevated,
+        fillColor: fillColor ?? tokens.surfaceElevated,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

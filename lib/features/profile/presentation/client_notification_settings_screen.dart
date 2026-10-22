@@ -95,12 +95,12 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                 _NotificationPrefRow(
                   icon: Icons.chat_bubble_outline,
                   title: t(
-                    tk: 'Usta habarlary',
+                    tk: 'Master habarlary',
                     ru: 'Сообщения мастера',
                     en: 'Master messages',
                   ),
                   subtitle: t(
-                    tk: 'Ussalardan gelýän habarlar',
+                    tk: 'Masterlerden gelýän habarlar',
                     ru: 'Сообщения от ваших мастеров',
                     en: 'Messages from your masters',
                   ),

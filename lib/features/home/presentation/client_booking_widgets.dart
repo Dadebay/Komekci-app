@@ -207,7 +207,7 @@ class _ClientBookingsListCard extends StatelessWidget {
   );
 }
 
-/// The soonest upcoming booking, shown big at the top of "Gelejek".
+/// The soonest upcoming booking, shown big at the top of "Indiki".
 class _NextBookingHero extends StatelessWidget {
   const _NextBookingHero({required this.booking, required this.language});
   final ClientBooking booking;

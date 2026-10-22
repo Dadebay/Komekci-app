@@ -59,7 +59,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       ..prefetch(_weekStart.add(const Duration(days: 6)));
 
     final dayAppointments = bookingProvider.onDay(_selected);
-    final query = _searchController.text.trim().toLowerCase();
+    final query = _searching ? _searchController.text.trim().toLowerCase() : '';
     final now = DateTime.now();
     final minLeadMinutes = schedule?.minLeadMin ?? 30;
     final timeline = _buildTimeline(dayAppointments, _selected, schedule)
@@ -234,6 +234,32 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   tk: 'Başga at ýa-da hyzmat bilen gözläň.',
                   ru: 'Попробуйте другое имя или услугу.',
                   en: 'Try another name or service.',
+                ),
+              ),
+            if (query.isEmpty &&
+                entries.isEmpty &&
+                schedule != null &&
+                bookingProvider.isMonthLoaded(_selected))
+              Padding(
+                padding: const EdgeInsets.only(top: 48),
+                child: BookingsEmptyState(
+                  framed: false,
+                  title: _sameDay(_selected, appToday())
+                      ? t(
+                          tk: 'Bu gün iş wagtyňyz galmady',
+                          ru: 'На сегодня рабочих часов не осталось',
+                          en: 'No working hours left today',
+                        )
+                      : t(
+                          tk: 'Bu gün iş wagtyňyz ýok',
+                          ru: 'На этот день рабочих часов нет',
+                          en: 'No working hours on this day',
+                        ),
+                  text: t(
+                    tk: 'Başga güni saýlaň ýa-da iş wagtyňyzy sazlaň.',
+                    ru: 'Выберите другой день или настройте рабочее время.',
+                    en: 'Choose another day or update your working hours.',
+                  ),
                 ),
               ),
             ...entries.map((entry) {

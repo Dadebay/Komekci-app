@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/localization/language_provider.dart';
+import '../../../core/theme/app_theme_tokens.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../data/models/app_settings.dart';
 import '../../../data/repositories/settings_repository.dart';
@@ -27,6 +28,14 @@ class AppSettingsProvider extends ChangeNotifier {
   String get supportContact => _settings.supportContact;
   List<AppLanguage> get locales => _settings.locales;
   List<KomekciTheme> get themes => _settings.themes;
+  AppThemeTokens themeTokensFor(KomekciTheme theme) {
+    final bundled = tokensFor(theme);
+    final tokens = _settings.themeColors[theme]?.applyTo(bundled) ?? bundled;
+    // Keep red-theme cards and inputs white even if the API sends a pink secondary.
+    return themeStyleFor(theme) == KomekciThemeStyle.red
+        ? tokens.copyWith(surfaceElevated: tokens.surface)
+        : tokens;
+  }
   AppContact get contact => _settings.contact;
   AppAbout get about => _settings.about;
   int _loadGeneration = 0;

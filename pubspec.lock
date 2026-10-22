@@ -187,10 +187,9 @@ packages:
   firebase_analytics:
     dependency: "direct main"
     description:
-      name: firebase_analytics
-      sha256: b82d2cabf4905a465ac95937037cbab4f2ca80f559cb04abd3da3f2abb9960bb
-      url: "https://pub.dev"
-    source: hosted
+      path: "third_party/firebase_analytics"
+      relative: true
+    source: path
     version: "12.6.0"
   firebase_analytics_platform_interface:
     dependency: transitive
@@ -211,10 +210,9 @@ packages:
   firebase_core:
     dependency: "direct main"
     description:
-      name: firebase_core
-      sha256: "5fbbaa2aeb08a52feee559f92a62f5a6b04c9bdff81c8f608636771cf0d7b680"
-      url: "https://pub.dev"
-    source: hosted
+      path: "third_party/firebase_core"
+      relative: true
+    source: path
     version: "4.15.0"
   firebase_core_platform_interface:
     dependency: transitive
@@ -791,10 +789,9 @@ packages:
   smart_auth:
     dependency: "direct main"
     description:
-      name: smart_auth
-      sha256: a536423c50d71e9a311d16027346634d0deadd07dafc5b5606b46719cf6fb2b6
-      url: "https://pub.dev"
-    source: hosted
+      path: "third_party/smart_auth"
+      relative: true
+    source: path
     version: "3.2.0"
   source_span:
     dependency: transitive

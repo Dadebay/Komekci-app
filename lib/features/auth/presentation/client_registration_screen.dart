@@ -354,14 +354,7 @@ class _ClientRegistrationScreenState extends State<ClientRegistrationScreen> {
         OtpScreen(
           phone: phone,
           nextBuilder: (_) => const ConnectMasterScreen(),
-          onResend: () async {
-            try {
-              await auth.requestOtp(phone);
-            } on ApiException catch (e) {
-              if (e.code != ApiErrors.phoneNotFound) rethrow;
-              await auth.register(data);
-            }
-          },
+          onResend: () => auth.register(data),
         ),
       ),
     );

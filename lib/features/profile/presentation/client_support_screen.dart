@@ -106,12 +106,12 @@ class ClientSupportScreen extends StatelessWidget {
       ),
       (
         t(
-          tk: 'Halanan ussalarym nirede saklanýar?',
+          tk: 'Halanan masterlerim nirede saklanýar?',
           ru: 'Где хранятся мои избранные мастера?',
           en: 'Where are my favourite masters saved?',
         ),
         t(
-          tk: 'Aşaky menýudaky ýürek nyşanyna basyp, halanlaryňyzy islendik wagt görüp bilersiňiz. Ussanyň profilindäki ýürek belligi bilen goşup/aýryp bolýar.',
+          tk: 'Aşaky menýudaky ýürek nyşanyna basyp, halanlaryňyzy islendik wagt görüp bilersiňiz. Masteriň profilindäki ýürek belligi bilen goşup/aýryp bolýar.',
           ru: 'Нажмите на значок сердца в нижнем меню, чтобы увидеть избранное в любое время. Добавляйте и убирайте мастеров сердцем на странице их профиля.',
           en: 'Tap the heart icon in the bottom menu to see your favourites anytime. Add or remove a master with the heart on their profile page.',
         ),

@@ -39,7 +39,7 @@ class ClientHomeDashboard extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        t(tk: 'Ussany lakamy ýa-da telefony boýunça tap', ru: 'Найти мастера по никнейму или телефону', en: 'Find a master by nickname or phone'),
+                        t(tk: 'Masteri lakamy ýa-da telefony boýunça tap', ru: 'Найти мастера по никнейму или телефону', en: 'Find a master by nickname or phone'),
                         style: TextStyle(color: tokens.textSecondary, fontSize: 14),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

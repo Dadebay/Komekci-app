@@ -23,7 +23,7 @@ class CabinetSettingsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: tokens.surfaceElevated,
+                color: tokens.surface,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: _softLine(tokens)),
               ),
@@ -98,7 +98,7 @@ class CabinetSettingsScreen extends StatelessWidget {
             _CabinetPreferenceTile(
               icon: Icons.brush_outlined,
               title: t(tk: 'Görnüşi', ru: 'Оформление', en: 'Appearance'),
-              value: _themeName(theme),
+              value: _themeName(theme, language),
               onTap: () => _showThemeSheet(context),
             ),
             const SizedBox(height: 8),
@@ -139,7 +139,7 @@ class _CabinetPreferenceTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: tokens.surfaceElevated,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: _softLine(tokens)),
       ),

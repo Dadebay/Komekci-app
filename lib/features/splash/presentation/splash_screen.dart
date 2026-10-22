@@ -44,8 +44,16 @@ class _SplashScreenState extends State<SplashScreen>
     if (settings.locales.isNotEmpty && !settings.locales.contains(language.language)) {
       language.select(settings.locales.first);
     }
-    if (settings.themes.isNotEmpty && !settings.themes.contains(theme.selected)) {
-      theme.select(settings.themes.first);
+    if (settings.themes.isNotEmpty) {
+      final preferred = enabledThemeForStyle(
+        settings.themes,
+        themeStyleFor(theme.selected),
+      );
+      if (preferred != null && preferred != theme.selected) {
+        theme.select(preferred);
+      } else if (!settings.themes.contains(theme.selected)) {
+        theme.select(settings.themes.first);
+      }
     }
     final networks = result.first as List<ConnectivityResult>;
     _isOnline = networks.any((value) => value != ConnectivityResult.none);
@@ -56,8 +64,15 @@ class _SplashScreenState extends State<SplashScreen>
       for (final candidate in settings.locales) {
         if (candidate.name == me.locale) language.select(candidate);
       }
-      for (final candidate in settings.themes) {
-        if (candidate.name == me.theme) theme.select(candidate);
+      for (final candidate in KomekciTheme.values) {
+        if (candidate.name == me.theme) {
+          final enabled = enabledThemeForStyle(
+            settings.themes,
+            themeStyleFor(candidate),
+          );
+          if (enabled != null) theme.select(enabled);
+          break;
+        }
       }
       if ((settings.locales.isNotEmpty && me.locale != language.language.name) ||
           (settings.themes.isNotEmpty && me.theme != theme.selected.name)) {
@@ -84,6 +99,9 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _initializeFirebase() async {
+    final devices = context.read<DeviceRegistrar>();
+    final notifications = context.read<NotificationProvider>();
+    final auth = context.read<AuthProvider>();
     try {
       if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp(
@@ -93,13 +111,12 @@ class _SplashScreenState extends State<SplashScreen>
       await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
       await FirebaseMessagingService(
         onToken: (token) async {
-          debugPrint('KOMEKCI FCM TOKEN: $token');
-          if (mounted) context.read<DeviceRegistrar>().onToken(token);
+          devices.onToken(token);
         },
         onMessage: (message) {
           final notification = message.notification;
-          if (notification == null || !mounted) return;
-          context.read<NotificationProvider>().add(
+          if (notification == null || !auth.isSignedIn) return;
+          notifications.add(
             title: notification.title ?? 'KÖMEKÇI',
             body: notification.body ?? '',
             data: message.data,
@@ -184,10 +201,13 @@ class _SplashScreenState extends State<SplashScreen>
                                 ),
                               ],
                             ),
-                            child: const AppIcon(
-                              Icons.auto_awesome_outlined,
-                              color: Color(0xffF6E4BC),
-                              size: 40,
+                            child: const Center(
+                              child: SizedBox.square(
+                                dimension: 72,
+                                child: CustomPaint(
+                                  painter: _SplashSparklesPainter(),
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -286,4 +306,37 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
   }
+}
+
+/// Two filled sparkles stay distinct and legible inside the small splash mark.
+class _SplashSparklesPainter extends CustomPainter {
+  const _SplashSparklesPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.scale(size.width / 64, size.height / 64);
+    final paint = Paint()
+      ..color = const Color(0xffF6E4BC)
+      ..isAntiAlias = true;
+    canvas.drawPath(_sparkle(const Offset(42, 23), 18), paint);
+    canvas.drawPath(_sparkle(const Offset(18, 47), 9), paint);
+    canvas.restore();
+  }
+
+  Path _sparkle(Offset center, double radius) {
+    final x = center.dx;
+    final y = center.dy;
+    final inset = radius * .26;
+    return Path()
+      ..moveTo(x, y - radius)
+      ..quadraticBezierTo(x + inset, y - inset, x + radius, y)
+      ..quadraticBezierTo(x + inset, y + inset, x, y + radius)
+      ..quadraticBezierTo(x - inset, y + inset, x - radius, y)
+      ..quadraticBezierTo(x - inset, y - inset, x, y - radius)
+      ..close();
+  }
+
+  @override
+  bool shouldRepaint(covariant _SplashSparklesPainter oldDelegate) => false;
 }

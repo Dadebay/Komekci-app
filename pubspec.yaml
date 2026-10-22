@@ -52,7 +52,14 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   webview_flutter: ^4.14.1
   image: ^4.10.1
-  smart_auth: ^3.2.0
+  smart_auth:
+    path: third_party/smart_auth
+
+dependency_overrides:
+  firebase_core:
+    path: third_party/firebase_core
+  firebase_analytics:
+    path: third_party/firebase_analytics
 
 dev_dependencies:
   flutter_test:

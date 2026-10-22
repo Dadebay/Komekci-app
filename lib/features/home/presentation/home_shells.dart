@@ -40,7 +40,7 @@ class _ClientHomeState extends State<ClientHome> {
         ],
         labels: [
           t(tk: 'Baş sahypa', ru: 'Главная', en: 'Home'),
-          t(tk: 'Ussalarym', ru: 'Мои мастера', en: 'My masters'),
+          t(tk: 'Masterlerim', ru: 'Мои мастера', en: 'My masters'),
           t(tk: 'Ýazgylarym', ru: 'Мои записи', en: 'Bookings'),
           t(tk: 'Profil', ru: 'Профиль', en: 'Profile'),
         ],
@@ -55,8 +55,39 @@ class MasterHome extends StatefulWidget {
   State<MasterHome> createState() => _MasterHomeState();
 }
 
-class _MasterHomeState extends State<MasterHome> {
+class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
   int tab = 0;
+  Timer? _connectionRequestsRefresh;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _connectionRequestsRefresh = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _refreshConnectionRequests(),
+    );
+  }
+
+  void _refreshConnectionRequests() {
+    if (!mounted ||
+        WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      return;
+    }
+    context.read<ConnectionRequestsProvider>().load();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refreshConnectionRequests();
+  }
+
+  @override
+  void dispose() {
+    _connectionRequestsRefresh?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   /// Set right before jumping to the Senenama tab from the home dashboard's
   /// day list, so that tab opens on the tapped day instead of "today".
@@ -71,6 +102,8 @@ class _MasterHomeState extends State<MasterHome> {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
+    final pendingRequests =
+        context.select<ConnectionRequestsProvider, int>((requests) => requests.count);
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     // Index 3 ("Müşderi goşmak") is a push-style action, not a persistent tab —
@@ -89,6 +122,7 @@ class _MasterHomeState extends State<MasterHome> {
       bottomNavigationBar: GlassNavBar(
         docked: true,
         currentIndex: tab,
+        badgeCounts: {4: pendingRequests},
         onSelected: (v) {
           if (v == 3) {
             Navigator.push(context, pageRoute(const CustomerFormScreen()));

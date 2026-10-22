@@ -192,7 +192,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
                             vertical: 13,
                           ),
                           decoration: BoxDecoration(
-                            color: rowSelected
+                            color: rowSelected && tokens.surfaceElevated != tokens.surface
                                 ? tokens.accent.withValues(alpha: .08)
                                 : tokens.surfaceElevated,
                             borderRadius: BorderRadius.circular(14),

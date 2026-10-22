@@ -1,4 +1,5 @@
 import '../../core/localization/language_provider.dart';
+import '../../core/theme/backend_theme_colors.dart';
 import '../../core/theme/theme_provider.dart';
 
 class AppContact {
@@ -54,6 +55,7 @@ class AppSettings {
     required this.supportContact,
     required this.locales,
     required this.themes,
+    this.themeColors = const {},
     required this.contact,
     required this.about,
   });
@@ -82,6 +84,7 @@ class AppSettings {
   /// translations for.
   final List<AppLanguage> locales;
   final List<KomekciTheme> themes;
+  final Map<KomekciTheme, BackendThemeColors> themeColors;
   final AppContact contact;
   final AppAbout about;
 
@@ -98,6 +101,17 @@ class AppSettings {
           for (final theme in KomekciTheme.values)
             if (theme.name == item['code']) theme,
     ];
+    final themeColors = <KomekciTheme, BackendThemeColors>{};
+    for (final item in (json['themes'] as List? ?? const [])) {
+      if (item is! Map || item['enabled'] != true || item['colors'] is! Map) {
+        continue;
+      }
+      for (final theme in KomekciTheme.values) {
+        if (theme.name == item['code']) {
+          themeColors[theme] = BackendThemeColors.fromJson(item['colors'] as Map);
+        }
+      }
+    }
     return AppSettings(
       subscriptionPrice:
           double.tryParse('${json['subscription_price']}') ??
@@ -106,6 +120,7 @@ class AppSettings {
       supportContact: (json['support_contact'] as String?)?.trim() ?? '',
       locales: locales,
       themes: json['themes'] is List ? themes : fallback.themes,
+      themeColors: themeColors,
       contact: json['contact'] is Map<String, dynamic>
           ? AppContact.fromJson(json['contact'] as Map<String, dynamic>)
           : const AppContact(),

@@ -7,11 +7,12 @@ import 'app_icon.dart';
 /// an optional action. Used for empty search results, empty lists, and (via
 /// [RetryErrorState] / [OfflineState]) for retryable and offline states too.
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.icon, required this.title, required this.text, this.action});
+  const EmptyState({super.key, required this.icon, required this.title, required this.text, this.action, this.backgroundColor});
   final IconData icon;
   final String title;
   final String text;
   final Widget? action;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class EmptyState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
       decoration: BoxDecoration(
-        color: t.surfaceElevated,
+        color: backgroundColor ?? t.surfaceElevated,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: t.border),
       ),

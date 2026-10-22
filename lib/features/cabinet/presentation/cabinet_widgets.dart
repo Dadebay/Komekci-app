@@ -132,11 +132,9 @@ class _SettingRow extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.value,
-    this.switchValue,
-    this.onSwitchChanged,
     this.showChevron = false,
     this.onTap,
-  });
+  }) : switchValue = null, onSwitchChanged = null;
 
   final IconData icon;
   final String title;

@@ -416,7 +416,9 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
                           if (_mode == _NewSlotCustomerMode.existing &&
                               _selectedCustomer != null)
                             Material(
-                              color: tokens.accent.withValues(alpha: .08),
+                              color: tokens.surfaceElevated == tokens.surface
+                                  ? tokens.surface
+                                  : tokens.accent.withValues(alpha: .08),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 side: BorderSide(

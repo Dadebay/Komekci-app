@@ -150,24 +150,27 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                           ],
                         ),
                         const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _BookingInfoTile(
-                                icon: Icons.calendar_today_outlined,
-                                caption: t(tk: 'Senesi', ru: 'Дата', en: 'Date'),
-                                value: dateLabel,
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: _BookingInfoTile(
+                                  icon: Icons.calendar_today_outlined,
+                                  caption: t(tk: 'Senesi', ru: 'Дата', en: 'Date'),
+                                  value: dateLabel,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _BookingInfoTile(
-                                icon: Icons.schedule_outlined,
-                                caption: t(tk: 'Wagty', ru: 'Время', en: 'Time'),
-                                value: '$timeLabel · ${widget.service.durationMin} ${t(tk: "min", ru: "мин", en: "min")}',
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _BookingInfoTile(
+                                  icon: Icons.schedule_outlined,
+                                  caption: t(tk: 'Barmaly wagtyňyz', ru: 'Время', en: 'Time'),
+                                  value: '$timeLabel · ${widget.service.durationMin} ${t(tk: "min", ru: "мин", en: "min")}',
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -192,26 +195,29 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                             filled: true,
                             fillColor: tokens.surfaceElevated,
                             hintText: t(
-                              tk: 'Ussa üçin bellik (hökmany däl)',
+                              tk: 'Master üçin bellik (hökmany däl)',
                               ru: 'Заметка для мастера (необязательно)',
                               en: 'Note for the master (optional)',
                             ),
                           ),
                         ),
-                        CheckboxListTile(
-                          value: _notifyEarlier,
-                          onChanged: (v) => setState(() => _notifyEarlier = v ?? false),
-                          controlAffinity: ListTileControlAffinity.leading,
-                          contentPadding: EdgeInsets.zero,
-                          dense: true,
-                          activeColor: tokens.textPrimary,
-                          title: Text(
-                            t(
-                              tk: 'Has erki wagt açylsa maňa habar ber',
-                              ru: 'Сообщить, если освободится более раннее время',
-                              en: 'Notify me if an earlier slot opens up',
+                        Material(
+                          type: MaterialType.transparency,
+                          child: CheckboxListTile(
+                            value: _notifyEarlier,
+                            onChanged: (v) => setState(() => _notifyEarlier = v ?? false),
+                            controlAffinity: ListTileControlAffinity.leading,
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                            activeColor: tokens.textPrimary,
+                            title: Text(
+                              t(
+                                tk: 'Has erki wagt açylsa maňa habar ber',
+                                ru: 'Сообщить, если освободится более раннее время',
+                                en: 'Notify me if an earlier slot opens up',
+                              ),
+                              style: const TextStyle(fontSize: 13, height: 1.35),
                             ),
-                            style: const TextStyle(fontSize: 13, height: 1.35),
                           ),
                         ),
                       ],
@@ -260,7 +266,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
       bottomNavigationBar: _BookingBottomBar(
         caption: t(tk: 'Jemi', ru: 'Итого', en: 'Total'),
         value: '${formatMoney(widget.service.price)} $currency',
-        label: t(tk: 'Randevuny tassykla', ru: 'Подтвердить запись', en: 'Confirm booking'),
+        label: t(tk: 'Ýazgyny tassykla', ru: 'Подтвердить запись', en: 'Confirm booking'),
         loading: _submitting,
         onPressed: () => _confirm(t),
       ),

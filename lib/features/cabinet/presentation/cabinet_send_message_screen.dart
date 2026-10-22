@@ -256,17 +256,29 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
         accountIds: recipients.map((c) => c.accountId!).toSet().toList(),
       );
       if (!mounted) return;
-      final sent = (response['sent'] as List? ?? const []).length;
+      final inbox = (response['sent'] as List? ?? const []).length;
       final skipped = (response['skipped'] as List? ?? const []).length;
+      final push = response['success_count'] as int? ?? 0;
+      final failed = response['failure_count'] as int? ?? 0;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(
-        tk: '$sent habar iberildi, $skipped iberilmedi.',
-        ru: 'Отправлено: $sent, пропущено: $skipped.',
-        en: 'Sent: $sent, skipped: $skipped.',
+        tk: 'Gelen habarlar: $inbox, push tassyklandy: $push, şowsuz: $failed, geçildi: $skipped.',
+        ru: 'Входящие: $inbox, push подтверждено: $push, не доставлено: $failed, пропущено: $skipped.',
+        en: 'Inbox: $inbox, push confirmed: $push, failed: $failed, skipped: $skipped.',
       ))));
       Navigator.pop(context);
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
+      final rejected = error is ApiException && error.code == ApiErrors.forbidden
+          ? error.details['rejected'] as List?
+          : null;
+      final message = rejected != null && rejected.isNotEmpty
+          ? t(
+              tk: 'Habar iberilmedi. Rugsat berilmedik hasaplar: ${rejected.join(', ')}.',
+              ru: 'Ничего не отправлено. Недоступные аккаунты: ${rejected.join(', ')}.',
+              en: 'Nothing was sent. Unavailable accounts: ${rejected.join(', ')}.',
+            )
+          : apiErrorMessage(error, language);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       setState(() => _sending = false);
     }
   }

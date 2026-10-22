@@ -164,7 +164,7 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      t(tk: 'Usta goş', ru: 'Добавить мастера', en: 'Add master'),
+                      t(tk: 'Master goş', ru: 'Добавить мастера', en: 'Add master'),
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                     ),
@@ -179,9 +179,9 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
                 children: [
                   _ConnectHero(
-                    title: t(tk: 'Ussaňyza baglanyň', ru: 'Подключитесь к мастеру', en: 'Connect to your master'),
+                    title: t(tk: 'Masteriňize baglanyň', ru: 'Подключитесь к мастеру', en: 'Connect to your master'),
                     subtitle: t(
-                      tk: 'Ussanyň lakamyny ýa-da telefon belgisini giriziň',
+                      tk: 'Masteriň lakamyny ýa-da telefon belgisini giriziň',
                       ru: 'Введите никнейм или номер телефона мастера',
                       en: "Enter your master's nickname or phone number",
                     ),
@@ -217,7 +217,7 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                     )
                   else if (_notFound)
                     _NotFoundNote(
-                      title: t(tk: 'Usta tapylmady', ru: 'Мастер не найден', en: 'No master found'),
+                      title: t(tk: 'Master tapylmady', ru: 'Мастер не найден', en: 'No master found'),
                       text: t(
                         tk: 'Lakamy ýa-da telefon belgisini doly we dogry ýazandygyňyzy barlaň. Gözleg takyk deňleşdirme bilen işleýär.',
                         ru: 'Проверьте, что никнейм или номер введены полностью и без ошибок. Поиск работает по точному совпадению.',
@@ -230,13 +230,13 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                       steps: [
                         (
                           Icons.chat_bubble_outline,
-                          t(tk: 'Ussadan lakamyny soraň', ru: 'Узнайте никнейм у мастера', en: 'Ask your master for their nickname'),
+                          t(tk: 'Masterden lakamyny soraň', ru: 'Узнайте никнейм у мастера', en: 'Ask your master for their nickname'),
                           t(tk: 'Ýa-da onuň telefon belgisini ulanyň.', ru: 'Или воспользуйтесь его номером телефона.', en: 'Or use their phone number.'),
                         ),
                         (
                           Icons.search,
                           t(tk: 'Gözläň we haýyş iberiň', ru: 'Найдите и отправьте запрос', en: 'Search and send a request'),
-                          t(tk: 'Ussa sizi öz müşderileriniň hataryna goşar.', ru: 'Мастер добавит вас в свои клиенты.', en: 'The master adds you to their clients.'),
+                          t(tk: 'Master sizi öz müşderileriniň hataryna goşar.', ru: 'Мастер добавит вас в свои клиенты.', en: 'The master adds you to their clients.'),
                         ),
                         (
                           Icons.calendar_month_outlined,
@@ -462,7 +462,7 @@ class _MasterResultCard extends StatelessWidget {
         children: [
           Container(
             height: 78,
-            color: Color.alphaBlend(tokens.accent.withValues(alpha: .16), tokens.surface),
+            color: tokens.surfaceElevated,
           ),
           // Only 46px of layout height: the avatar hangs 40px up into the banner.
           SizedBox(

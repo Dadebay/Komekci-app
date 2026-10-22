@@ -34,6 +34,7 @@ class ConnectionRequestsProvider extends SessionScoped {
   }
 
   Future<void> load() async {
+    if (_loading) return;
     _loading = true;
     _error = null;
     notifyListeners();

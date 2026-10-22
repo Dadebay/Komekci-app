@@ -5,10 +5,12 @@ class _SearchField extends StatelessWidget {
     required this.controller,
     required this.hint,
     required this.onChanged,
+    this.backgroundColor,
   });
   final TextEditingController controller;
   final String hint;
   final ValueChanged<String> onChanged;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +18,7 @@ class _SearchField extends StatelessWidget {
     return Container(
       height: 46,
       decoration: BoxDecoration(
-        color: tokens.surfaceElevated,
+        color: backgroundColor ?? tokens.surfaceElevated,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: tokens.border.withValues(alpha: .7)),
       ),
@@ -126,7 +128,7 @@ class _CustomerCard extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: tokens.surfaceElevated,
+                                color: tokens.surface,
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(color: tokens.border),
                               ),
@@ -179,8 +181,9 @@ class _CustomerCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: tokens.surfaceElevated,
+                color: tokens.surface,
                 borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: tokens.border.withValues(alpha: .7)),
               ),
               child: Row(
                 children: [

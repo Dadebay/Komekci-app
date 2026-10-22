@@ -14,8 +14,7 @@ class MasterOtpScreen extends StatefulWidget {
   /// `+993XXXXXXXX`.
   final String phone;
 
-  /// What was submitted, kept so "resend" can fall back to registering again
-  /// if the server does not yet treat the pending account as signed-up.
+  /// What was submitted, reused for a single registration resend request.
   final RegistrationData? registration;
 
   /// Fills the code in from the incoming SMS (Android).
@@ -82,16 +81,10 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
       _error = null;
     });
     try {
-      try {
+      if (widget.registration case final registration?) {
+        await auth.register(registration);
+      } else {
         await auth.requestOtp(widget.phone);
-      } on ApiException catch (e) {
-        // A pending (not yet verified) account may not count as "active" for
-        // the sign-in code endpoint; registering again re-sends the code.
-        if (e.code == ApiErrors.phoneNotFound && widget.registration != null) {
-          await auth.register(widget.registration!);
-        } else {
-          rethrow;
-        }
       }
       if (!mounted) return;
       _code.clear();

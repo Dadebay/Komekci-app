@@ -279,7 +279,11 @@ class _KomekciViewState extends State<_KomekciView> {
   Widget build(BuildContext context) => MaterialApp(
     navigatorKey: _navigatorKey,
     debugShowCheckedModeBanner: false,
-    theme: buildThemeData(tokensFor(context.watch<ThemeProvider>().selected)),
+    theme: buildThemeData(
+      context.watch<AppSettingsProvider>().themeTokensFor(
+        context.watch<ThemeProvider>().selected,
+      ),
+    ),
     builder: (context, child) {
       return GlobalSafeAreaWrapper(child: child ?? const SizedBox.shrink());
     },

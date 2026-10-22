@@ -1,6 +1,6 @@
 part of '../../../app/komekci_app.dart';
 
-/// The client's "Ussalar" tab and "My masters" menu page: accepted and
+/// The client's "Masterler" tab and "My masters" menu page: accepted and
 /// pending connections (`GET /connections`) with the main-master switch and
 /// removal, and the entry point for connecting to a new master.
 class MyMastersScreen extends StatelessWidget {
@@ -67,13 +67,13 @@ class ClientMastersScreen extends StatelessWidget {
               child: Center(child: CircularProgressIndicator()),
             )
           : _MastersEmpty(
-              title: t(tk: 'Baglanan ussaňyz ýok', ru: 'Связанных мастеров нет', en: 'No connected masters yet'),
+              title: t(tk: 'Baglanan masteriňiz ýok', ru: 'Связанных мастеров нет', en: 'No connected masters yet'),
               text: t(
-                tk: 'Ussanyň lakamyny ýa-da telefonyny giriziň, haýyş iberiň — kabul eden badyna ýazyp bilersiňiz.',
+                tk: 'Masteriň lakamyny ýa-da telefonyny giriziň, haýyş iberiň — kabul eden badyna ýazyp bilersiňiz.',
                 ru: 'Введите никнейм или телефон мастера и отправьте запрос — после принятия вы сможете записываться.',
                 en: 'Enter your master’s nickname or phone and send a request — once accepted you can book.',
               ),
-              button: t(tk: 'Usta goş', ru: 'Добавить мастера', en: 'Add master'),
+              button: t(tk: 'Master goş', ru: 'Добавить мастера', en: 'Add master'),
             );
     } else {
       content = Column(
@@ -82,7 +82,7 @@ class ClientMastersScreen extends StatelessWidget {
           if (main != null) ...[_MainMasterCard(connection: main)],
           if (others.isNotEmpty) ...[
             sectionTitle(
-              main == null ? t(tk: 'Baglanan ussalar', ru: 'Подключённые мастера', en: 'Connected masters') : t(tk: 'Beýleki ussalar', ru: 'Другие мастера', en: 'Other masters'),
+              main == null ? t(tk: 'Baglanan masterler', ru: 'Подключённые мастера', en: 'Connected masters') : t(tk: 'Beýleki masterler', ru: 'Другие мастера', en: 'Other masters'),
               others.length,
             ),
             for (final c in others) _MyMasterCard(connection: c),
@@ -126,14 +126,14 @@ class ClientMastersScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          t(tk: 'Ussalarym', ru: 'Мои мастера', en: 'My masters'),
+                          t(tk: 'Masterlerim', ru: 'Мои мастера', en: 'My masters'),
                           style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, height: 1.1),
                         ),
                         const SizedBox(height: 3),
                         Text(
                           total == 0
-                              ? t(tk: 'Heniz usta goşulmady', ru: 'Мастеров пока нет', en: 'No masters yet')
-                              : t(tk: '$total usta', ru: 'Мастеров: $total', en: '$total ${total == 1 ? 'master' : 'masters'}'),
+                              ? t(tk: 'Heniz master goşulmady', ru: 'Мастеров пока нет', en: 'No masters yet')
+                              : t(tk: '$total master', ru: 'Мастеров: $total', en: '$total ${total == 1 ? 'master' : 'masters'}'),
                           style: TextStyle(fontSize: 13, color: tokens.textSecondary),
                         ),
                       ],
@@ -155,7 +155,7 @@ class ClientMastersScreen extends StatelessWidget {
                           AppIcon(Icons.add, size: 18, color: tokens.surface),
                           const SizedBox(width: 6),
                           Text(
-                            t(tk: 'Usta goş', ru: 'Добавить', en: 'Add'),
+                            t(tk: 'Master goş', ru: 'Добавить', en: 'Add'),
                             style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: tokens.surface),
                           ),
                         ],
@@ -287,7 +287,7 @@ Future<void> _showMasterMenu(BuildContext context, ClientConnection connection) 
               _MasterMenuTile(
                 icon: Icons.star_border,
                 color: tokens.accent,
-                title: t(tk: 'Esasy usta et', ru: 'Сделать основным', en: 'Make main master'),
+                title: t(tk: 'Esasy master et', ru: 'Сделать основным', en: 'Make main master'),
                 onTap: () => Navigator.pop(sheetContext, 'active'),
               ),
             _MasterMenuTile(
@@ -417,7 +417,7 @@ class _MainMasterCard extends StatelessWidget {
                     AppIcon(Icons.star_border, size: 13, color: tokens.accentOn),
                     const SizedBox(width: 4),
                     Text(
-                      t(tk: 'Esasy usta', ru: 'Основной мастер', en: 'Main master'),
+                      t(tk: 'Esasy master', ru: 'Основной мастер', en: 'Main master'),
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: tokens.accentOn),
                     ),
                   ],
@@ -633,7 +633,7 @@ class _MyMasterCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      t(tk: 'Usta kabul edenini garaşýar', ru: 'Ждём ответа мастера', en: 'Waiting for the master to accept'),
+                      t(tk: 'Masteriň kabul etmegine garaşylýar', ru: 'Ждём ответа мастера', en: 'Waiting for the master to accept'),
                       style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.warning),
                     ),
                   ),

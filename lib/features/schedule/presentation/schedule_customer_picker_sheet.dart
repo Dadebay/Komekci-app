@@ -315,7 +315,7 @@ class _ChoiceCard extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: selected
+          color: selected && tokens.surfaceElevated != tokens.surface
               ? tokens.accent.withValues(alpha: .08)
               : tokens.surfaceElevated,
           borderRadius: BorderRadius.circular(16),

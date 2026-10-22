@@ -37,6 +37,7 @@ class BookingProvider extends SessionScoped {
   ];
   bool get loading => _loading;
   ApiException? get error => _error;
+  bool isMonthLoaded(DateTime day) => _loadedMonths.contains(_key(day));
 
   Appointment _withLocalState(Appointment a) =>
       a.status == AppointmentStatus.expected && _arrived.contains(a.id)

@@ -22,7 +22,10 @@ class _DashboardHero extends StatelessWidget {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final balance = context.watch<BillingProvider>().balance;
-    final masterName = context.watch<MasterProfileProvider>().name;
+    final profile = context.watch<MasterProfileProvider>();
+    final masterName = profile.name;
+    final banner = profile.banner;
+    final bannerUrl = profile.bannerUrl;
     final hh = now.hour.toString().padLeft(2, '0');
     final mm = now.minute.toString().padLeft(2, '0');
     final ss = now.second.toString().padLeft(2, '0');
@@ -35,7 +38,6 @@ class _DashboardHero extends StatelessWidget {
             Container(
               width: double.infinity,
               height: _bannerHeight,
-              padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -52,32 +54,44 @@ class _DashboardHero extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(26),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  _HeroChip(
-                    icon: Icons.chat_bubble_outline,
-                    label: t(tk: 'Habarlaşmak', ru: 'Связаться', en: 'Contact us'),
-                    onTap: () => Navigator.push(
-                      context,
-                      pageRoute(const SupportScreen()),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Align(
-                      alignment: Alignment.topRight,
-                      child: _HeroBalanceChip(
-                        label: t(tk: 'Balans', ru: 'Баланс', en: 'Balance'),
-                        amount: balance,
-                        currency: context
-                            .watch<AppSettingsProvider>()
-                            .currencyLabel(language),
-                        onTap: () => Navigator.push(
-                          context,
-                          pageRoute(const BillingScreen()),
+                  if (banner != null)
+                    Image.file(banner, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink())
+                  else if (bannerUrl != null)
+                    Image.network(bannerUrl, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink()),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _HeroChip(
+                          icon: Icons.chat_bubble_outline,
+                          label: t(tk: 'Habarlaşmak', ru: 'Связаться', en: 'Contact us'),
+                          onTap: () => Navigator.push(
+                            context,
+                            pageRoute(const SupportScreen()),
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Align(
+                            alignment: Alignment.topRight,
+                            child: _HeroBalanceChip(
+                              label: t(tk: 'Balans', ru: 'Баланс', en: 'Balance'),
+                              amount: balance,
+                              currency: context
+                                  .watch<AppSettingsProvider>()
+                                  .currencyLabel(language),
+                              onTap: () => Navigator.push(
+                                context,
+                                pageRoute(const BillingScreen()),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -94,14 +108,10 @@ class _DashboardHero extends StatelessWidget {
                     color: tokens.surface,
                     shape: BoxShape.circle,
                   ),
-                  child: CircleAvatar(
+                  child: RoundPhoto(
+                    file: profile.avatar,
+                    url: profile.avatarUrl,
                     radius: _avatarRadius - 4,
-                    backgroundColor: tokens.accent.withValues(alpha: .22),
-                    child: AppIcon(
-                      Icons.person_outline,
-                      size: 28,
-                      color: tokens.textPrimary,
-                    ),
                   ),
                 ),
               ),
@@ -166,7 +176,7 @@ class _HeroChip extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: context.appTokens.surfaceElevated,
+        color: context.appTokens.surface,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
@@ -203,7 +213,7 @@ class _HeroBalanceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-    color: context.appTokens.surfaceElevated,
+    color: context.appTokens.surface,
     borderRadius: BorderRadius.circular(14),
     child: InkWell(
       onTap: onTap,
@@ -277,7 +287,7 @@ class _HomeStatCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: context.appTokens.surfaceElevated,
+      color: context.appTokens.surface,
       borderRadius: BorderRadius.circular(16),
       border: Border.all(color: context.appTokens.border),
       boxShadow: [
@@ -376,7 +386,7 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
   Widget build(BuildContext context) => Container(
     clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
-      color: context.appTokens.surfaceElevated,
+      color: context.appTokens.surface,
       borderRadius: BorderRadius.circular(18),
       border: Border.all(color: context.appTokens.border),
       boxShadow: [
@@ -563,7 +573,7 @@ class _ApptListHead extends StatelessWidget {
           vertical: 9,
         ),
         decoration: BoxDecoration(
-          color: tokens.accent.withValues(alpha: .1),
+          color: tokens.surface,
           border: Border(
             bottom: BorderSide(
               color: tokens.accent.withValues(alpha: .55),
@@ -810,8 +820,9 @@ class _HomeApptRow extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: tokens.accent.withValues(alpha: .10),
+                      color: tokens.surface,
                       borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: tokens.border),
                     ),
                     child: Row(
                       children: [
@@ -1038,7 +1049,7 @@ class _HomeFreeRow extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               foregroundColor: freeColor,
               side: BorderSide(color: freeColor),
-              backgroundColor: context.appTokens.surfaceElevated,
+              backgroundColor: context.appTokens.surface,
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               visualDensity: VisualDensity.compact,

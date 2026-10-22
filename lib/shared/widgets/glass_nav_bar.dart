@@ -16,11 +16,15 @@ typedef HugeIconData = List<List<dynamic>>;
 /// tile that glides between positions, stretching slightly mid-travel; an
 /// optional label sits under each icon, outside the tile.
 class GlassNavBar extends StatelessWidget {
-  const GlassNavBar({super.key, required this.icons, required this.currentIndex, required this.onSelected, this.labels, this.animatedIcons = false, this.docked = false});
+  const GlassNavBar({super.key, required this.icons, required this.currentIndex, required this.onSelected, this.labels, this.animatedIcons = false, this.docked = false, this.badgeCounts = const {}});
 
   final List<HugeIconData> icons;
   final int currentIndex;
   final ValueChanged<int> onSelected;
+
+  /// Pending-item counts keyed by tab index on the docked bar.
+  /// Zero counts are hidden.
+  final Map<int, int> badgeCounts;
 
   /// One label per icon, shown underneath it. Omit to keep the bar icon-only.
   final List<String>? labels;
@@ -46,7 +50,7 @@ class GlassNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.appTokens;
     if (docked) {
-      return _DockedBar(icons: icons, labels: labels, currentIndex: currentIndex, onSelected: onSelected, tokens: t);
+      return _DockedBar(icons: icons, labels: labels, currentIndex: currentIndex, onSelected: onSelected, tokens: t, badgeCounts: badgeCounts);
     }
     final hasLabels = labels != null;
     final barHeight = hasLabels ? _labelledBarHeight : _barHeight;
@@ -269,13 +273,14 @@ class _NavSlotState extends State<_NavSlot> with SingleTickerProviderStateMixin 
 /// Docked variant of [GlassNavBar]: plain HugeIcons with a caption, the picked
 /// tab tinted in the accent colour on a soft rounded highlight.
 class _DockedBar extends StatelessWidget {
-  const _DockedBar({required this.icons, required this.labels, required this.currentIndex, required this.onSelected, required this.tokens});
+  const _DockedBar({required this.icons, required this.labels, required this.currentIndex, required this.onSelected, required this.tokens, required this.badgeCounts});
 
   final List<HugeIconData> icons;
   final List<String>? labels;
   final int currentIndex;
   final ValueChanged<int> onSelected;
   final AppThemeTokens tokens;
+  final Map<int, int> badgeCounts;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -299,6 +304,7 @@ class _DockedBar extends StatelessWidget {
                 icon: icons[index],
                 label: labels?[index],
                 selected: index == currentIndex,
+                badgeCount: badgeCounts[index] ?? 0,
                 tokens: tokens,
                 onTap: () => onSelected(index),
               ),
@@ -311,11 +317,12 @@ class _DockedBar extends StatelessWidget {
 }
 
 class _DockedSlot extends StatefulWidget {
-  const _DockedSlot({required this.icon, required this.selected, required this.onTap, required this.tokens, this.label});
+  const _DockedSlot({required this.icon, required this.selected, required this.onTap, required this.tokens, required this.badgeCount, this.label});
 
   final HugeIconData icon;
   final String? label;
   final bool selected;
+  final int badgeCount;
   final VoidCallback onTap;
   final AppThemeTokens tokens;
 
@@ -363,23 +370,49 @@ class _DockedSlotState extends State<_DockedSlot> with SingleTickerProviderState
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 52,
-                height: 32,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(color: tokens.accent.withValues(alpha: t), borderRadius: BorderRadius.circular(16)),
-                child: AnimatedBuilder(
-                  animation: _draw,
-                  builder: (context, _) {
-                    final p = _draw.isAnimating ? _draw.value : 1.0;
-                    // A small springy pop while the lines are being drawn.
-                    final pop = _draw.isAnimating ? .14 * math.sin(math.pi * p) : 0.0;
-                    return Transform.scale(
-                      scale: 1 + .06 * t + pop,
-                      child: AnimatedHugeIcon(icon: widget.icon, color: color, progress: p, size: 22),
-                    );
-                  },
-                ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(color: tokens.accent.withValues(alpha: t), borderRadius: BorderRadius.circular(16)),
+                    child: AnimatedBuilder(
+                      animation: _draw,
+                      builder: (context, _) {
+                        final p = _draw.isAnimating ? _draw.value : 1.0;
+                        // A small springy pop while the lines are being drawn.
+                        final pop = _draw.isAnimating ? .14 * math.sin(math.pi * p) : 0.0;
+                        return Transform.scale(
+                          scale: 1 + .06 * t + pop,
+                          child: AnimatedHugeIcon(icon: widget.icon, color: color, progress: p, size: 22),
+                        );
+                      },
+                    ),
+                  ),
+                  if (widget.badgeCount > 0)
+                    Positioned(
+                      right: -7,
+                      top: -7,
+                      child: IgnorePointer(
+                        child: Container(
+                          constraints: const BoxConstraints(minWidth: 19, minHeight: 19),
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: BoxDecoration(
+                            color: tokens.danger,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: tokens.surface, width: 1.5),
+                          ),
+                          child: Text(
+                            widget.badgeCount > 99 ? '99+' : '${widget.badgeCount}',
+                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, height: 1),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
               if (widget.label != null) ...[
                 const SizedBox(height: 3),

@@ -26,7 +26,9 @@ typedef _Tr =
 
 /// Soft raised surface used by every card in the booking flow.
 BoxDecoration _bookingCardDecoration(AppThemeTokens tokens, {bool selected = false}) => BoxDecoration(
-  color: selected ? Color.alphaBlend(tokens.accent.withValues(alpha: .07), tokens.surface) : tokens.surface,
+  color: selected && tokens.surfaceElevated != tokens.surface
+      ? Color.alphaBlend(tokens.accent.withValues(alpha: .07), tokens.surface)
+      : tokens.surface,
   borderRadius: BorderRadius.circular(20),
   border: Border.all(color: selected ? tokens.accent : tokens.border.withValues(alpha: .7), width: selected ? 1.5 : 1),
   boxShadow: [

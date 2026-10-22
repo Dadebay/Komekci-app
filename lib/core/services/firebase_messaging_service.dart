@@ -30,20 +30,48 @@ class FirebaseMessagingService {
   Future<void> initialize() async {
     _active = this;
     await LocalNotificationsService.instance.initialize();
-    await FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
+    // Keep the existing startup permission request, but never let an OS
+    // prompt or a refusal hold up sign-in or topic subscription.
+    unawaited(_requestPermission());
     if (!_listenersRegistered) {
       _listenersRegistered = true;
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-      FirebaseMessaging.onMessage.listen((message) => _active?._handleForegroundMessage(message));
+      FirebaseMessaging.onMessage.listen(
+        (message) => _active?._handleForegroundMessage(message),
+      );
       // The OS already showed these in the notification tray — just record them.
-      FirebaseMessaging.onMessageOpenedApp.listen((message) => _active?._recordMessage(message));
-      FirebaseMessaging.instance.onTokenRefresh.listen((token) => _active?.onToken(token));
+      FirebaseMessaging.onMessageOpenedApp.listen(
+        (message) => _active?._recordMessage(message),
+      );
+      FirebaseMessaging.instance.onTokenRefresh.listen(
+        (token) => _active?.onToken(token),
+      );
     }
     final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) _recordMessage(initialMessage);
     // Not awaited: waiting for APNs can take seconds (and never ends on a
     // simulator), which must not hold up the splash screen.
     unawaited(_registerDevice());
+  }
+
+  Future<void> _requestPermission() async {
+    if (!Platform.isAndroid && !Platform.isIOS) return;
+    try {
+      final settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        await _registerDevice();
+      }
+    } on Object catch (e) {
+      developer.log(
+        'Notification permission request failed: $e',
+        name: 'Komekci FCM',
+      );
+    }
   }
 
   /// Joins the broadcast [topic] and reports the device token.
@@ -62,15 +90,7 @@ class FirebaseMessagingService {
       }
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
-        developer.log('FCM TOKEN: $token', name: 'Komekci FCM');
-        _printToken(label: 'FCM TOKEN', token: token, ansiColor: '32');
         await onToken(token);
-      } else {
-        _printToken(label: 'FCM TOKEN', token: 'not available yet', ansiColor: '33');
-      }
-      if (Platform.isIOS) {
-        final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-        _printToken(label: 'APNS TOKEN', token: apnsToken ?? 'not available yet (physical iPhone + APNs setup required)', ansiColor: apnsToken == null ? '33' : '35');
       }
     } on Object catch (e) {
       developer.log('Push device registration failed: $e', name: 'Komekci FCM');
@@ -86,23 +106,20 @@ class FirebaseMessagingService {
       if (await FirebaseMessaging.instance.getAPNSToken() != null) return;
       await Future<void>.delayed(const Duration(milliseconds: 400));
     }
-    developer.log('APNs did not answer in ${_apnsWait.inSeconds}s', name: 'Komekci FCM');
-  }
-
-  void _printToken({required String label, required String token, required String ansiColor}) {
-    // ANSI escapes render as coloured output in `flutter run` terminals.
-    // ignore: avoid_print
-    print('\x1B[1;${ansiColor}m╔══ KÖMEKÇI $label ══╗\x1B[0m');
-    // ignore: avoid_print
-    print('\x1B[${ansiColor}m$token\x1B[0m');
-    // ignore: avoid_print
-    print('\x1B[1;${ansiColor}m╚══════════════════════════════╝\x1B[0m');
+    developer.log(
+      'APNs did not answer in ${_apnsWait.inSeconds}s',
+      name: 'Komekci FCM',
+    );
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
     final notification = message.notification;
     if (notification != null) {
-      LocalNotificationsService.instance.show(title: notification.title, body: notification.body, payload: message.data.toString());
+      LocalNotificationsService.instance.show(
+        title: notification.title,
+        body: notification.body,
+        payload: message.data.toString(),
+      );
     }
     _recordMessage(message);
   }
@@ -115,5 +132,8 @@ class FirebaseMessagingService {
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (Firebase.apps.isEmpty) await Firebase.initializeApp();
-  developer.log('Background message: ${message.messageId}', name: 'Komekci FCM');
+  developer.log(
+    'Background message: ${message.messageId}',
+    name: 'Komekci FCM',
+  );
 }

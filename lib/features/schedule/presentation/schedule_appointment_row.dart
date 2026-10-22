@@ -178,8 +178,9 @@ class _AppointmentRow extends StatelessWidget {
                     vertical: 9,
                   ),
                   decoration: BoxDecoration(
-                    color: tokens.accent.withValues(alpha: .09),
+                    color: tokens.surfaceElevated,
                     borderRadius: BorderRadius.circular(11),
+                    border: Border.all(color: tokens.border),
                   ),
                   child: Row(
                     children: [

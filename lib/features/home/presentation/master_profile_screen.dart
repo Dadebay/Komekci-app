@@ -349,7 +349,8 @@ class _MasterProfileHero extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
-              color: Color.alphaBlend(tokens.accent.withValues(alpha: .16), tokens.surface),
+              color: tokens.surfaceElevated,
+              border: Border.all(color: tokens.border),
             ),
             child: Stack(
               fit: StackFit.expand,

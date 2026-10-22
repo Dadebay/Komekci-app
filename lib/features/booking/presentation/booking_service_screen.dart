@@ -110,7 +110,7 @@ class _BookingPageState extends State<BookingPage> {
                         en: 'Bookings are paused',
                       ),
                       text: t(
-                        tk: 'Usta häzirlikçe täze ýazgylary kabul etmeýär.',
+                        tk: 'Master häzirlikçe täze ýazgylary kabul etmeýär.',
                         ru: 'Мастер временно не принимает новые записи.',
                         en: 'This master is not accepting new bookings right now.',
                       ),

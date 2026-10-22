@@ -122,7 +122,7 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: Row(
                 children: [
-                  tabButton(t(tk: 'Gelejek', ru: 'Предстоящие', en: 'Upcoming'), upcomingAll.length, false),
+                  tabButton(t(tk: 'Indiki', ru: 'Предстоящие', en: 'Upcoming'), upcomingAll.length, false),
                   const SizedBox(width: 10),
                   tabButton(t(tk: 'Geçen', ru: 'Прошедшие', en: 'Past'), pastCount, true),
                 ],
@@ -142,7 +142,7 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
                                   ? t(tk: 'Ýazgy tapylmady', ru: 'Записи не найдены', en: 'No bookings found')
                                   : _showPast
                                   ? t(tk: 'Geçen ýazgy ýok', ru: 'Прошедших записей нет', en: 'No past bookings')
-                                  : t(tk: 'Gelejek ýazgy ýok', ru: 'Предстоящих записей нет', en: 'No upcoming bookings'),
+                                  : t(tk: 'Indiki ýazgy ýok', ru: 'Предстоящих записей нет', en: 'No upcoming bookings'),
                               text: _hasActiveFilter
                                   ? t(tk: 'Süzgüçi üýtgediň.', ru: 'Измените фильтр.', en: 'Try a different filter.')
                                   : _showPast

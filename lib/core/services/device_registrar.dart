@@ -36,6 +36,7 @@ class DeviceRegistrar {
 
   String? _token;
   int? _userId;
+  Future<void> _pendingSync = Future<void>.value();
 
   static Future<String?> _firebaseToken() async {
     if (Firebase.apps.isEmpty) return null;
@@ -45,7 +46,7 @@ class DeviceRegistrar {
   /// Firebase handed over (or refreshed) the device token.
   void onToken(String token) {
     _token = token;
-    unawaited(_sync(token));
+    unawaited(_queueSync(token));
   }
 
   /// Call right after a successful sign-in / session restore.
@@ -61,7 +62,7 @@ class DeviceRegistrar {
       final token = await _tokenSource() ?? _token;
       if (token != null) {
         _token = token;
-        await _sync(token);
+        await _queueSync(token);
       }
     } catch (error) {
       debugPrint('FCM token fetch failed: $error');
@@ -70,8 +71,14 @@ class DeviceRegistrar {
 
   /// Must run *before* the session is dropped: the DELETE needs the token.
   Future<void> onSigningOut() async {
-    final token = _token;
     _userId = null;
+    // Finish any POST before DELETE so a slow registration cannot leave this
+    // signed-out device registered for the old account.
+    await _pendingSync;
+    String? token = _token;
+    try {
+      token ??= await _tokenSource();
+    } catch (_) {}
     await _remember(null);
     if (token == null) return;
     try {
@@ -81,13 +88,21 @@ class DeviceRegistrar {
     }
   }
 
+  Future<void> _queueSync(String token) {
+    _pendingSync = _pendingSync.then((_) => _sync(token));
+    return _pendingSync;
+  }
+
   Future<void> _sync(String token) async {
     final userId = _userId;
     if (userId == null) return;
     final key = '$userId:$token';
     if (await _lastSynced() == key) return;
     try {
-      await _repository.registerDevice(token, Platform.isIOS ? 'ios' : 'android');
+      await _repository.registerDevice(
+        token,
+        Platform.isIOS ? 'ios' : 'android',
+      );
       await _remember(key);
     } catch (error) {
       debugPrint('Registering FCM token failed: $error');

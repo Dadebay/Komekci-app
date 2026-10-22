@@ -145,6 +145,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   _FormField(
                     controller: _nameController,
                     hint: tk ? 'Müşderiniň adyny ýazyň' : 'Введите имя клиента',
+                    fillColor: tokens.surface,
                     invalid: _showErrors && !_nameOk,
                     enabled: !_isEditing,
                     onChanged: () => setState(() {}),
@@ -158,6 +159,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   _FormField(
                     controller: _phoneController,
                     hint: '65 123456',
+                    fillColor: tokens.surface,
                     keyboardType: TextInputType.phone,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => FocusScope.of(context).unfocus(),
@@ -179,6 +181,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                       hint: tk
                           ? 'Müşderi barada bellik goşuň...'
                           : 'Добавьте заметку о клиенте...',
+                      fillColor: tokens.surface,
                       maxLines: 4,
                       maxLength: 2000,
                       onChanged: () => setState(() {}),
@@ -249,8 +252,9 @@ class _FormBanner extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
-      color: context.appTokens.accent.withValues(alpha: .1),
+      color: context.appTokens.surface,
       borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: context.appTokens.border),
     ),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,7 +265,8 @@ class _FormBanner extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: context.appTokens.surfaceElevated,
+            color: context.appTokens.surface,
+            border: Border.all(color: context.appTokens.border),
           ),
           child: AppIcon(
             Icons.info_outline,

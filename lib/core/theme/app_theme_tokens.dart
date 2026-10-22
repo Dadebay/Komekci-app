@@ -22,8 +22,11 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
     required this.textPrimary,
     required this.textSecondary,
     required this.border,
+    required this.primary,
     required this.accent,
     required this.accentOn,
+    required this.button,
+    required this.buttonText,
     required this.success,
     required this.warning,
     required this.danger,
@@ -42,11 +45,16 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
   final Color textSecondary;
   final Color border;
 
-  /// Brand accent (gold in Ivory) — CTAs, selection, links.
+  /// The backend's primary brand colour, used by Material controls.
+  final Color primary;
+
+  /// Brand accent — CTAs, selection, links.
   final Color accent;
 
   /// Colour to use for content painted on top of [accent].
   final Color accentOn;
+  final Color button;
+  final Color buttonText;
   final Color success;
   final Color warning;
   final Color danger;
@@ -63,8 +71,11 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
     Color? textPrimary,
     Color? textSecondary,
     Color? border,
+    Color? primary,
     Color? accent,
     Color? accentOn,
+    Color? button,
+    Color? buttonText,
     Color? success,
     Color? warning,
     Color? danger,
@@ -77,8 +88,11 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
     textPrimary: textPrimary ?? this.textPrimary,
     textSecondary: textSecondary ?? this.textSecondary,
     border: border ?? this.border,
+    primary: primary ?? this.primary,
     accent: accent ?? this.accent,
     accentOn: accentOn ?? this.accentOn,
+    button: button ?? this.button,
+    buttonText: buttonText ?? this.buttonText,
     success: success ?? this.success,
     warning: warning ?? this.warning,
     danger: danger ?? this.danger,
@@ -96,8 +110,11 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
       textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
       border: Color.lerp(border, other.border, t)!,
+      primary: Color.lerp(primary, other.primary, t)!,
       accent: Color.lerp(accent, other.accent, t)!,
       accentOn: Color.lerp(accentOn, other.accentOn, t)!,
+      button: Color.lerp(button, other.button, t)!,
+      buttonText: Color.lerp(buttonText, other.buttonText, t)!,
       success: Color.lerp(success, other.success, t)!,
       warning: Color.lerp(warning, other.warning, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
@@ -107,15 +124,18 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
   }
 }
 
-const ivoryTokens = AppThemeTokens(
+const goldTokens = AppThemeTokens(
   brightness: Brightness.light,
   surface: Colors.white,
   surfaceElevated: cream,
   textPrimary: ink,
   textSecondary: Colors.black54,
   border: line,
+  primary: ink,
   accent: gold,
   accentOn: Colors.white,
+  button: ink,
+  buttonText: Colors.white,
   success: Color(0xff2F7D4F),
   warning: Color(0xff9C6B14),
   danger: Color(0xffC0392B),
@@ -123,59 +143,48 @@ const ivoryTokens = AppThemeTokens(
   scrim: Colors.black45,
 );
 
-const onyxTokens = AppThemeTokens(
-  brightness: Brightness.dark,
-  surface: Color(0xff1A1A1C),
-  surfaceElevated: Color(0xff242426),
-  textPrimary: Colors.white,
-  textSecondary: Colors.white70,
-  border: Color(0xff3A3A3D),
-  accent: Color(0xffD8B26A),
-  accentOn: Color(0xff1A1A1C),
-  success: Color(0xff5FBE85),
-  warning: Color(0xffE0B75B),
-  danger: Color(0xffE5766B),
-  disabled: Colors.white24,
-  scrim: Colors.black87,
-);
-
-const champagneTokens = AppThemeTokens(
+const blueTokens = AppThemeTokens(
   brightness: Brightness.light,
-  surface: Color(0xffFAF6EE),
-  surfaceElevated: Colors.white,
-  textPrimary: Color(0xff5C4A22),
-  textSecondary: Color(0xff8A7350),
-  border: Color(0xffE9DCC0),
-  accent: Color(0xffB9963F),
+  surface: Colors.white,
+  surfaceElevated: Color(0xffF2F7FF),
+  textPrimary: Color(0xff172334),
+  textSecondary: Color(0xff5B6B7D),
+  border: Color(0xffD9E5F5),
+  primary: Color(0xff172334),
+  accent: Color(0xff0867D8),
   accentOn: Colors.white,
+  button: Color(0xff0867D8),
+  buttonText: Colors.white,
   success: Color(0xff2F7D4F),
   warning: Color(0xff9C6B14),
-  danger: Color(0xffC0392B),
-  disabled: Color(0xffD8CBAA),
+  danger: Color(0xffC93438),
+  disabled: Color(0xffAAB7C7),
   scrim: Colors.black45,
 );
 
-const roseTokens = AppThemeTokens(
+const redTokens = AppThemeTokens(
   brightness: Brightness.light,
-  surface: Color(0xffFCF7F6),
+  surface: Colors.white,
   surfaceElevated: Colors.white,
-  textPrimary: Color(0xff5C3A3D),
-  textSecondary: Color(0xff9C7679),
-  border: Color(0xffEBD7D8),
-  accent: Color(0xffB0757C),
+  textPrimary: Color(0xff251B1C),
+  textSecondary: Color(0xff705D60),
+  border: Color(0xffF0D8DA),
+  primary: Color(0xff251B1C),
+  accent: Color(0xffE32027),
   accentOn: Colors.white,
+  button: Color(0xffE32027),
+  buttonText: Colors.white,
   success: Color(0xff2F7D4F),
   warning: Color(0xff9C6B14),
-  danger: Color(0xffC0392B),
-  disabled: Color(0xffE3C9CB),
+  danger: Color(0xffB91D24),
+  disabled: Color(0xffD6B9BC),
   scrim: Colors.black45,
 );
 
-AppThemeTokens tokensFor(KomekciTheme theme) => switch (theme) {
-  KomekciTheme.ivory => ivoryTokens,
-  KomekciTheme.onyx => onyxTokens,
-  KomekciTheme.champagne => champagneTokens,
-  KomekciTheme.rose => roseTokens,
+AppThemeTokens tokensFor(KomekciTheme theme) => switch (themeStyleFor(theme)) {
+  KomekciThemeStyle.gold => goldTokens,
+  KomekciThemeStyle.blue => blueTokens,
+  KomekciThemeStyle.red => redTokens,
 };
 
 /// The app's font (declared in `pubspec.yaml`). Widgets that set their own
@@ -191,7 +200,7 @@ ThemeData buildThemeData(AppThemeTokens t) {
     scaffoldBackgroundColor: t.surface,
     colorScheme: ColorScheme(
       brightness: t.brightness,
-      primary: t.textPrimary,
+      primary: t.primary,
       onPrimary: t.surface,
       secondary: t.accent,
       onSecondary: t.accentOn,
@@ -229,8 +238,8 @@ ThemeData buildThemeData(AppThemeTokens t) {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: t.textPrimary,
-        foregroundColor: t.surface,
+        backgroundColor: t.button,
+        foregroundColor: t.buttonText,
       ),
     ),
     textButtonTheme: TextButtonThemeData(
@@ -284,5 +293,5 @@ ThemeData buildThemeData(AppThemeTokens t) {
 
 extension AppThemeContext on BuildContext {
   AppThemeTokens get appTokens =>
-      Theme.of(this).extension<AppThemeTokens>() ?? ivoryTokens;
+      Theme.of(this).extension<AppThemeTokens>() ?? goldTokens;
 }
