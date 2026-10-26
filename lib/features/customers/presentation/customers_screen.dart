@@ -22,7 +22,9 @@ class _CustomersScreenState extends State<CustomersScreen>
 
   @override
   Widget build(BuildContext context) {
-    final tk = context.watch<LanguageProvider>().isTurkmen;
+    final language = context.watch<LanguageProvider>().language;
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
     final provider = context.watch<CustomerProvider>();
     final results = provider.visible;
     final canPop = Navigator.of(context).canPop();
@@ -30,7 +32,7 @@ class _CustomersScreenState extends State<CustomersScreen>
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: tk ? 'Müşderiler' : 'Клиенты',
+        title: t(tk: 'Müşderiler', ru: 'Клиенты', en: 'Customers'),
         action: Padding(
           padding: const EdgeInsets.only(right: 8),
           child: GestureDetector(
@@ -65,10 +67,10 @@ class _CustomersScreenState extends State<CustomersScreen>
                       child: _CustomerControls(
                         searchController: _searchController,
                         provider: provider,
-                        tk: tk,
+                        language: language,
                         onFilterTap: () => _openFilterSheet(
                           context,
-                          tk: tk,
+                          language: language,
                           provider: provider,
                         ),
                       ),
@@ -82,12 +84,8 @@ class _CustomersScreenState extends State<CustomersScreen>
                         child: EmptyState(
                           icon: Icons.people_outline,
                           backgroundColor: tokens.surface,
-                          title: tk
-                              ? 'Müşderi tapylmady'
-                              : 'Клиенты не найдены',
-                          text: tk
-                              ? 'Gözlegi ýa-da süzgüçi üýtgediň.'
-                              : 'Измените поиск или фильтр.',
+                          title: t(tk: 'Müşderi tapylmady', ru: 'Клиенты не найдены', en: 'No customers found'),
+                          text: t(tk: 'Gözlegi ýa-da süzgüçi üýtgediň.', ru: 'Измените поиск или фильтр.', en: 'Try a different search or filter.'),
                         ),
                       ),
                     )
@@ -98,7 +96,7 @@ class _CustomersScreenState extends State<CustomersScreen>
                       sliver: SliverList.builder(
                         itemCount: results.length,
                         itemBuilder: (_, index) =>
-                            _CustomerCard(customer: results[index], tk: tk),
+                            _CustomerCard(customer: results[index], language: language),
                       ),
                     ),
                 ],
@@ -112,7 +110,7 @@ class _CustomersScreenState extends State<CustomersScreen>
 
   void _openFilterSheet(
     BuildContext context, {
-    required bool tk,
+    required AppLanguage language,
     required CustomerProvider provider,
   }) {
     final tokens = context.appTokens;
@@ -130,7 +128,7 @@ class _CustomersScreenState extends State<CustomersScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                tk ? 'Süzgüç' : 'Фильтр',
+                pickTr(language, tk: 'Süzgüç', ru: 'Фильтр', en: 'Filter'),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -138,21 +136,21 @@ class _CustomersScreenState extends State<CustomersScreen>
               ),
               const SizedBox(height: 8),
               ...[
-                (CustomerFilter.all, tk ? 'Ähli' : 'Все', Icons.people_outline),
+                (CustomerFilter.all, pickTr(language, tk: 'Ähli', ru: 'Все', en: 'All'), Icons.people_outline),
                 (CustomerFilter.vip, 'VIP', Icons.emoji_events_outlined),
                 (
                   CustomerFilter.regular,
-                  tk ? 'Hemişelik' : 'Постоянные',
+                  pickTr(language, tk: 'Hemişelik', ru: 'Постоянные', en: 'Regular'),
                   Icons.star_border,
                 ),
                 (
                   CustomerFilter.newClient,
-                  tk ? 'Täze' : 'Новые',
+                  pickTr(language, tk: 'Täze', ru: 'Новые', en: 'New'),
                   Icons.person_add_alt_1,
                 ),
                 (
                   CustomerFilter.inactive,
-                  tk ? 'Uzak wagt gelmedi' : 'Давно не приходили',
+                  pickTr(language, tk: 'Uzak wagt gelmedi', ru: 'Давно не приходили', en: 'Inactive'),
                   Icons.history,
                 ),
               ].map(
@@ -238,12 +236,12 @@ class _CustomerControls extends StatelessWidget {
   const _CustomerControls({
     required this.searchController,
     required this.provider,
-    required this.tk,
+    required this.language,
     required this.onFilterTap,
   });
   final TextEditingController searchController;
   final CustomerProvider provider;
-  final bool tk;
+  final AppLanguage language;
   final VoidCallback onFilterTap;
 
   @override
@@ -263,7 +261,7 @@ class _CustomerControls extends StatelessWidget {
                 Expanded(
                   child: _SearchField(
                     controller: searchController,
-                    hint: tk ? 'Müşderi gözlemek' : 'Поиск клиента',
+                    hint: pickTr(language, tk: 'Müşderi gözlemek', ru: 'Поиск клиента', en: 'Search customers'),
                     onChanged: provider.setQuery,
                     backgroundColor: tokens.surface,
                   ),
@@ -305,7 +303,7 @@ class _CustomerControls extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            child: _StatGrid(provider: provider, tk: tk),
+            child: _StatGrid(provider: provider, language: language),
           ),
           const SizedBox(height: 12),
         ],
@@ -315,9 +313,9 @@ class _CustomerControls extends StatelessWidget {
 }
 
 class _StatGrid extends StatelessWidget {
-  const _StatGrid({required this.provider, required this.tk});
+  const _StatGrid({required this.provider, required this.language});
   final CustomerProvider provider;
-  final bool tk;
+  final AppLanguage language;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -325,7 +323,7 @@ class _StatGrid extends StatelessWidget {
       Expanded(
         child: _StatCard(
           icon: Icons.people_outline,
-          label: tk ? 'Ähli' : 'Все',
+          label: pickTr(language, tk: 'Ähli', ru: 'Все', en: 'All'),
           value: provider.allCount,
           color: context.appTokens.textPrimary,
           selected: provider.filter == CustomerFilter.all,
@@ -347,7 +345,7 @@ class _StatGrid extends StatelessWidget {
       Expanded(
         child: _StatCard(
           icon: Icons.star_border,
-          label: tk ? 'Hemişelik' : 'Постоянные',
+          label: pickTr(language, tk: 'Hemişelik', ru: 'Постоянные', en: 'Regular'),
           value: provider.regularCount,
           color: _statusColor(CustomerStatus.regular, context.appTokens),
           selected: provider.filter == CustomerFilter.regular,
@@ -358,7 +356,7 @@ class _StatGrid extends StatelessWidget {
       Expanded(
         child: _StatCard(
           icon: Icons.person_add_alt_1,
-          label: tk ? 'Täze' : 'Новые',
+          label: pickTr(language, tk: 'Täze', ru: 'Новые', en: 'New'),
           value: provider.newCount,
           color: _statusColor(CustomerStatus.newClient, context.appTokens),
           selected: provider.filter == CustomerFilter.newClient,

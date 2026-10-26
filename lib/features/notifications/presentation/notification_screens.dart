@@ -10,116 +10,164 @@ class _NotificationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    return InkWell(
-      onTap: () =>
-          context.read<NotificationProvider>().markRead(notification.id),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: notification.read ? tokens.surface : tokens.surfaceElevated,
+    final unread = !notification.read;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: unread
+            ? Color.alphaBlend(
+                tokens.accent.withValues(alpha: .045),
+                tokens.surfaceElevated,
+              )
+            : Color.alphaBlend(
+                tokens.textPrimary.withValues(alpha: .06),
+                tokens.surface,
+              ),
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: tokens.border),
+          side: BorderSide(
+            color: unread
+                ? tokens.accent.withValues(alpha: .3)
+                : tokens.textPrimary.withValues(alpha: .12),
+          ),
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: tokens.surfaceElevated,
-                shape: BoxShape.circle,
-              ),
-              child: AppIcon(
-                Icons.notifications_none,
-                size: 18,
-                color: tokens.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    notification.title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () =>
+              context.read<NotificationProvider>().markRead(notification.id),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: unread
+                        ? tokens.accent.withValues(alpha: .14)
+                        : tokens.surface,
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    notification.body,
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: tokens.textSecondary,
-                      height: 1.4,
-                    ),
+                  child: AppIcon(
+                    unread
+                        ? Icons.notifications_active_outlined
+                        : Icons.notifications_none,
+                    size: 18,
+                    color: unread ? tokens.accent : tokens.textSecondary,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    _formatNotificationTime(notification.receivedAt),
-                    style: TextStyle(fontSize: 11, color: tokens.textSecondary),
-                  ),
-                  if (_waitlistOfferId(notification) case final offerId?) ...[
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: tokens.textPrimary,
-                            shape: const StadiumBorder(),
-                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              notification.title,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: unread
+                                    ? FontWeight.w700
+                                    : FontWeight.w600,
+                                color: unread
+                                    ? tokens.textPrimary
+                                    : tokens.textSecondary,
+                              ),
+                            ),
                           ),
-                          onPressed: () => runApi(
-                            context,
-                            () => context.read<ClientBookingsProvider>().acceptWaitlistOffer(offerId),
-                          ),
-                          child: Text(pickTr(
-                            context.read<LanguageProvider>().language,
-                            tk: 'Kabul et',
-                            ru: 'Принять',
-                            en: 'Accept',
-                          )),
+                          if (unread)
+                            Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.only(top: 5, left: 8),
+                              decoration: BoxDecoration(
+                                color: tokens.accent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        notification.body,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: tokens.textSecondary,
+                          height: 1.4,
                         ),
-                        const SizedBox(width: 8),
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            shape: const StadiumBorder(),
-                            side: BorderSide(color: tokens.border),
-                          ),
-                          onPressed: () => runApi(
-                            context,
-                            () => context.read<ClientBookingsProvider>().declineWaitlistOffer(offerId),
-                          ),
-                          child: Text(pickTr(
-                            context.read<LanguageProvider>().language,
-                            tk: 'Ret et',
-                            ru: 'Отказаться',
-                            en: 'Decline',
-                          )),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _formatNotificationTime(notification.receivedAt),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: tokens.textSecondary,
+                        ),
+                      ),
+                      if (_waitlistOfferId(notification)
+                          case final offerId?) ...[
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: [
+                            FilledButton(
+                              style: FilledButton.styleFrom(
+                                backgroundColor: tokens.textPrimary,
+                                shape: const StadiumBorder(),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                ),
+                              ),
+                              onPressed: () => runApi(
+                                context,
+                                () => context
+                                    .read<ClientBookingsProvider>()
+                                    .acceptWaitlistOffer(offerId),
+                              ),
+                              child: Text(
+                                pickTr(
+                                  context.read<LanguageProvider>().language,
+                                  tk: 'Kabul et',
+                                  ru: 'Принять',
+                                  en: 'Accept',
+                                ),
+                              ),
+                            ),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                shape: const StadiumBorder(),
+                                side: BorderSide(color: tokens.border),
+                              ),
+                              onPressed: () => runApi(
+                                context,
+                                () => context
+                                    .read<ClientBookingsProvider>()
+                                    .declineWaitlistOffer(offerId),
+                              ),
+                              child: Text(
+                                pickTr(
+                                  context.read<LanguageProvider>().language,
+                                  tk: 'Ret et',
+                                  ru: 'Отказаться',
+                                  en: 'Decline',
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (!notification.read)
-              Container(
-                width: 8,
-                height: 8,
-                margin: const EdgeInsets.only(top: 4, left: 6),
-                decoration: BoxDecoration(
-                  color: tokens.accent,
-                  shape: BoxShape.circle,
+                    ],
+                  ),
                 ),
-              ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -76,31 +76,51 @@ class AppointmentDetailScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _ClientBookingStatusChip(status: current.status, tk: tk),
-                            const Spacer(),
-                            if (countdown != null)
-                              Row(
-                                children: [
-                                  AppIcon(Icons.timer_outlined, size: 15, color: tokens.textPrimary),
-                                  const SizedBox(width: 4),
-                                  Text(countdown, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
-                                ],
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                t(
+                                  tk: 'Barmaly wagtyňyz',
+                                  ru: 'Время прихода',
+                                  en: 'Time to arrive',
+                                ),
+                                textAlign: TextAlign.end,
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: tokens.textPrimary),
                               ),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-                        Text(formatDate(current.startsAt), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, height: 1.1)),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            AppIcon(Icons.schedule_outlined, size: 18, color: statusColor),
-                            const SizedBox(width: 7),
-                            Text(
-                              '${clock(current.startsAt)} – ${clock(current.endsAt)}',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: statusColor),
                             ),
                           ],
+                        ),
+                        if (countdown != null) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              AppIcon(Icons.timer_outlined, size: 15, color: tokens.textPrimary),
+                              const SizedBox(width: 4),
+                              Flexible(child: Text(countdown, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800))),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 18),
+                        Text(formatDate(current.startsAt), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, height: 1.1)),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            AppIcon(Icons.schedule_outlined, size: 22, color: statusColor),
+                            const SizedBox(width: 8),
+                            Text(
+                              clock(current.startsAt),
+                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: statusColor),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '${t(tk: 'Hyzmat wagty', ru: 'Время услуги', en: 'Service time')}: ${clock(current.startsAt)} – ${clock(current.endsAt)}',
+                          style: TextStyle(fontSize: 12, color: tokens.textSecondary),
                         ),
                       ],
                     ),
@@ -222,7 +242,7 @@ class AppointmentDetailScreen extends StatelessWidget {
                         Expanded(
                           child: Text(
                             t(
-                              tk: 'Has erki wagt açylsa size habar berler',
+                              tk: 'Has irki wagt açylsa, size habar berler',
                               ru: 'Сообщим, если освободится более раннее время',
                               en: 'We’ll tell you if an earlier slot opens up',
                             ),
@@ -230,6 +250,26 @@ class AppointmentDetailScreen extends StatelessWidget {
                           ),
                         ),
                       ],
+                    ),
+                  ],
+                  if (isUpcoming) ...[
+                    const SizedBox(height: 16),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final toast = AppToast.of(context);
+                        final result = await provider.saveToCalendar(current);
+                        switch (result) {
+                          case CalendarSaveResult.saved:
+                            toast.success(t(tk: 'Senenama goşuldy. 1 sagat öň ýatladar.', ru: 'Добавлено в календарь с напоминанием за час.', en: 'Added to calendar with a one-hour reminder.'));
+                          case CalendarSaveResult.permissionDenied:
+                            toast.error(t(tk: 'Telefon sazlamalarynda senenama rugsadyny açyň.', ru: 'Разрешите доступ к календарю в настройках телефона.', en: 'Allow calendar access in phone settings.'));
+                          case CalendarSaveResult.unavailable:
+                          case CalendarSaveResult.failed:
+                            toast.error(t(tk: 'Senenama goşup bolmady.', ru: 'Не удалось добавить в календарь.', en: 'Could not add to calendar.'));
+                        }
+                      },
+                      icon: const Icon(Icons.calendar_month_outlined),
+                      label: Text(t(tk: 'Telefon senenamasyna goş', ru: 'Добавить в календарь телефона', en: 'Add to phone calendar')),
                     ),
                   ],
                 ],
@@ -285,7 +325,7 @@ class AppointmentDetailScreen extends StatelessWidget {
                       TextButton(
                         onPressed: () => _confirmCancel(context, current, t),
                         child: Text(
-                          t(tk: 'Randevuny ýatyr', ru: 'Отменить запись', en: 'Cancel appointment'),
+                          t(tk: 'Ýazgyny ýatyr', ru: 'Отменить запись', en: 'Cancel appointment'),
                           style: TextStyle(color: tokens.danger, fontWeight: FontWeight.w700),
                         ),
                       ),
@@ -306,7 +346,7 @@ class AppointmentDetailScreen extends StatelessWidget {
       context,
       icon: Icons.event_busy_outlined,
       danger: true,
-      title: t(tk: 'Randevuny ýatyrmaly?', ru: 'Отменить запись?', en: 'Cancel this booking?'),
+      title: t(tk: 'Ýazgyny ýatyrmaly?', ru: 'Отменить запись?', en: 'Cancel this booking?'),
       message: t(tk: 'Bu hereketi yzyna gaýtaryp bolmaz.', ru: 'Это действие нельзя отменить.', en: 'This action cannot be undone.'),
       confirmLabel: t(tk: 'Ýatyr', ru: 'Отменить', en: 'Cancel'),
       cancelLabel: t(tk: 'Ýapmak', ru: 'Закрыть', en: 'Close'),

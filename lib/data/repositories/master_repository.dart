@@ -184,14 +184,41 @@ class MasterRepository {
     await _api.delete('/me/vacations/$id');
   }
 
+  /// A private blocked interval; clients only see its effect on availability.
+  Future<List<ClosedTime>> closedTimes(DateTime day) async => [
+    for (final item in asMapList(unwrapData(await _api.get(
+      '/me/closed-times',
+      query: {'from': formatApiDate(day), 'to': formatApiDate(day)},
+    ))))
+      ClosedTime.fromJson(item),
+  ];
+
+  Future<ClosedTime> createClosedTime({
+    required DateTime start,
+    required DateTime end,
+    String? note,
+  }) async => ClosedTime.fromJson(asMap(unwrapData(await _api.post(
+    '/me/closed-times',
+    json: {
+      'starts_at': formatApiAshgabatDateTime(start),
+      'ends_at': formatApiAshgabatDateTime(end),
+      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+    },
+  ))));
+
+  Future<void> deleteClosedTime(int id) async {
+    await _api.delete('/me/closed-times/$id');
+  }
+
   // ---- calendar & appointments -----------------------------------------
 
-  Future<List<MasterAppointment>> calendar(DateTime from, DateTime to) async => [
+  Future<List<MasterAppointment>> calendar(DateTime from, DateTime to, {bool offlineFallback = true}) async => [
     for (final a in asMapList(
       unwrapData(
         await _api.get(
           '/me/calendar',
           query: {'from': formatApiDate(from), 'to': formatApiDate(to)},
+          offlineFallback: offlineFallback,
         ),
       ),
     ))

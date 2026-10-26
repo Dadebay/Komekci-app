@@ -130,7 +130,7 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _BookingTitle(
-                      title: t(tk: 'Tarih we wagt saýlaň', ru: 'Выберите дату и время', en: 'Pick a date & time'),
+                      title: t(tk: 'Sene we wagt saýlaň', ru: 'Выберите дату и время', en: 'Pick a date & time'),
                       subtitle: '${widget.service.name} · ${widget.service.durationMin} ${t(tk: 'min', ru: 'мин', en: 'min')} · ${formatMoney(widget.service.price)} $currency',
                     ),
                   ),
@@ -150,7 +150,7 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
-                    height: 84,
+                    height: max(100.0, MediaQuery.textScalerOf(context).scale(100)),
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 20),

@@ -84,7 +84,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
   }
 
   Future<void> _confirmDelete() async {
-    final tk = context.read<LanguageProvider>().isTurkmen;
+    final language = context.read<LanguageProvider>().language;
     final provider = context.read<CustomerProvider>();
     final customer = widget.customer!;
     final navigator = Navigator.of(context);
@@ -92,12 +92,14 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
       context,
       icon: Icons.delete_outline,
       danger: true,
-      title: tk ? 'Müşderini pozmaly?' : 'Удалить клиента?',
-      message: tk
-          ? '"${customer.name}" sanawdan aýrylar. Bu hereketi yzyna gaýtaryp bolmaýar.'
-          : '«${customer.name}» будет удалён из списка без возможности восстановления.',
-      confirmLabel: tk ? 'Poz' : 'Удалить',
-      cancelLabel: tk ? 'Ýatyr' : 'Отмена',
+      title: pickTr(language, tk: 'Müşderini pozmaly?', ru: 'Удалить клиента?', en: 'Delete customer?'),
+      message: pickTr(language,
+        tk: '"${customer.name}" sanawdan aýrylar. Bu hereketi yzyna gaýtaryp bolmaýar.',
+        ru: '«${customer.name}» будет удалён из списка без возможности восстановления.',
+        en: '"${customer.name}" will be removed from your customer list. This cannot be undone.',
+      ),
+      confirmLabel: pickTr(language, tk: 'Poz', ru: 'Удалить', en: 'Delete'),
+      cancelLabel: pickTr(language, tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
     );
     if (!confirmed || !mounted) return;
     if (await runApi(context, () => provider.remove(customer.id))) {
@@ -109,15 +111,17 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tk = context.watch<LanguageProvider>().isTurkmen;
+    final language = context.watch<LanguageProvider>().language;
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
         title: _isEditing
-            ? (tk ? 'Müşderi bellik' : 'Заметка о клиенте')
-            : (tk ? 'Täze müşderi' : 'Новый клиент'),
+            ? t(tk: 'Müşderi bellik', ru: 'Заметка о клиенте', en: 'Customer note')
+            : t(tk: 'Täze müşderi', ru: 'Новый клиент', en: 'New customer'),
       ),
       body: SafeArea(
         bottom: false,
@@ -126,25 +130,21 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                 children: [
                   _FormBanner(
                     title: _isEditing
-                        ? (tk ? 'Ýekelikde bellik' : 'Личная заметка')
-                        : (tk ? 'Täze müşderi ýazgy bilen goşulýar.' : 'Новый клиент добавляется вместе с записью.'),
+                        ? t(tk: 'Ýekelikde bellik', ru: 'Личная заметка', en: 'Private note')
+                        : t(tk: 'Täze müşderi ýazgy bilen goşulýar.', ru: 'Новый клиент добавляется вместе с записью.', en: 'A new customer is added with a booking.'),
                     subtitle: _isEditing
-                        ? (tk
-                              ? 'Ady, telefon belgisi we suraty müşderiniň özünden gelýär. Diňe şahsy bellik üýtgedilýär.'
-                              : 'Имя, телефон и фото берутся из профиля клиента. Изменить можно только личную заметку.')
-                        : (tk
-                              ? 'Adyny we telefon belgisini giriziň, soňra wagty saýlaň.'
-                              : 'Введите имя и телефон, затем выберите время записи.'),
+                        ? t(tk: 'Ady, telefon belgisi we suraty müşderiniň özünden gelýär. Diňe şahsy bellik üýtgedilýär.', ru: 'Имя, телефон и фото берутся из профиля клиента. Изменить можно только личную заметку.', en: 'Name, phone and photo come from the customer profile. You can only edit your private note.')
+                        : t(tk: 'Adyny we telefon belgisini giriziň, soňra wagty saýlaň.', ru: 'Введите имя и телефон, затем выберите время записи.', en: 'Enter a name and phone number, then choose a booking time.'),
                   ),
                   const SizedBox(height: 22),
                   if (_isEditing)
                     Center(child: _CustomerAvatar(customer: widget.customer!, radius: 46)),
                   if (_isEditing) const SizedBox(height: 24),
-                  _FieldLabel(text: tk ? 'Ady' : 'Имя', required: !_isEditing),
+                  _FieldLabel(text: t(tk: 'Ady', ru: 'Имя', en: 'Name'), required: !_isEditing),
                   const SizedBox(height: 8),
                   _FormField(
                     controller: _nameController,
-                    hint: tk ? 'Müşderiniň adyny ýazyň' : 'Введите имя клиента',
+                    hint: t(tk: 'Müşderiniň adyny ýazyň', ru: 'Введите имя клиента', en: 'Enter customer name'),
                     fillColor: tokens.surface,
                     invalid: _showErrors && !_nameOk,
                     enabled: !_isEditing,
@@ -152,7 +152,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   ),
                   const SizedBox(height: 18),
                   _FieldLabel(
-                    text: tk ? 'Telefon belgisi' : 'Номер телефона',
+                    text: t(tk: 'Telefon belgisi', ru: 'Номер телефона', en: 'Phone number'),
                     required: !_isEditing,
                   ),
                   const SizedBox(height: 8),
@@ -172,15 +172,13 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   if (_isEditing) ...[
                     const SizedBox(height: 20),
                     _FieldLabel(
-                      text: tk ? 'Bellik' : 'Заметка',
-                      optionalLabel: tk ? '(islege görä)' : '(необязательно)',
+                      text: t(tk: 'Bellik', ru: 'Заметка', en: 'Note'),
+                      optionalLabel: t(tk: '(islege görä)', ru: '(необязательно)', en: '(optional)'),
                     ),
                     const SizedBox(height: 8),
                     _FormField(
                       controller: _noteController,
-                      hint: tk
-                          ? 'Müşderi barada bellik goşuň...'
-                          : 'Добавьте заметку о клиенте...',
+                      hint: t(tk: 'Müşderi barada bellik goşuň...', ru: 'Добавьте заметку о клиенте...', en: 'Add a note about this customer...'),
                       fillColor: tokens.surface,
                       maxLines: 4,
                       maxLength: 2000,
@@ -191,7 +189,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                       child: TextButton(
                         onPressed: _confirmDelete,
                         child: Text(
-                          tk ? 'Müşderini poz' : 'Удалить клиента',
+                          t(tk: 'Müşderini poz', ru: 'Удалить клиента', en: 'Delete customer'),
                           style: TextStyle(
                             color: tokens.danger,
                             fontWeight: FontWeight.w700,
@@ -216,8 +214,8 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   children: [
                     _MasterActionButton(
                       label: _isEditing
-                          ? (tk ? 'Ýatda sakla' : 'Сохранить')
-                          : (tk ? 'Dowam et' : 'Продолжить'),
+                          ? t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save')
+                          : t(tk: 'Dowam et', ru: 'Продолжить', en: 'Continue'),
                       enabled: _complete && !_saving,
                       leading: _isEditing ? Icons.save_outlined : null,
                       trailingArrow: !_isEditing,
@@ -227,7 +225,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                     TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: Text(
-                        tk ? 'Ýatyrmazdan yzyna dön' : 'Вернуться без сохранения',
+                        t(tk: 'Ýatyrmazdan yzyna dön', ru: 'Вернуться без сохранения', en: 'Go back without saving'),
                         style: TextStyle(
                           color: tokens.accent,
                           fontWeight: FontWeight.w600,

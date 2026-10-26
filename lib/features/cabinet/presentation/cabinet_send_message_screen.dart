@@ -1,5 +1,10 @@
 part of '../../../app/komekci_app.dart';
 
+bool _canMessageCustomer(Customer customer, {required bool forPush}) =>
+    forPush
+        ? !customer.offline && customer.accountId != null
+        : customer.phone.isNotEmpty;
+
 class SendMessageScreen extends StatefulWidget {
   const SendMessageScreen({super.key});
 
@@ -17,8 +22,18 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
   bool _sending = false;
 
   List<Customer> get _eligibleClients => context.read<CustomerProvider>().customers
-      .where((c) => _pushChannel ? !c.offline && c.accountId != null : c.phone.isNotEmpty)
+      .where((c) => _canMessageCustomer(c, forPush: _pushChannel))
       .toList();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final customers = context.read<CustomerProvider>();
+      if (!customers.loading) customers.load();
+    });
+  }
 
   List<Customer> get _recipients {
     final clients = _eligibleClients;
@@ -431,6 +446,7 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
+    final customerProvider = context.watch<CustomerProvider>();
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
@@ -481,15 +497,44 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                       en: 'Send a short message to selected clients. This can be an SMS or a push notification.',
                     ),
                   ),
-                  if (_eligibleClients.isEmpty) ...[
+                  if (customerProvider.loading && customerProvider.customers.isEmpty) ...[
+                    const SizedBox(height: 16),
+                    const Center(child: CircularProgressIndicator()),
+                  ] else if (customerProvider.error != null && customerProvider.customers.isEmpty) ...[
+                    const SizedBox(height: 10),
+                    RetryErrorState(
+                      title: t(tk: 'Müşderileri ýükläp bolmady', ru: 'Не удалось загрузить клиентов', en: 'Could not load clients'),
+                      text: t(tk: 'Täzeden synanyşyň.', ru: 'Попробуйте ещё раз.', en: 'Please try again.'),
+                      retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                      onRetry: customerProvider.load,
+                    ),
+                  ] else if (_eligibleClients.isEmpty) ...[
                     const SizedBox(height: 10),
                     _InfoBanner(
                       icon: Icons.info_outline,
-                      text: t(
-                        tk: 'Habar ibermek üçin elýeterli müşderi ýok.',
-                        ru: 'Нет доступных клиентов для отправки.',
-                        en: 'No clients are available for messaging.',
-                      ),
+                      text: customerProvider.customers.isEmpty
+                          ? _pushChannel
+                              ? t(
+                                  tk: 'Sanawda entek müşderi ýok. Push üçin baglanan müşderi gerek.',
+                                  ru: 'Список клиентов пуст. Для push нужен подключённый клиент.',
+                                  en: 'The client list is empty. Push needs a connected client.',
+                                )
+                              : t(
+                                  tk: 'Sanawda entek müşderi ýok.',
+                                  ru: 'Список клиентов пока пуст.',
+                                  en: 'The client list is empty.',
+                                )
+                          : _pushChannel
+                              ? t(
+                                  tk: 'Müşderiler bar, ýöne push alyjynyň hasaby kesgitlenmedi. SMS saýlap bilersiňiz.',
+                                  ru: 'Клиенты есть, но аккаунт получателя для push не определён. Можно выбрать SMS.',
+                                  en: 'Clients are listed, but their push account cannot be identified. You can choose SMS.',
+                                )
+                              : t(
+                                  tk: 'Müşderileriň telefon belgisi ýok.',
+                                  ru: 'У клиентов нет номеров телефонов.',
+                                  en: 'These clients have no phone numbers.',
+                                ),
                     ),
                   ],
                   if (_recipients.length > 50) ...[

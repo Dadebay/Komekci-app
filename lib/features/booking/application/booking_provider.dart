@@ -21,6 +21,7 @@ class BookingProvider extends SessionScoped {
   final Map<String, Appointment> _byId = {};
   final Set<String> _loadedMonths = {};
   final Set<String> _inFlightMonths = {};
+  final Set<String> _failedMonths = {};
   final Set<String> _arrived = {};
   bool _loading = false;
   ApiException? _error;
@@ -29,11 +30,15 @@ class BookingProvider extends SessionScoped {
       List.unmodifiable(_byId.values.map(_withLocalState));
   List<Appointment> get active => [
     for (final a in appointments)
-      if (a.status == AppointmentStatus.expected || a.status == AppointmentStatus.arrived) a,
+      if (a.status == AppointmentStatus.expected ||
+          a.status == AppointmentStatus.arrived)
+        a,
   ];
   List<Appointment> get history => [
     for (final a in appointments)
-      if (a.status != AppointmentStatus.expected && a.status != AppointmentStatus.arrived) a,
+      if (a.status != AppointmentStatus.expected &&
+          a.status != AppointmentStatus.arrived)
+        a,
   ];
   bool get loading => _loading;
   ApiException? get error => _error;
@@ -76,6 +81,7 @@ class BookingProvider extends SessionScoped {
     _byId.clear();
     _loadedMonths.clear();
     _inFlightMonths.clear();
+    _failedMonths.clear();
     _arrived.clear();
     _loading = false;
     _error = null;
@@ -100,23 +106,39 @@ class BookingProvider extends SessionScoped {
   /// [ensureLoaded] that is safe to call from a widget's `build`: the work
   /// starts after the current frame, so listeners may be notified.
   void prefetch(DateTime day) {
-    if (_loadedMonths.contains(_key(day)) || _inFlightMonths.contains(_key(day))) return;
+    if (_loadedMonths.contains(_key(day)) ||
+        _inFlightMonths.contains(_key(day)) ||
+        _failedMonths.contains(_key(day))) {
+      return;
+    }
     Future.microtask(() => ensureLoaded(day));
   }
 
   /// Re-reads every month seen so far (pull-to-refresh, after a push).
   Future<void> refresh() async {
-    final months = {..._loadedMonths};
-    _loadedMonths.clear();
+    final months = {..._loadedMonths, ..._failedMonths};
     for (final key in months) {
       final parts = key.split('-');
-      await _loadMonth(DateTime(int.parse(parts[0]), int.parse(parts[1])), force: true);
+      await _loadMonth(
+        DateTime(int.parse(parts[0]), int.parse(parts[1])),
+        force: true,
+      );
     }
   }
 
-  Future<void> _loadMonth(DateTime day, {required bool force}) async {
+  /// Forces a fresh calendar request for the month containing [day].
+  Future<void> refreshDay(DateTime day) => _loadMonth(day, force: true);
+
+  Future<void> _loadMonth(
+    DateTime day, {
+    required bool force,
+    bool offlineFallback = true,
+  }) async {
     final key = _key(day);
-    if (!force && (_loadedMonths.contains(key) || _inFlightMonths.contains(key))) return;
+    if (!force &&
+        (_loadedMonths.contains(key) || _inFlightMonths.contains(key))) {
+      return;
+    }
     _inFlightMonths.add(key);
     _loading = true;
     _error = null;
@@ -124,7 +146,11 @@ class BookingProvider extends SessionScoped {
     final from = DateTime(day.year, day.month);
     final to = DateTime(day.year, day.month + 1, 0);
     try {
-      final fetched = await _repository.calendar(from, to);
+      final fetched = await _repository.calendar(
+        from,
+        to,
+        offlineFallback: offlineFallback,
+      );
       final monthEnd = DateTime(to.year, to.month, to.day + 1);
       // Replace what we had for this month so cancelled/removed rows vanish.
       _byId.removeWhere(
@@ -135,8 +161,10 @@ class BookingProvider extends SessionScoped {
         _byId[appointment.id] = appointment;
       }
       _loadedMonths.add(key);
+      _failedMonths.remove(key);
     } on ApiException catch (e) {
       _error = e;
+      _failedMonths.add(key);
       debugPrint('Loading calendar for $key failed: $e');
     }
     _inFlightMonths.remove(key);
@@ -163,14 +191,24 @@ class BookingProvider extends SessionScoped {
     final appointment = Appointment.fromApi(created);
     _byId[appointment.id] = appointment;
     notifyListeners();
+    await _loadMonth(startsAt, force: true, offlineFallback: false);
     return appointment;
   }
 
-  Future<void> complete(String id) => _setStatus(id, ApiAppointmentStatus.completed, AppointmentStatus.completed);
+  Future<void> complete(String id) => _setStatus(
+    id,
+    ApiAppointmentStatus.completed,
+    AppointmentStatus.completed,
+  );
 
-  Future<void> markNoShow(String id) => _setStatus(id, ApiAppointmentStatus.noShow, AppointmentStatus.noShow);
+  Future<void> markNoShow(String id) =>
+      _setStatus(id, ApiAppointmentStatus.noShow, AppointmentStatus.noShow);
 
-  Future<void> cancel(String id) => _setStatus(id, ApiAppointmentStatus.cancelled, AppointmentStatus.cancelled);
+  Future<void> cancel(String id) => _setStatus(
+    id,
+    ApiAppointmentStatus.cancelled,
+    AppointmentStatus.cancelled,
+  );
 
   /// Client has arrived. Only remembered on this device — the API has no such
   /// status; the booking stays `expected` on the server until completed.
@@ -179,16 +217,27 @@ class BookingProvider extends SessionScoped {
     notifyListeners();
   }
 
-  Future<void> _setStatus(String id, ApiAppointmentStatus wire, AppointmentStatus local) async {
+  Future<void> _setStatus(
+    String id,
+    ApiAppointmentStatus wire,
+    AppointmentStatus local,
+  ) async {
+    final day = _byId[id]?.startsAt;
     await _repository.setAppointmentStatus(int.parse(id), wire);
     _arrived.remove(id);
     _replace(id, (a) => a.copyWith(status: local));
+    if (day != null) await _loadMonth(day, force: true, offlineFallback: false);
   }
 
   /// Throws `SLOT_TAKEN` (with suggested slots) when the new time is busy.
   Future<void> reschedule(String id, DateTime startsAt) async {
+    final previousDay = _byId[id]?.startsAt;
     await _repository.moveAppointment(int.parse(id), startsAt);
     _replace(id, (a) => a.copyWith(startsAt: startsAt));
+    if (previousDay != null && _key(previousDay) != _key(startsAt)) {
+      await _loadMonth(previousDay, force: true, offlineFallback: false);
+    }
+    await _loadMonth(startsAt, force: true, offlineFallback: false);
   }
 
   void _replace(String id, Appointment Function(Appointment) transform) {

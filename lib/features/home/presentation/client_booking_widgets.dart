@@ -24,8 +24,11 @@ String? _bookingCountdown(ClientBooking booking, AppLanguage language) {
     if (diff.inMinutes < 60) return t(tk: '${diff.inMinutes} min soň', ru: 'через ${diff.inMinutes} мин', en: 'in ${diff.inMinutes} min');
     final h = diff.inHours;
     final m = diff.inMinutes % 60;
-    final tail = m == 0 ? '' : ' $m min';
-    return t(tk: '$h sag$tail soň', ru: 'через $h ч$tail', en: 'in $h h$tail');
+    return t(
+      tk: '$h sag${m == 0 ? '' : ' $m min'} soň',
+      ru: 'через $h ч${m == 0 ? '' : ' $m мин'}',
+      en: 'in $h h${m == 0 ? '' : ' $m min'}',
+    );
   }
   if (days == 1) return t(tk: 'Ertir', ru: 'Завтра', en: 'Tomorrow');
   return t(tk: '$days gün soň', ru: 'через $days дн.', en: 'in $days days');

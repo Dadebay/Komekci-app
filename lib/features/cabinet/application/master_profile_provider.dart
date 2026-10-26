@@ -11,13 +11,7 @@ import '../../../shared/utils/image_url.dart';
 /// edit form, dashboard greeting). Mirrors `GET /me` and `GET /me/profile`;
 /// [sync] keeps it in step with the account held by `AuthProvider`.
 class MasterProfileProvider extends SessionScoped {
-  MasterProfileProvider({
-    required MeRepository me,
-    required MasterRepository master,
-    required void Function(Me) onMeChanged,
-  }) : _me = me,
-       _master = master,
-       _onMeChanged = onMeChanged;
+  MasterProfileProvider({required this._me, required this._master, required this._onMeChanged});
 
   final MeRepository _me;
   final MasterRepository _master;
@@ -136,34 +130,17 @@ class MasterProfileProvider extends SessionScoped {
 
   /// Saves the whole profile form: account fields on `PATCH /me`, the public
   /// profile on `PATCH /me/profile`. Throws `ApiException` on failure.
-  Future<void> save({
-    required String name,
-    required String nickname,
-    required String address,
-    required String about,
-    required String instagramUrl,
-    required String tiktokUrl,
-    File? banner,
-  }) async {
+  Future<void> save({required String name, required String nickname, required String address, required String about, required String instagramUrl, required String tiktokUrl, File? banner}) async {
     _saving = true;
     notifyListeners();
     try {
       final accountChanged = name != _name || nickname != _nickname;
       if (accountChanged) {
-        final me = await _me.updateMe(
-          name: name != _name ? name : null,
-          nickname: nickname != _nickname ? nickname : null,
-        );
+        final me = await _me.updateMe(name: name != _name ? name : null, nickname: nickname != _nickname ? nickname : null);
         _onMeChanged(me);
       }
       if (banner != null) _banner = banner;
-      final profile = await _master.updateProfile(
-        address: address,
-        description: about,
-        instagramUrl: instagramUrl,
-        tiktokUrl: tiktokUrl,
-        bannerPath: banner?.path,
-      );
+      final profile = await _master.updateProfile(address: address, description: about, instagramUrl: instagramUrl, tiktokUrl: tiktokUrl, bannerPath: banner?.path);
       _address = profile.address;
       _about = profile.description;
       _instagram = profile.instagramUrl ?? '';

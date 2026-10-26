@@ -25,13 +25,7 @@ class GlobalSafeAreaWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: _getSystemUiOverlayStyle(context),
-      child: SafeArea(
-        top: top,
-        bottom: bottom,
-        left: left,
-        right: right,
-        child: child,
-      ),
+      child: SafeArea(top: top, bottom: bottom, left: left, right: right, child: child),
     );
   }
 

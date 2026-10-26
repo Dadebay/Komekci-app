@@ -116,6 +116,28 @@ class Vacation {
   );
 }
 
+/// A one-off interval blocked by the master; its note is private to the master.
+class ClosedTime {
+  const ClosedTime({
+    required this.id,
+    required this.startsAt,
+    required this.endsAt,
+    this.note = '',
+  });
+
+  final int id;
+  final DateTime startsAt;
+  final DateTime endsAt;
+  final String note;
+
+  factory ClosedTime.fromJson(Map<String, dynamic> json) => ClosedTime(
+    id: parseIntOrNull(json['id']) ?? 0,
+    startsAt: parseApiTime(json['starts_at']) ?? DateTime.now(),
+    endsAt: parseApiTime(json['ends_at']) ?? DateTime.now(),
+    note: json['note'] as String? ?? '',
+  );
+}
+
 class Schedule {
   const Schedule({
     required this.gridStepMin,

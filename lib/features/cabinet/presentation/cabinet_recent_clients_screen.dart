@@ -27,8 +27,13 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
     };
     final cutoff = DateTime.now().subtract(Duration(days: _periodDays[_period]));
     final clients = context.watch<CustomerProvider>().customers
-        .where((c) => (widget.forPush ? !c.offline && c.accountId != null : c.phone.isNotEmpty) && c.lastVisit != null && !c.lastVisit!.isBefore(cutoff))
+        .where((c) => c.lastVisit != null && !c.lastVisit!.isBefore(cutoff))
         .toList();
+    final eligibleIds = clients
+        .where((c) => _canMessageCustomer(c, forPush: widget.forPush))
+        .map((c) => c.id)
+        .toSet();
+    final selected = _selected.intersection(eligibleIds);
     final tokens = context.appTokens;
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -128,20 +133,27 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
                   ),
                   const SizedBox(height: 10),
                   ...clients.map((c) {
-                    final checked = _selected.contains(c.id);
+                    final canSend = _canMessageCustomer(c, forPush: widget.forPush);
+                    final checked = canSend && selected.contains(c.id);
                     return _ClientListTile(
                       name: c.name,
                       phone: c.phone,
-                      subtitle:
-                          '${t(tk: "Soňky sapar", ru: "Последний визит", en: "Last visit")}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
+                      subtitle: !canSend
+                          ? widget.forPush
+                              ? t(tk: 'Push üçin elýeterli däl', ru: 'Push недоступен', en: 'Push unavailable')
+                              : t(tk: 'Telefon belgisi ýok', ru: 'Нет номера телефона', en: 'No phone number')
+                          : '${t(tk: "Soňky sapar", ru: "Последний визит", en: "Last visit")}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
                       checked: checked,
-                      onTap: () => setState(() {
-                        if (checked) {
-                          _selected.remove(c.id);
-                        } else {
-                          _selected.add(c.id);
-                        }
-                      }),
+                      enabled: canSend,
+                      onTap: canSend
+                          ? () => setState(() {
+                              if (checked) {
+                                _selected.remove(c.id);
+                              } else {
+                                _selected.add(c.id);
+                              }
+                            })
+                          : null,
                     );
                   }),
                   const SizedBox(height: 8),
@@ -160,9 +172,9 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: _MasterActionButton(
                 label:
-                    '${t(tk: "Dowam et", ru: "Продолжить", en: "Continue")} (${_selected.length})',
-                enabled: _selected.isNotEmpty && _selected.length <= 50,
-                onTap: () => Navigator.pop(context, _selected.toList()),
+                    '${t(tk: "Dowam et", ru: "Продолжить", en: "Continue")} (${selected.length})',
+                enabled: selected.isNotEmpty && selected.length <= 50,
+                onTap: () => Navigator.pop(context, selected.toList()),
               ),
             ),
           ],

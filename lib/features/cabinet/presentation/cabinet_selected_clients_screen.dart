@@ -25,15 +25,18 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final query = _searchController.text.trim().toLowerCase();
-    final clients = context.watch<CustomerProvider>().customers
-        .where(
-          (c) =>
-              (widget.forPush ? !c.offline && c.accountId != null : c.phone.isNotEmpty) &&
-              (query.isEmpty || c.name.toLowerCase().contains(query) || c.phone.contains(query)),
-        )
+    final provider = context.watch<CustomerProvider>();
+    final clients = provider.customers
+        .where((c) => query.isEmpty || c.name.toLowerCase().contains(query) || c.phone.contains(query))
         .toList();
+    final eligible = clients.where((c) => _canMessageCustomer(c, forPush: widget.forPush)).toList();
+    final eligibleIds = provider.customers
+        .where((c) => _canMessageCustomer(c, forPush: widget.forPush))
+        .map((c) => c.id)
+        .toSet();
+    final selected = _selected.intersection(eligibleIds);
     final allSelected =
-        clients.isNotEmpty && clients.every((c) => _selected.contains(c.id));
+        eligible.isNotEmpty && eligible.every((c) => selected.contains(c.id));
     final tokens = context.appTokens;
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -99,13 +102,22 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
+                  if (provider.loading && provider.customers.isEmpty)
+                    const Center(child: CircularProgressIndicator()),
+                  if (provider.error != null && provider.customers.isEmpty)
+                    RetryErrorState(
+                      title: t(tk: 'Müşderileri ýükläp bolmady', ru: 'Не удалось загрузить клиентов', en: 'Could not load clients'),
+                      text: t(tk: 'Täzeden synanyşyň.', ru: 'Попробуйте ещё раз.', en: 'Please try again.'),
+                      retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                      onRetry: provider.load,
+                    ),
                   Row(
                     children: [
                       Text(
                         t(
-                          tk: 'Saýlananlar: ${_selected.length}',
-                          ru: 'Выбрано: ${_selected.length}',
-                          en: 'Selected: ${_selected.length}',
+                          tk: 'Saýlananlar: ${selected.length}',
+                          ru: 'Выбрано: ${selected.length}',
+                          en: 'Selected: ${selected.length}',
                         ),
                         style: const TextStyle(
                           fontSize: 13,
@@ -116,11 +128,11 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                       GestureDetector(
                         onTap: () => setState(() {
                           if (allSelected) {
-                            for (final c in clients) {
+                            for (final c in eligible) {
                               _selected.remove(c.id);
                             }
                           } else {
-                            for (final c in clients) {
+                            for (final c in eligible) {
                               _selected.add(c.id);
                             }
                           }
@@ -147,21 +159,29 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                   ),
                   const SizedBox(height: 10),
                   ...clients.map((c) {
-                    final checked = _selected.contains(c.id);
+                    final canSend = _canMessageCustomer(c, forPush: widget.forPush);
+                    final checked = canSend && selected.contains(c.id);
                     return _ClientListTile(
                       name: c.name,
                       phone: c.phone,
-                      subtitle: c.lastVisit == null
-                          ? ''
-                          : '${t(tk: "Soňky gezek", ru: "Последний визит", en: "Last visit")}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
+                      subtitle: !canSend
+                          ? widget.forPush
+                              ? t(tk: 'Push üçin elýeterli däl', ru: 'Push недоступен', en: 'Push unavailable')
+                              : t(tk: 'Telefon belgisi ýok', ru: 'Нет номера телефона', en: 'No phone number')
+                          : c.lastVisit == null
+                              ? ''
+                              : '${t(tk: "Soňky gezek", ru: "Последний визит", en: "Last visit")}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
                       checked: checked,
-                      onTap: () => setState(() {
-                        if (checked) {
-                          _selected.remove(c.id);
-                        } else {
-                          _selected.add(c.id);
-                        }
-                      }),
+                      enabled: canSend,
+                      onTap: canSend
+                          ? () => setState(() {
+                              if (checked) {
+                                _selected.remove(c.id);
+                              } else {
+                                _selected.add(c.id);
+                              }
+                            })
+                          : null,
                     );
                   }),
                 ],
@@ -171,9 +191,9 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: _MasterActionButton(
                 label:
-                    '${t(tk: "Dowam et", ru: "Продолжить", en: "Continue")} (${_selected.length})',
-                enabled: _selected.isNotEmpty && _selected.length <= 50,
-                onTap: () => Navigator.pop(context, _selected.toList()),
+                    '${t(tk: "Dowam et", ru: "Продолжить", en: "Continue")} (${selected.length})',
+                enabled: selected.isNotEmpty && selected.length <= 50,
+                onTap: () => Navigator.pop(context, selected.toList()),
               ),
             ),
           ],

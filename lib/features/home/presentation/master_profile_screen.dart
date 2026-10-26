@@ -29,10 +29,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
     setState(() => _error = null);
     final repository = context.read<ClientRepository>();
     try {
-      final results = await Future.wait<Object>([
-        repository.master(widget.master.id),
-        repository.masterServices(widget.master.id),
-      ]);
+      final results = await Future.wait<Object>([repository.master(widget.master.id), repository.masterServices(widget.master.id)]);
       if (!mounted) return;
       setState(() {
         _profile = results[0] as MasterProfile;
@@ -46,15 +43,12 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
+    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final profile = _profile;
     final services = _services?.services.where((s) => !s.isHidden).toList() ?? const <ApiService>[];
     final accepting = _services?.acceptingBookings ?? widget.master.acceptingBookings;
-    final cheapest = services.isEmpty
-        ? null
-        : services.map((s) => s.price).reduce((a, b) => a < b ? a : b);
+    final cheapest = services.isEmpty ? null : services.map((s) => s.price).reduce((a, b) => a < b ? a : b);
     final name = profile?.name ?? widget.master.name;
     final nickname = profile?.nickname ?? widget.master.nickname;
     final address = profile?.address ?? widget.master.address;
@@ -70,7 +64,11 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Container(width: 4, height: 16, decoration: BoxDecoration(color: tokens.accent, borderRadius: BorderRadius.circular(2))),
+          Container(
+            width: 4,
+            height: 16,
+            decoration: BoxDecoration(color: tokens.accent, borderRadius: BorderRadius.circular(2)),
+          ),
           const SizedBox(width: 8),
           Text(text, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
           if (count != null) ...[
@@ -78,7 +76,10 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(color: tokens.surfaceElevated, borderRadius: BorderRadius.circular(9)),
-              child: Text('$count', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: tokens.textSecondary)),
+              child: Text(
+                '$count',
+                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: tokens.textSecondary),
+              ),
             ),
           ],
         ],
@@ -92,17 +93,18 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
           ListView(
             padding: EdgeInsets.zero,
             children: [
-              _MasterProfileHero(
-                bannerUrl: profile?.bannerUrl,
-                photoUrl: profile?.photoUrl ?? widget.master.photoUrl,
-              ),
+              _MasterProfileHero(bannerUrl: profile?.bannerUrl, photoUrl: profile?.photoUrl ?? widget.master.photoUrl),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Center(
-                      child: Text(name, textAlign: TextAlign.center, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, height: 1.15)),
+                      child: Text(
+                        name,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, height: 1.15),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     Wrap(
@@ -114,9 +116,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                         if (address.isNotEmpty) _ProfilePill(icon: Icons.location_on_outlined, label: address),
                         _ProfilePill(
                           dotColor: accepting ? tokens.success : tokens.warning,
-                          label: accepting
-                              ? t(tk: 'Ýazgy açyk', ru: 'Запись открыта', en: 'Taking bookings')
-                              : t(tk: 'Wagtlaýyn ýapyk', ru: 'Запись закрыта', en: 'Bookings paused'),
+                          label: accepting ? t(tk: 'Ýazgy açyk', ru: 'Запись открыта', en: 'Taking bookings') : t(tk: 'Wagtlaýyn ýapyk', ru: 'Запись закрыта', en: 'Bookings paused'),
                         ),
                       ],
                     ),
@@ -166,10 +166,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: _bookingCardDecoration(tokens),
-                        child: Text(
-                          profile!.description,
-                          style: TextStyle(fontSize: 13.5, color: tokens.textSecondary, height: 1.6),
-                        ),
+                        child: Text(profile!.description, style: TextStyle(fontSize: 13.5, color: tokens.textSecondary, height: 1.6)),
                       ),
                     ],
                     if (links.isNotEmpty) ...[
@@ -203,7 +200,10 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                       ),
                     ],
                     const SizedBox(height: 28),
-                    sectionTitle(t(tk: 'Hyzmatlar', ru: 'Услуги', en: 'Services'), count: _services == null ? null : services.length),
+                    sectionTitle(
+                      t(tk: 'Hyzmatlar', ru: 'Услуги', en: 'Services'),
+                      count: _services == null ? null : services.length,
+                    ),
                     if (_services == null && _error == null)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 16),
@@ -221,12 +221,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                           description: s.description,
                           price: s.price,
                           minutes: s.durationMin,
-                          onTap: accepting
-                              ? () => Navigator.push(
-                                  context,
-                                  pageRoute(BookingPage(master: widget.master, preselectedServiceId: s.id)),
-                                )
-                              : null,
+                          onTap: accepting ? () => Navigator.push(context, pageRoute(BookingPage(master: widget.master, preselectedServiceId: s.id))) : null,
                         ),
                       ),
                   ],
@@ -243,9 +238,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
-                  children: [
-                    _MasterProfileIconButton(icon: Icons.arrow_back, onTap: () => Navigator.maybePop(context)),
-                  ],
+                  children: [_MasterProfileIconButton(icon: Icons.arrow_back, onTap: () => Navigator.maybePop(context))],
                 ),
               ),
             ),
@@ -255,9 +248,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
       bottomNavigationBar: _BookingBottomBar(
         caption: t(tk: 'Başlangyç bahasy', ru: 'Цена от', en: 'Starting from'),
         value: cheapest == null ? '—' : '${formatMoney(cheapest)} $currency',
-        label: accepting
-            ? t(tk: 'Ýazyl', ru: 'Записаться', en: 'Book')
-            : t(tk: 'Wagtlaýyn ýapyk', ru: 'Запись закрыта', en: 'Bookings paused'),
+        label: accepting ? t(tk: 'Ýazyl', ru: 'Записаться', en: 'Book') : t(tk: 'Wagtlaýyn ýapyk', ru: 'Запись закрыта', en: 'Bookings paused'),
         onPressed: accepting ? () => Navigator.push(context, pageRoute(BookingPage(master: widget.master))) : null,
       ),
     );
@@ -291,11 +282,20 @@ class _ProfilePill extends StatelessWidget {
         children: [
           if (icon != null) ...[AppIcon(icon!, size: 13, color: tokens.textSecondary), const SizedBox(width: 5)],
           if (dotColor != null) ...[
-            Container(width: 7, height: 7, decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle)),
+            Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+            ),
             const SizedBox(width: 6),
           ],
           Flexible(
-            child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary)),
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary),
+            ),
           ),
         ],
       ),
@@ -324,7 +324,12 @@ class _ProfileStat extends StatelessWidget {
             child: Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
           ),
           const SizedBox(height: 2),
-          Text(caption, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: tokens.textSecondary)),
+          Text(
+            caption,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 11, color: tokens.textSecondary),
+          ),
         ],
       ),
     );
@@ -355,20 +360,19 @@ class _MasterProfileHero extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                if (bannerUrl != null)
-                  Image.network(bannerUrl!, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink()),
+                if (bannerUrl != null) Image.network(bannerUrl!, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink()),
                 // Keeps the back button readable on a photo banner.
                 if (bannerUrl != null)
                   DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [tokens.textPrimary.withValues(alpha: .28), Colors.transparent, tokens.textPrimary.withValues(alpha: .12)],
-                      stops: const [0, .45, 1],
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [tokens.textPrimary.withValues(alpha: .28), Colors.transparent, tokens.textPrimary.withValues(alpha: .12)],
+                        stops: const [0, .45, 1],
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -461,10 +465,20 @@ class _MasterServiceRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+                    Text(
+                      name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
+                    ),
                     if (description.isNotEmpty) ...[
                       const SizedBox(height: 2),
-                      Text(description, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: tokens.textSecondary)),
+                      Text(
+                        description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+                      ),
                     ],
                     const SizedBox(height: 5),
                     Row(
@@ -488,10 +502,7 @@ class _MasterServiceRow extends StatelessWidget {
                     '${formatMoney(price)} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
                     style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: tokens.accent),
                   ),
-                  if (bookable) ...[
-                    const SizedBox(height: 4),
-                    AppIcon(Icons.chevron_right, size: 16, color: tokens.disabled),
-                  ],
+                  if (bookable) ...[const SizedBox(height: 4), AppIcon(Icons.chevron_right, size: 16, color: tokens.disabled)],
                 ],
               ),
             ],

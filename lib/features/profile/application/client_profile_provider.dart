@@ -10,11 +10,7 @@ import '../../../shared/utils/image_url.dart';
 /// edit form). Mirrors `GET /me`; [sync] keeps it in step with the account
 /// held by `AuthProvider`.
 class ClientProfileProvider extends SessionScoped {
-  ClientProfileProvider({
-    required MeRepository me,
-    required void Function(Me) onMeChanged,
-  }) : _me = me,
-       _onMeChanged = onMeChanged;
+  ClientProfileProvider({required this._me, required this._onMeChanged});
 
   final MeRepository _me;
   final void Function(Me) _onMeChanged;
@@ -78,10 +74,7 @@ class ClientProfileProvider extends SessionScoped {
 
   /// Saves the name (and nickname when given). Throws `ApiException`.
   Future<void> save({String? name, String? nickname}) async {
-    final me = await _me.updateMe(
-      name: name != null && name != _name ? name : null,
-      nickname: nickname != null && nickname != _nickname ? nickname : null,
-    );
+    final me = await _me.updateMe(name: name != null && name != _name ? name : null, nickname: nickname != null && nickname != _nickname ? nickname : null);
     _onMeChanged(me);
   }
 }

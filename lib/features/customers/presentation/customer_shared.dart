@@ -36,10 +36,10 @@ IconData _statusIcon(CustomerStatus status) => switch (status) {
   CustomerStatus.newClient => Icons.person_add_alt_1,
 };
 
-String _statusLabel(CustomerStatus status, bool tk) => switch (status) {
+String _statusLabel(CustomerStatus status, AppLanguage language) => switch (status) {
   CustomerStatus.vip => 'VIP',
-  CustomerStatus.regular => tk ? 'Hemişelik' : 'Постоянный',
-  CustomerStatus.newClient => tk ? 'Täze' : 'Новый',
+  CustomerStatus.regular => pickTr(language, tk: 'Hemişelik', ru: 'Постоянный', en: 'Regular'),
+  CustomerStatus.newClient => pickTr(language, tk: 'Täze', ru: 'Новый', en: 'New'),
 };
 
 /// Shared "are you sure" dialog: icon badge, centred copy, a cancel outline

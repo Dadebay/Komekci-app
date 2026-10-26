@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import '../../../core/network/api_exception.dart';
@@ -6,6 +8,8 @@ import '../../../data/models/api/client_models.dart';
 import '../../../data/models/api/master_models.dart';
 import '../../../data/models/api/user_models.dart';
 import '../../../data/repositories/client_repository.dart';
+import 'appointment_reminder_scheduler.dart';
+import 'client_calendar_service.dart';
 
 enum ClientBookingStatus { expected, completed, cancelled, noShow }
 
@@ -48,6 +52,24 @@ class ClientBooking {
   final int? lateMinutes;
 
   DateTime get endsAt => startsAt.add(Duration(minutes: minutes));
+
+  CalendarBookingDetails get calendarDetails {
+    // Calculate in Ashgabat wall time, independent of the phone's DST rules.
+    final endWall = DateTime.utc(
+      startsAt.year,
+      startsAt.month,
+      startsAt.day,
+      startsAt.hour,
+      startsAt.minute,
+    ).add(Duration(minutes: minutes));
+    return CalendarBookingDetails(
+      id: id,
+      masterName: masterName,
+      serviceName: serviceName,
+      startsAt: startsAt,
+      endsAt: endWall,
+    );
+  }
 
   factory ClientBooking.fromApi(ClientAppointment a) => ClientBooking(
     id: '${a.id}',
@@ -95,9 +117,19 @@ class ClientBooking {
 
 /// The client's appointments (`/appointments`).
 class ClientBookingsProvider extends SessionScoped {
-  ClientBookingsProvider(this._repository);
+  ClientBookingsProvider(
+    this._repository, {
+    AppointmentReminderScheduler? reminders,
+    ClientCalendarService? calendar,
+  }) : _reminders = reminders ?? AppointmentReminderScheduler(),
+       _calendar = calendar ?? ClientCalendarService.instance;
 
   final ClientRepository _repository;
+  final AppointmentReminderScheduler _reminders;
+  final ClientCalendarService _calendar;
+  int? _reminderUserId;
+  bool _remindersEnabled = true;
+  String _reminderLocale = 'tk';
 
   /// Pages read per list on a full load.
   static const _maxPages = 5;
@@ -109,16 +141,90 @@ class ClientBookingsProvider extends SessionScoped {
   bool _loadingMore = false;
   ApiException? _error;
 
-  List<ClientBooking> get bookings => List.unmodifiable([..._upcoming, ..._history]);
+  List<ClientBooking> get bookings =>
+      List.unmodifiable([..._upcoming, ..._history]);
 
-  List<ClientBooking> get upcoming => List.of(_upcoming)..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+  List<ClientBooking> get upcoming =>
+      List.of(_upcoming)..sort((a, b) => a.startsAt.compareTo(b.startsAt));
 
-  List<ClientBooking> get history => List.of(_history)..sort((a, b) => b.startsAt.compareTo(a.startsAt));
+  List<ClientBooking> get history =>
+      List.of(_history)..sort((a, b) => b.startsAt.compareTo(a.startsAt));
 
   bool get loading => _loading;
   bool get loadingMore => _loadingMore;
   bool get hasMoreHistory => _historyCursor != null;
   ApiException? get error => _error;
+
+  /// Called when the account's notification preference or language changes.
+  void configureReminders(Me? me) {
+    final userId = me?.isMaster == true ? null : me?.id;
+    final enabled = me?.notificationPrefs['reminders'] ?? true;
+    final locale = me?.locale ?? 'tk';
+    final sameUser = _reminderUserId == userId;
+    if (sameUser && _remindersEnabled == enabled && _reminderLocale == locale) {
+      return;
+    }
+    _reminderUserId = userId;
+    _remindersEnabled = enabled;
+    _reminderLocale = locale;
+    if (sameUser) _syncReminders();
+  }
+
+  void _syncReminders() {
+    unawaited(
+      _reminders
+          .sync(
+            userId: _reminderUserId,
+            bookings: [
+              for (final booking in _upcoming)
+                ReminderBooking(
+                  id: booking.id,
+                  masterName: booking.masterName,
+                  serviceName: booking.serviceName,
+                  startsAt: booking.startsAt,
+                  active: booking.status == ClientBookingStatus.expected,
+                ),
+            ],
+            enabled: _remindersEnabled,
+            locale: _reminderLocale,
+          )
+          .catchError((Object error) {
+            debugPrint('Could not update appointment reminders: $error');
+          }),
+    );
+  }
+
+  Future<CalendarSaveResult> saveToCalendar(ClientBooking booking) async {
+    final userId = sessionUserId;
+    if (userId == null) return CalendarSaveResult.unavailable;
+    return _calendar.save(userId, booking.calendarDetails);
+  }
+
+  Future<void> openCalendarSettings() => _calendar.openSettings();
+
+  void _syncCalendar() {
+    if (!_calendar.isSupported) return;
+    final userId = sessionUserId;
+    if (userId == null) return;
+    final upcoming = List<ClientBooking>.of(_upcoming);
+    final history = List<ClientBooking>.of(_history);
+    unawaited(() async {
+      try {
+        for (final booking in upcoming) {
+          if (booking.status == ClientBookingStatus.expected) {
+            await _calendar.reconcile(userId, booking.calendarDetails);
+          }
+        }
+        for (final booking in history) {
+          if (booking.status == ClientBookingStatus.cancelled) {
+            await _calendar.remove(userId, booking.id);
+          }
+        }
+      } catch (error) {
+        debugPrint('Could not reconcile calendar bookings: $error');
+      }
+    }());
+  }
 
   @override
   void reset() {
@@ -127,14 +233,30 @@ class ClientBookingsProvider extends SessionScoped {
     _historyCursor = null;
     _loading = _loadingMore = false;
     _error = null;
+    unawaited(
+      _reminders
+          .sync(
+            userId: null,
+            bookings: const [],
+            enabled: false,
+            locale: _reminderLocale,
+          )
+          .catchError((Object error) {
+            debugPrint('Could not clear appointment reminders: $error');
+          }),
+    );
   }
 
   @override
   Future<void> onSignedIn(Me me) async {
-    if (!me.isMaster) await load();
+    if (!me.isMaster) {
+      configureReminders(me);
+      await load();
+    }
   }
 
   Future<void> load() async {
+    final userId = sessionUserId;
     _loading = true;
     _error = null;
     notifyListeners();
@@ -143,14 +265,20 @@ class ClientBookingsProvider extends SessionScoped {
       String? cursor;
       var pages = 0;
       do {
-        final page = await _repository.appointments(scope: 'upcoming', cursor: cursor);
+        final page = await _repository.appointments(
+          scope: 'upcoming',
+          cursor: cursor,
+        );
         upcoming.addAll(page.items.map(ClientBooking.fromApi));
         cursor = page.nextCursor;
       } while (cursor != null && ++pages < _maxPages);
       final history = await _repository.appointments(scope: 'history');
+      if (sessionUserId != userId) return;
       _upcoming = upcoming;
       _history = history.items.map(ClientBooking.fromApi).toList();
       _historyCursor = history.nextCursor;
+      _syncReminders();
+      _syncCalendar();
     } on ApiException catch (e) {
       _error = e;
       debugPrint('Loading client appointments failed: $e');
@@ -165,9 +293,13 @@ class ClientBookingsProvider extends SessionScoped {
     _loadingMore = true;
     notifyListeners();
     try {
-      final page = await _repository.appointments(scope: 'history', cursor: cursor);
+      final page = await _repository.appointments(
+        scope: 'history',
+        cursor: cursor,
+      );
       _history = [..._history, ...page.items.map(ClientBooking.fromApi)];
       _historyCursor = page.nextCursor;
+      _syncCalendar();
     } on ApiException catch (e) {
       debugPrint('Loading more history failed: $e');
     }
@@ -195,6 +327,7 @@ class ClientBookingsProvider extends SessionScoped {
     final booking = ClientBooking.fromApi(created);
     _upcoming = [..._upcoming.where((b) => b.id != booking.id), booking];
     notifyListeners();
+    _syncReminders();
     return booking;
   }
 
@@ -207,15 +340,19 @@ class ClientBookingsProvider extends SessionScoped {
   Future<void> reschedule(String id, DateTime startsAt) async {
     await _repository.moveAppointment(int.parse(id), startsAt);
     _upcoming = [
-      for (final b in _upcoming) b.id == id ? b.copyWith(startsAt: startsAt) : b,
+      for (final b in _upcoming)
+        b.id == id ? b.copyWith(startsAt: startsAt) : b,
     ];
     notifyListeners();
+    _syncReminders();
+    _syncCalendar();
   }
 
   Future<void> setLate(String id, int minutes) async {
     await _repository.reportLate(int.parse(id), minutes);
     _upcoming = [
-      for (final b in _upcoming) b.id == id ? b.copyWith(lateMinutes: minutes) : b,
+      for (final b in _upcoming)
+        b.id == id ? b.copyWith(lateMinutes: minutes) : b,
     ];
     notifyListeners();
   }
@@ -226,6 +363,7 @@ class ClientBookingsProvider extends SessionScoped {
     final booking = ClientBooking.fromApi(created);
     _upcoming = [..._upcoming.where((b) => b.id != booking.id), booking];
     notifyListeners();
+    _syncReminders();
     return booking;
   }
 
@@ -247,5 +385,7 @@ class ClientBookingsProvider extends SessionScoped {
     _upcoming = [..._upcoming]..removeAt(index);
     _history = [moved, ..._history];
     notifyListeners();
+    _syncReminders();
+    _syncCalendar();
   }
 }

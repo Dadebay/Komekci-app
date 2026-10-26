@@ -65,6 +65,10 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
       !context.read<BookingProvider>().hasConflict(
         widget.start,
         service.minutes,
+      ) &&
+      !context.read<ScheduleProvider>().hasClosedConflict(
+        widget.start,
+        service.minutes,
       );
 
   Future<void> _pickExistingCustomer() async {
@@ -257,7 +261,6 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    final tk = language == AppLanguage.tk;
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
@@ -547,7 +550,7 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
                               onChanged: () => setState(() {}),
                             ),
                           ],
-                          if (_showErrors && !_customerOk) _ErrorText(tk: tk),
+                          if (_showErrors && !_customerOk) _ErrorText(language: language),
                           const SizedBox(height: 22),
                           _NewBookingSectionTitle(
                             number: 2,
@@ -640,7 +643,7 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
                             ),
                           ),
                           if (_showErrors && _selectedService == null)
-                            _ErrorText(tk: tk),
+                            _ErrorText(language: language),
                           const SizedBox(height: 22),
                           _NewBookingSectionTitle(
                             number: 3,

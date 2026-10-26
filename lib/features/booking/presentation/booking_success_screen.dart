@@ -17,10 +17,30 @@ class BookingSuccessScreen extends StatefulWidget {
 
 class _BookingSuccessScreenState extends State<BookingSuccessScreen>
     with SingleTickerProviderStateMixin {
+  CalendarSaveResult? _calendarResult;
+  bool _calendarSaving = true;
   late final _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 420),
   )..forward();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _saveToCalendar();
+    });
+  }
+
+  Future<void> _saveToCalendar() async {
+    setState(() => _calendarSaving = true);
+    final result = await context.read<ClientBookingsProvider>().saveToCalendar(widget.appointment);
+    if (!mounted) return;
+    setState(() {
+      _calendarSaving = false;
+      _calendarResult = result;
+    });
+  }
 
   @override
   void dispose() {
@@ -135,6 +155,50 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                   ],
                 ),
               ),
+              if (_calendarSaving || _calendarResult != CalendarSaveResult.unavailable) ...[
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                  decoration: _bookingCardDecoration(tokens),
+                  child: Row(
+                    children: [
+                      AppIcon(
+                        _calendarResult == CalendarSaveResult.saved
+                            ? Icons.event_available_outlined
+                            : Icons.calendar_today_outlined,
+                        color: tokens.accent,
+                        size: 19,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _calendarSaving
+                              ? t(tk: 'Senenama goşulýar…', ru: 'Добавляем в календарь…', en: 'Adding to calendar…')
+                              : switch (_calendarResult) {
+                                  CalendarSaveResult.saved => t(tk: 'Senenama goşuldy · 1 sagat öň ýatlatma', ru: 'Добавлено в календарь · напоминание за 1 час', en: 'Added to calendar · reminder 1 hour before'),
+                                  CalendarSaveResult.permissionDenied => t(tk: 'Senenama rugsady gerek', ru: 'Нужен доступ к календарю', en: 'Calendar access is needed'),
+                                  _ => t(tk: 'Senenama goşup bolmady', ru: 'Не удалось добавить в календарь', en: 'Could not add to calendar'),
+                                },
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textPrimary),
+                        ),
+                      ),
+                      if (!_calendarSaving && _calendarResult != CalendarSaveResult.saved) ...[
+                        if (_calendarResult == CalendarSaveResult.permissionDenied)
+                          TextButton(
+                            onPressed: () => context.read<ClientBookingsProvider>().openCalendarSettings(),
+                            child: Text(t(tk: 'Sazlamalar', ru: 'Настройки', en: 'Settings')),
+                          ),
+                        IconButton(
+                          tooltip: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Retry'),
+                          onPressed: _saveToCalendar,
+                          icon: const Icon(Icons.refresh),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
               const Spacer(),
               SizedBox(
                 width: double.infinity,

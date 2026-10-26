@@ -25,7 +25,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final tk = context.watch<LanguageProvider>().isTurkmen;
+    final language = context.watch<LanguageProvider>().language;
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
     final provider = context.watch<CustomerProvider>();
     final customer = _findCustomer(provider.customers, widget.customerId);
     if (customer == null) {
@@ -42,7 +44,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: tk ? 'Müşderi maglumatlary' : 'Информация о клиенте',
+        title: t(tk: 'Müşderi maglumatlary', ru: 'Информация о клиенте', en: 'Customer details'),
       ),
       body: SafeArea(
         child: Column(
@@ -121,7 +123,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                   const SizedBox(height: 10),
                                   _StatusPill(
                                     status: customer.status,
-                                    tk: tk,
+                                    language: language,
                                   ),
                                 ],
                               ),
@@ -148,7 +150,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                             Expanded(
                               child: _HeaderStat(
                                 value: '${customer.totalVisits}',
-                                label: tk ? 'Sapar' : 'Визитов',
+                                label: t(tk: 'Sapar', ru: 'Визитов', en: 'Visits'),
                               ),
                             ),
                             Container(
@@ -161,7 +163,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                             Expanded(
                               child: _HeaderStat(
                                 value: '${customer.totalSpent}',
-                                label: tk ? 'Manat' : 'Манат',
+                                label: t(tk: 'Manat', ru: 'Манат', en: 'Manat'),
                               ),
                             ),
                             Container(
@@ -176,7 +178,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                 value: customer.lastVisitDate == null
                                     ? '—'
                                     : formatDate(customer.lastVisitDate!),
-                                label: tk ? 'Şodny gelişi' : 'Визит',
+                                label: t(tk: 'Soňky sapar', ru: 'Последний визит', en: 'Last visit'),
                               ),
                             ),
                           ],
@@ -191,7 +193,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         child: _InfoTile(
                           icon: Icons.content_cut,
                           accent: tokens.accent,
-                          label: tk ? 'Şodny hyzmat' : 'Последняя услуга',
+                          label: t(tk: 'Soňky hyzmat', ru: 'Последняя услуга', en: 'Last service'),
                           value: customer.lastCompletedVisit == null
                               ? '—'
                               : customer.lastCompletedVisit!.serviceName,
@@ -202,9 +204,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         child: _InfoTile(
                           icon: Icons.calendar_month_outlined,
                           accent: _statusColor(CustomerStatus.newClient, tokens),
-                          label: tk ? 'Indiki ýazgy' : 'Следующая запись',
+                          label: t(tk: 'Indiki ýazgy', ru: 'Следующая запись', en: 'Next booking'),
                           value: customer.nextVisit == null
-                              ? (tk ? 'Ýok' : 'Нет')
+                              ? t(tk: 'Ýok', ru: 'Нет', en: 'None')
                               : '${formatDate(customer.nextVisit!)} • ${formatTime(TimeOfDay.fromDateTime(customer.nextVisit!))}',
                           chevron: true,
                           onTap: () => Navigator.push(
@@ -244,7 +246,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  tk ? 'Bellik' : 'Заметка',
+                                  t(tk: 'Bellik', ru: 'Заметка', en: 'Note'),
                                   style: TextStyle(
                                     fontSize: 11.5,
                                     color: tokens.textSecondary,
@@ -271,7 +273,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        tk ? 'Sapar taryhy' : 'История визитов',
+                        t(tk: 'Sapar taryhy', ru: 'История визитов', en: 'Visit history'),
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
@@ -288,7 +290,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           child: Row(
                             children: [
                               Text(
-                                tk ? 'Ählisini görmek' : 'Смотреть все',
+                                t(tk: 'Ählisini görmek', ru: 'Смотреть все', en: 'View all'),
                                 style: TextStyle(
                                   fontSize: 12.5,
                                   color: tokens.accent,
@@ -309,14 +311,12 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   if (recentVisits.isEmpty)
                     EmptyState(
                       icon: Icons.event_busy_outlined,
-                      title: tk ? 'Sapar ýok' : 'Визитов пока нет',
-                      text: tk
-                          ? 'Bu müşderi entek gelen däldir.'
-                          : 'Клиент ещё не приходил.',
+                      title: t(tk: 'Sapar ýok', ru: 'Визитов пока нет', en: 'No visits yet'),
+                      text: t(tk: 'Bu müşderi entek gelen däldir.', ru: 'Клиент ещё не приходил.', en: 'This customer has not visited yet.'),
                     )
                   else
                     ...recentVisits.map(
-                      (visit) => _VisitRow(visit: visit, tk: tk),
+                      (visit) => _VisitRow(visit: visit, language: language),
                     ),
                 ],
               ),
@@ -328,7 +328,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   Expanded(
                     child: _OutlineActionButton(
                       icon: Icons.phone_outlined,
-                      label: tk ? 'Habarlaşmak' : 'Связаться',
+                      label: t(tk: 'Habarlaşmak', ru: 'Связаться', en: 'Contact'),
                       onTap: () => launchUrl(
                         Uri(
                           scheme: 'tel',
@@ -340,7 +340,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _MasterActionButton(
-                      label: tk ? 'Täze ýazgy etmek' : 'Новая запись',
+                      label: t(tk: 'Täze ýazgy etmek', ru: 'Новая запись', en: 'New booking'),
                       enabled: true,
                       leading: Icons.calendar_month_outlined,
                       onTap: () => Navigator.push(
@@ -469,9 +469,9 @@ class _InfoTile extends StatelessWidget {
 }
 
 class _VisitRow extends StatelessWidget {
-  const _VisitRow({required this.visit, required this.tk});
+  const _VisitRow({required this.visit, required this.language});
   final CustomerVisit visit;
-  final bool tk;
+  final AppLanguage language;
 
   static const _monthsTk = [
     'Ýan',
@@ -500,6 +500,10 @@ class _VisitRow extends StatelessWidget {
     'Окт',
     'Ноя',
     'Дек',
+  ];
+  static const _monthsEn = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
   ];
 
   @override
@@ -536,7 +540,11 @@ class _VisitRow extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  (tk ? _monthsTk : _monthsRu)[visit.date.month - 1],
+                  (switch (language) {
+                    AppLanguage.tk => _monthsTk,
+                    AppLanguage.ru => _monthsRu,
+                    AppLanguage.en => _monthsEn,
+                  })[visit.date.month - 1],
                   style: TextStyle(
                     fontSize: 9,
                     fontWeight: FontWeight.w600,
@@ -567,7 +575,7 @@ class _VisitRow extends StatelessWidget {
             ),
           ),
           Text(
-            '${visit.price} ${context.watch<AppSettingsProvider>().currencyLabel(tk ? AppLanguage.tk : AppLanguage.ru)}',
+            '${visit.price} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
             style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
           ),
         ],
@@ -625,14 +633,14 @@ class CustomerVisitsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tk = context.watch<LanguageProvider>().isTurkmen;
+    final language = context.watch<LanguageProvider>().language;
     final customer = _findCustomer(
       context.watch<CustomerProvider>().customers,
       customerId,
     );
     return Scaffold(
       backgroundColor: context.appTokens.surface,
-      appBar: CabinetAppBar(title: tk ? 'Sapar taryhy' : 'История визитов'),
+      appBar: CabinetAppBar(title: pickTr(language, tk: 'Sapar taryhy', ru: 'История визитов', en: 'Visit history')),
       body: SafeArea(
         child: customer == null
             ? const SizedBox.shrink()
@@ -640,7 +648,7 @@ class CustomerVisitsScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                 itemCount: customer.visits.length,
                 itemBuilder: (_, index) =>
-                    _VisitRow(visit: customer.visits[index], tk: tk),
+                    _VisitRow(visit: customer.visits[index], language: language),
               ),
       ),
     );

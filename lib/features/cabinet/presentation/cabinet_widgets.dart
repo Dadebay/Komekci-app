@@ -348,18 +348,20 @@ class _ClientListTile extends StatelessWidget {
     required this.subtitle,
     required this.checked,
     required this.onTap,
+    this.enabled = true,
   });
   final String name;
   final String phone;
   final String subtitle;
   final bool checked;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     return GestureDetector(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
@@ -410,7 +412,9 @@ class _ClientListTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            _CheckboxDot(checked: checked),
+            enabled
+                ? _CheckboxDot(checked: checked)
+                : AppIcon(Icons.info_outline, color: tokens.textSecondary, size: 19),
           ],
         ),
       ),

@@ -698,12 +698,13 @@ class _HowBalanceWorks extends StatelessWidget {
     final tokens = context.appTokens;
     final example = fee * 2 + fee ~/ 2;
     final left = example - fee * 2;
-    return Container(
-      decoration: BoxDecoration(
-        color: tokens.surfaceElevated,
+    return Material(
+      color: tokens.surfaceElevated,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: tokens.border),
+        side: BorderSide(color: tokens.border),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(

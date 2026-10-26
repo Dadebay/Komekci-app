@@ -55,9 +55,9 @@ class _SearchField extends StatelessWidget {
 }
 
 class _CustomerCard extends StatelessWidget {
-  const _CustomerCard({required this.customer, required this.tk});
+  const _CustomerCard({required this.customer, required this.language});
   final Customer customer;
-  final bool tk;
+  final AppLanguage language;
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +174,7 @@ class _CustomerCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                _StatusBadge(status: customer.status, tk: tk),
+                _StatusBadge(status: customer.status, language: language),
               ],
             ),
             const SizedBox(height: 12),
@@ -190,7 +190,7 @@ class _CustomerCard extends StatelessWidget {
                   Expanded(
                     child: _CardFact(
                       icon: Icons.history,
-                      label: tk ? 'Şodny gelişi' : 'Последний визит',
+                      label: pickTr(language, tk: 'Soňky sapar', ru: 'Последний визит', en: 'Last visit'),
                       value: customer.lastVisitDate == null
                           ? '—'
                           : formatDate(customer.lastVisitDate!),
@@ -204,8 +204,8 @@ class _CustomerCard extends StatelessWidget {
                           ? Icons.calendar_today_outlined
                           : Icons.schedule_outlined,
                       label: next == null
-                          ? (tk ? 'Gelişi' : 'Визитов')
-                          : (tk ? 'Indiki' : 'Следующий'),
+                          ? pickTr(language, tk: 'Gelişi', ru: 'Визитов', en: 'Visits')
+                          : pickTr(language, tk: 'Indiki', ru: 'Следующий', en: 'Next'),
                       value: next == null
                           ? '${customer.totalVisits}'
                           : formatDate(next),
@@ -281,9 +281,9 @@ class _CardFact extends StatelessWidget {
 }
 
 class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.status, required this.tk});
+  const _StatusBadge({required this.status, required this.language});
   final CustomerStatus status;
-  final bool tk;
+  final AppLanguage language;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -298,7 +298,7 @@ class _StatusBadge extends StatelessWidget {
         AppIcon(_statusIcon(status), size: 12, color: _statusColor(status, context.appTokens)),
         const SizedBox(width: 4),
         Text(
-          _statusLabel(status, tk),
+          _statusLabel(status, language),
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
@@ -311,9 +311,9 @@ class _StatusBadge extends StatelessWidget {
 }
 
 class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.status, required this.tk});
+  const _StatusPill({required this.status, required this.language});
   final CustomerStatus status;
-  final bool tk;
+  final AppLanguage language;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -328,7 +328,7 @@ class _StatusPill extends StatelessWidget {
         AppIcon(_statusIcon(status), size: 14, color: _statusColor(status, context.appTokens)),
         const SizedBox(width: 6),
         Text(
-          _statusLabel(status, tk),
+          _statusLabel(status, language),
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,

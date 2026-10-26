@@ -233,6 +233,13 @@ String _apptStatusLabel(AppointmentStatus status, AppLanguage language) =>
       ),
     };
 
+String _appointmentPhone(Appointment appointment, Customer? customer) {
+  final customerPhone = customer?.phone.trim() ?? '';
+  return customerPhone.isNotEmpty
+      ? customerPhone
+      : appointment.clientPhone?.trim() ?? '';
+}
+
 Future<void> _rescheduleAppointment(
   BuildContext context,
   Appointment appointment,
@@ -321,6 +328,7 @@ void _openAppointmentActions(
   String t({required String tk, required String ru, required String en}) =>
       pickTr(language, tk: tk, ru: ru, en: en);
   final tokens = context.appTokens;
+  final phone = _appointmentPhone(appointment, customer);
   showModalBottomSheet(
     context: context,
     backgroundColor: tokens.surface,
@@ -527,22 +535,16 @@ void _openAppointmentActions(
                   );
                 },
               ),
-            _SheetAction(
-              icon: Icons.phone_outlined,
-              callAction: true,
-              title: t(tk: 'Jaň etmek', ru: 'Позвонить', en: 'Call'),
-              subtitle: t(
-                tk: 'Müşdere jaň etmek',
-                ru: 'Позвонить клиенту',
-                en: 'Call the customer',
-              ),
-              onTap: () => launchUrl(
-                Uri(
-                  scheme: 'tel',
-                  path: (customer?.phone ?? '').replaceAll(' ', ''),
+            if (phone.isNotEmpty)
+              _SheetAction(
+                icon: Icons.phone_outlined,
+                callAction: true,
+                title: t(tk: 'Jaň etmek', ru: 'Позвонить', en: 'Call'),
+                subtitle: displayPhone(phone),
+                onTap: () => launchUrl(
+                  Uri(scheme: 'tel', path: phone.replaceAll(' ', '')),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -558,9 +560,15 @@ class _ApptEntry extends _TimelineEntry {
 }
 
 class _FreeEntry extends _TimelineEntry {
-  _FreeEntry(this.start, this.end);
+  _FreeEntry(this.start, this.end, this.availableEnd);
   final DateTime start;
   final DateTime end;
+  final DateTime availableEnd;
+}
+
+class _ClosedEntry extends _TimelineEntry {
+  _ClosedEntry(this.closed);
+  final ClosedTime closed;
 }
 
 /// Fills gaps between appointments only inside the server's working windows.
@@ -568,10 +576,12 @@ class _FreeEntry extends _TimelineEntry {
 List<_TimelineEntry> _buildTimeline(
   List<Appointment> appointments,
   DateTime day,
-  Schedule? schedule,
-) {
+  Schedule? schedule, {
+  List<ClosedTime> closedTimes = const [],
+}) {
   final entries = <_TimelineEntry>[
     for (final appointment in appointments) _ApptEntry(appointment),
+    for (final closed in closedTimes) _ClosedEntry(closed),
   ];
 
   void addFreeChunks(DateTime start, DateTime end) {
@@ -579,46 +589,45 @@ List<_TimelineEntry> _buildTimeline(
     while (chunkStart.isBefore(end)) {
       final chunkEnd = chunkStart.add(const Duration(hours: 1));
       entries.add(
-        _FreeEntry(chunkStart, chunkEnd.isBefore(end) ? chunkEnd : end),
+        _FreeEntry(chunkStart, chunkEnd.isBefore(end) ? chunkEnd : end, end),
       );
       chunkStart = chunkEnd;
     }
   }
 
-  final active = [
+  final busy = <(DateTime, DateTime)>[
     for (final appointment in appointments)
       if (appointment.status != AppointmentStatus.cancelled &&
           appointment.status != AppointmentStatus.noShow)
-        appointment,
-  ]..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+        (appointment.startsAt, appointment.endsAt),
+    for (final closed in closedTimes) (closed.startsAt, closed.endsAt),
+  ]..sort((a, b) => a.$1.compareTo(b.$1));
 
   for (final window in workingTimeRanges(schedule, day)) {
     var cursor = window.start;
-    for (final appointment in active) {
-      if (!appointment.startsAt.isBefore(window.end) ||
-          !appointment.endsAt.isAfter(window.start)) {
+    for (final (start, end) in busy) {
+      if (!start.isBefore(window.end) || !end.isAfter(window.start)) {
         continue;
       }
-      if (appointment.startsAt.isAfter(cursor)) {
+      if (start.isAfter(cursor)) {
         addFreeChunks(
           cursor,
-          appointment.startsAt.isBefore(window.end)
-              ? appointment.startsAt
-              : window.end,
+          start.isBefore(window.end) ? start : window.end,
         );
       }
-      if (appointment.endsAt.isAfter(cursor)) cursor = appointment.endsAt;
+      if (end.isAfter(cursor)) cursor = end;
     }
     if (window.end.isAfter(cursor)) addFreeChunks(cursor, window.end);
   }
 
   entries.sort((a, b) {
-    final aStart = a is _ApptEntry
-        ? a.appointment.startsAt
-        : (a as _FreeEntry).start;
-    final bStart = b is _ApptEntry
-        ? b.appointment.startsAt
-        : (b as _FreeEntry).start;
+    DateTime startOf(_TimelineEntry entry) => switch (entry) {
+      _ApptEntry(:final appointment) => appointment.startsAt,
+      _ClosedEntry(:final closed) => closed.startsAt,
+      _FreeEntry(:final start) => start,
+    };
+    final aStart = startOf(a);
+    final bStart = startOf(b);
     return aStart.compareTo(bStart);
   });
   return entries;

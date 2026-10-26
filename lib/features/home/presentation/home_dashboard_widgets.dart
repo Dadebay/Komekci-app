@@ -7,13 +7,19 @@ class _DashboardHero extends StatelessWidget {
     required this.tk,
     required this.now,
     required this.today,
+    required this.refreshingNumbers,
+    required this.numberShimmer,
+    required this.numberCountUp,
   });
   final bool tk;
   final DateTime now;
   final DateTime today;
+  final bool refreshingNumbers;
+  final Animation<double> numberShimmer;
+  final Animation<double> numberCountUp;
 
-  static const _avatarRadius = 34.0;
-  static const _bannerHeight = 132.0;
+  static const _avatarRadius = 30.0;
+  static const _bannerHeight = 144.0;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +34,16 @@ class _DashboardHero extends StatelessWidget {
     final bannerUrl = profile.bannerUrl;
     final hh = now.hour.toString().padLeft(2, '0');
     final mm = now.minute.toString().padLeft(2, '0');
-    final ss = now.second.toString().padLeft(2, '0');
+    final months = switch (language) {
+      AppLanguage.tk => _monthsFullTk,
+      AppLanguage.ru => _monthsFullRu,
+      AppLanguage.en => _monthsFullEn,
+    };
+    final weekdays = switch (language) {
+      AppLanguage.tk => _weekdaysFullTk,
+      AppLanguage.ru => _weekdaysFullRu,
+      AppLanguage.en => _weekdaysFullEn,
+    };
 
     return Column(
       children: [
@@ -79,7 +94,9 @@ class _DashboardHero extends StatelessWidget {
                           child: Align(
                             alignment: Alignment.topRight,
                             child: _HeroBalanceChip(
-                              label: t(tk: 'Balans', ru: 'Баланс', en: 'Balance'),
+                              refreshingNumbers: refreshingNumbers,
+                              numberShimmer: numberShimmer,
+                              numberCountUp: numberCountUp,
                               amount: balance,
                               currency: context
                                   .watch<AppSettingsProvider>()
@@ -118,39 +135,59 @@ class _DashboardHero extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: _avatarRadius + 14),
+        const SizedBox(height: _avatarRadius + 5),
+        Text(
+          masterName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 16,
+            color: tokens.textPrimary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 8),
         Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
           children: [
-            Text(
-              '$hh:$mm',
-              style: TextStyle(
-                fontSize: 38,
-                fontWeight: FontWeight.w800,
-                color: tokens.accent,
-                height: 1,
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '$hh:$mm',
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: tokens.textPrimary, height: 1),
+                ),
               ),
             ),
-            Text(
-              ':$ss',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: tokens.textSecondary,
+            Container(
+              width: 1,
+              height: 38,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: tokens.border,
+            ),
+            Expanded(
+              child: Row(
+                children: [
+                  AppIcon(Icons.calendar_today_outlined, size: 18, color: tokens.textSecondary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${today.day} ${months[today.month - 1]} ${today.year}',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: tokens.textPrimary),
+                        ),
+                        Text(
+                          weekdays[today.weekday - 1],
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 5),
-        Text(
-          '${today.day} ${_monthsFullTk[today.month - 1]} ${today.year}, $masterName',
-          style: TextStyle(
-            fontSize: 13,
-            color: tokens.textSecondary,
-            fontWeight: FontWeight.w600,
-          ),
         ),
       ],
     );
@@ -201,12 +238,16 @@ class _HeroChip extends StatelessWidget {
 /// White pill on the hero banner showing the wallet balance.
 class _HeroBalanceChip extends StatelessWidget {
   const _HeroBalanceChip({
-    required this.label,
+    required this.refreshingNumbers,
+    required this.numberShimmer,
+    required this.numberCountUp,
     required this.amount,
     required this.currency,
     required this.onTap,
   });
-  final String label;
+  final bool refreshingNumbers;
+  final Animation<double> numberShimmer;
+  final Animation<double> numberCountUp;
   final String amount;
   final String currency;
   final VoidCallback onTap;
@@ -214,53 +255,37 @@ class _HeroBalanceChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Material(
     color: context.appTokens.surface,
-    borderRadius: BorderRadius.circular(14),
+    borderRadius: BorderRadius.circular(30),
     child: InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(30),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(fontSize: 9, color: context.appTokens.textSecondary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    '$amount $currency',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: context.appTokens.textPrimary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+              child: _DashboardNumber(
+                loading: refreshingNumbers,
+                shimmer: numberShimmer,
+                countUp: numberCountUp,
+                value: amount,
+                suffix: ' $currency',
+                color: context.appTokens.textPrimary,
+                placeholderWidth: 56,
+                placeholderHeight: 14,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                  color: context.appTokens.textPrimary,
+                ),
               ),
             ),
-            const SizedBox(width: 8),
-            Container(
-              width: 26,
-              height: 26,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: context.appTokens.accent.withValues(alpha: .14),
-                shape: BoxShape.circle,
-              ),
-              child: AppIcon(
-                Icons.account_balance_wallet_outlined,
-                size: 13,
-                color: context.appTokens.accent,
-              ),
+            const SizedBox(width: 4),
+            AppIcon(
+              Icons.account_balance_wallet_outlined,
+              size: 15,
+              color: context.appTokens.textPrimary,
             ),
           ],
         ),
@@ -271,12 +296,18 @@ class _HeroBalanceChip extends StatelessWidget {
 
 class _HomeStatCard extends StatelessWidget {
   const _HomeStatCard({
+    required this.refreshingNumbers,
+    required this.numberShimmer,
+    required this.numberCountUp,
     required this.icon,
     required this.color,
     required this.label,
     required this.value,
     required this.hint,
   });
+  final bool refreshingNumbers;
+  final Animation<double> numberShimmer;
+  final Animation<double> numberCountUp;
   final IconData icon;
   final Color color;
   final String label;
@@ -285,7 +316,7 @@ class _HomeStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(14),
+    padding: const EdgeInsets.all(11),
     decoration: BoxDecoration(
       color: context.appTokens.surface,
       borderRadius: BorderRadius.circular(16),
@@ -304,8 +335,8 @@ class _HomeStatCard extends StatelessWidget {
         Row(
           children: [
             Container(
-              width: 30,
-              height: 30,
+              width: 28,
+              height: 28,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: .14),
@@ -328,16 +359,20 @@ class _HomeStatCard extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 11),
-        Text(
-          value,
+        const SizedBox(height: 6),
+        _DashboardNumber(
+          loading: refreshingNumbers,
+          shimmer: numberShimmer,
+          countUp: numberCountUp,
+          value: value,
+          color: color,
+          placeholderWidth: 56,
+          placeholderHeight: 24,
           style: TextStyle(
             fontSize: 21,
             fontWeight: FontWeight.w800,
             color: color,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 2),
         Text(
@@ -349,6 +384,112 @@ class _HomeStatCard extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// Hides the old value during refresh, then counts up to the latest API value.
+class _DashboardNumber extends StatelessWidget {
+  const _DashboardNumber({
+    required this.loading,
+    required this.shimmer,
+    required this.countUp,
+    required this.value,
+    required this.color,
+    required this.style,
+    required this.placeholderWidth,
+    required this.placeholderHeight,
+    this.suffix = '',
+  });
+
+  final bool loading;
+  final Animation<double> shimmer;
+  final Animation<double> countUp;
+  final String value;
+  final String suffix;
+  final Color color;
+  final TextStyle style;
+  final double placeholderWidth;
+  final double placeholderHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: placeholderWidth,
+        minHeight: placeholderHeight,
+      ),
+      child: Stack(
+        alignment: Alignment.centerLeft,
+        children: [
+          ExcludeSemantics(
+            child: Opacity(
+              opacity: 0,
+              child: Text(
+                '$value$suffix',
+                style: style,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+          if (loading)
+            AnimatedBuilder(
+              animation: shimmer,
+              builder: (context, _) => ShaderMask(
+                blendMode: BlendMode.srcIn,
+                shaderCallback: (bounds) => LinearGradient(
+                  colors: [
+                    color.withValues(alpha: .12),
+                    color.withValues(alpha: .38),
+                    color.withValues(alpha: .12),
+                  ],
+                ).createShader(
+                  Rect.fromLTWH(
+                    bounds.left + (shimmer.value * 2 - 1) * bounds.width,
+                    bounds.top,
+                    bounds.width,
+                    bounds.height,
+                  ),
+                ),
+                child: Container(
+                  width: placeholderWidth,
+                  height: placeholderHeight,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ),
+            )
+          else
+            AnimatedBuilder(
+              animation: countUp,
+              builder: (context, _) => Text(
+                '${_countedValue(value, countUp.value)}$suffix',
+                style: style,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  static String _countedValue(String target, double progress) {
+    if (progress >= 1) return target;
+    final fraction = Curves.easeOutCubic.transform(progress.clamp(0.0, 1.0));
+    final time = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(target);
+    if (time != null) {
+      final minutes = int.parse(time[1]!) * 60 + int.parse(time[2]!);
+      final current = (minutes * fraction).round();
+      return '${(current ~/ 60).toString().padLeft(2, '0')}:${(current % 60).toString().padLeft(2, '0')}';
+    }
+    final number = double.tryParse(target);
+    if (number == null) return target;
+    final decimals = target.contains('.') ? target.split('.').last.length : 0;
+    final current = number * fraction;
+    return decimals == 0 ? current.round().toString() : current.toStringAsFixed(decimals);
+  }
 }
 
 class _DayTimelineCard extends StatefulWidget {
@@ -497,6 +638,7 @@ class _HomeApptTable extends StatelessWidget {
     required this.language,
     required this.onTapAppointment,
     required this.onTapFree,
+    required this.onTapClosed,
   });
 
   final List<_TimelineEntry> entries;
@@ -507,12 +649,13 @@ class _HomeApptTable extends StatelessWidget {
   /// (schedule) screen uses — it no longer navigates away from home.
   final void Function(Appointment appointment, Customer? customer)
   onTapAppointment;
-  final VoidCallback onTapFree;
+  final void Function(DateTime start, DateTime end, DateTime availableEnd) onTapFree;
+  final void Function(ClosedTime closed) onTapClosed;
 
   @override
   Widget build(BuildContext context) {
     final busy = entries.whereType<_ApptEntry>().length;
-    final free = entries.length - busy;
+    final free = entries.whereType<_FreeEntry>().length;
     return Column(
       children: [
         _ApptListHead(language: language, people: busy, freeSlots: free),
@@ -533,13 +676,24 @@ class _HomeApptTable extends StatelessWidget {
               showDivider: !isLast,
             );
           }
+          if (entry is _ClosedEntry) {
+            return _HomeFreeRow(
+              index: index,
+              start: entry.closed.startsAt,
+              end: entry.closed.endsAt,
+              closed: entry.closed,
+              language: language,
+              onTap: () => onTapClosed(entry.closed),
+              showDivider: !isLast,
+            );
+          }
           final gap = entry as _FreeEntry;
           return _HomeFreeRow(
             index: index,
             start: gap.start,
             end: gap.end,
             language: language,
-            onTap: onTapFree,
+            onTap: () => onTapFree(gap.start, gap.end, gap.availableEnd),
             showDivider: !isLast,
           );
         }),
@@ -712,7 +866,7 @@ class _HomeApptRow extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          vertical: 12,
+          vertical: 9,
           horizontal: _apptRowInset,
         ),
         decoration: BoxDecoration(
@@ -810,14 +964,14 @@ class _HomeApptRow extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   // The service is what the master is actually about to do,
                   // so it gets its own tinted chip instead of a narrow column
                   // that used to clip after two lines.
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 9,
-                      vertical: 6,
+                      vertical: 5,
                     ),
                     decoration: BoxDecoration(
                       color: tokens.surface,
@@ -947,6 +1101,7 @@ class _HomeFreeRow extends StatelessWidget {
     required this.language,
     required this.onTap,
     required this.showDivider,
+    this.closed,
   });
   final int index;
   final DateTime start;
@@ -954,21 +1109,22 @@ class _HomeFreeRow extends StatelessWidget {
   final AppLanguage language;
   final VoidCallback onTap;
   final bool showDivider;
+  final ClosedTime? closed;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    final freeColor = tokens.brightness == Brightness.dark
+    final freeColor = closed != null ? tokens.warning : tokens.brightness == Brightness.dark
         ? tokens.success
         : const Color(0xff2A5DB0);
     final minutes = end.difference(start).inMinutes;
     return Container(
       padding: const EdgeInsets.symmetric(
-        vertical: 10,
+        vertical: 8,
         horizontal: _apptRowInset,
       ),
       decoration: BoxDecoration(
-        color: tokens.brightness == Brightness.dark
+        color: closed != null ? tokens.surfaceElevated : tokens.brightness == Brightness.dark
             ? freeSlotSurface(tokens)
             : freeSlotBg.withValues(alpha: .5),
         border: showDivider
@@ -1006,19 +1162,16 @@ class _HomeFreeRow extends StatelessWidget {
                 Row(
                   children: [
                     AppIcon(
-                      Icons.schedule_outlined,
+                      closed == null ? Icons.schedule_outlined : Icons.lock_clock_outlined,
                       size: 14,
                       color: freeColor,
                     ),
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        pickTr(
-                          language,
-                          tk: 'Boş aralyk',
-                          ru: 'Свободно',
-                          en: 'Free slot',
-                        ),
+                        closed == null
+                            ? pickTr(language, tk: 'Boş aralyk', ru: 'Свободно', en: 'Free slot')
+                            : pickTr(language, tk: 'Ýapyk wagt', ru: 'Закрытое время', en: 'Blocked time'),
                         style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,
@@ -1040,6 +1193,13 @@ class _HomeFreeRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (closed?.note.isNotEmpty == true)
+                  Text(
+                    closed!.note,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 11, color: tokens.textSecondary),
+                  ),
               ],
             ),
           ),
@@ -1054,9 +1214,11 @@ class _HomeFreeRow extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               visualDensity: VisualDensity.compact,
             ),
-            icon: const AppIcon(Icons.edit_outlined, size: 12),
+            icon: AppIcon(closed == null ? Icons.edit_outlined : Icons.lock_open_outlined, size: 12),
             label: Text(
-              pickTr(language, tk: 'Üýtgetmek', ru: 'Изменить', en: 'Edit'),
+              closed == null
+                  ? pickTr(language, tk: 'Üýtgetmek', ru: 'Изменить', en: 'Edit')
+                  : pickTr(language, tk: 'Açmak', ru: 'Открыть', en: 'Reopen'),
               style: const TextStyle(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w600,

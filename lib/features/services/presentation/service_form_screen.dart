@@ -549,13 +549,13 @@ class _FieldLabel extends StatelessWidget {
 }
 
 class _ErrorText extends StatelessWidget {
-  const _ErrorText({required this.tk});
-  final bool tk;
+  const _ErrorText({required this.language});
+  final AppLanguage language;
 
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: 7, left: 4),
-    child: Text(tk ? 'Bu meýdan hökmany' : 'Обязательное поле', style: const TextStyle(fontSize: 11.5, color: Color(0xffC0392B))),
+    child: Text(pickTr(language, tk: 'Bu meýdan hökmany', ru: 'Обязательное поле', en: 'Required field'), style: const TextStyle(fontSize: 11.5, color: Color(0xffC0392B))),
   );
 }
 

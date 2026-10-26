@@ -405,7 +405,6 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = widget.language;
-    final tk = language == AppLanguage.tk;
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     final query = _controller.text.trim().toLowerCase();
@@ -715,7 +714,7 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
                                       ),
                                       const SizedBox(width: 8),
                                       _StatusBadge2(
-                                        label: _statusLabel(c.status, tk),
+                                        label: _statusLabel(c.status, language),
                                         color: _statusColor(c.status, tokens),
                                         bg: _statusBg(c.status, tokens),
                                       ),

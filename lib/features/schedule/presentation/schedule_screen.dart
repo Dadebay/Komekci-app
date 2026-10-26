@@ -43,6 +43,33 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     });
   }
 
+  Future<void> _addWorkingHours() async {
+    final scheduleProvider = context.read<ScheduleProvider>();
+    final language = context.read<LanguageProvider>().language;
+    final existing = scheduleProvider.overrides.any(
+      (override) => _sameDay(override.date, _selected),
+    );
+    if (existing) {
+      await Navigator.push(context, pageRoute(const SpecialDaysScreen()));
+      return;
+    }
+    final windows = workingTimeRanges(scheduleProvider.schedule, _selected);
+    final range = await _pickTimeRange(
+      context,
+      language: language,
+      title: pickTr(
+        language,
+        tk: 'Şu gün üçin iş wagty',
+        ru: 'Рабочие часы на этот день',
+        en: 'Working hours for this day',
+      ),
+      start: windows.isEmpty ? '10:00' : formatTime(TimeOfDay.fromDateTime(windows.first.start)),
+      end: windows.isEmpty ? '16:00' : formatTime(TimeOfDay.fromDateTime(windows.last.end)),
+    );
+    if (range == null || !mounted) return;
+    await runApi(context, () => scheduleProvider.addCustomHours(_selected, range.$1, range.$2));
+  }
+
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
@@ -51,24 +78,29 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final tokens = context.appTokens;
     final bookingProvider = context.watch<BookingProvider>();
     final customerProvider = context.watch<CustomerProvider>();
-    final schedule = context.watch<ScheduleProvider>().schedule;
+    final scheduleProvider = context.watch<ScheduleProvider>();
+    final schedule = scheduleProvider.schedule;
     final canPop = Navigator.of(context).canPop();
     bookingProvider
       ..prefetch(_selected)
       ..prefetch(_visibleMonth)
       ..prefetch(_weekStart.add(const Duration(days: 6)));
+    scheduleProvider.prefetchClosedTimes(_selected);
 
+    final monthLoaded = bookingProvider.isMonthLoaded(_selected);
     final dayAppointments = bookingProvider.onDay(_selected);
+    final closedLoaded = scheduleProvider.closedTimesLoaded(_selected);
+    final closedError = scheduleProvider.closedTimesError(_selected);
     final query = _searching ? _searchController.text.trim().toLowerCase() : '';
     final now = DateTime.now();
-    final minLeadMinutes = schedule?.minLeadMin ?? 30;
-    final timeline = _buildTimeline(dayAppointments, _selected, schedule)
-        .where(
-          (entry) =>
-              entry is! _FreeEntry ||
-              meetsBookingLeadTime(entry.start, now, minLeadMinutes),
-        )
-        .toList();
+    final timeline = monthLoaded
+        ? (_buildTimeline(
+            dayAppointments,
+            _selected,
+            closedLoaded ? schedule : null,
+            closedTimes: scheduleProvider.closedTimesOn(_selected),
+          ).where((entry) => entry is! _FreeEntry || entry.start.isAfter(now)).toList())
+        : <_TimelineEntry>[];
     final entries = query.isEmpty
         ? timeline
         : timeline.where((entry) {
@@ -90,7 +122,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 padding: const EdgeInsets.only(right: 8),
                 child: TextButton(
                   onPressed: () => _select(appToday()),
-                  child: Text(t(tk: 'Bugün', ru: 'Сегодня', en: 'Today')),
+                  child: Text(t(tk: 'Şu gün', ru: 'Сегодня', en: 'Today')),
                 ),
               ),
             IconButton(
@@ -222,7 +254,46 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               ],
             ),
             const SizedBox(height: 14),
-            if (query.isNotEmpty && entries.isEmpty)
+            if (!_selected.isBefore(DateTime(appToday().year, appToday().month, appToday().day))) ...[
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: _addWorkingHours,
+                  icon: const Icon(Icons.add_alarm_outlined, size: 18),
+                  label: Text(t(
+                    tk: 'Iş wagty goş',
+                    ru: 'Добавить рабочие часы',
+                    en: 'Add working hours',
+                  )),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            if (!monthLoaded && bookingProvider.loading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            if (!monthLoaded && !bookingProvider.loading)
+              RetryErrorState(
+                title: t(tk: 'Bu aýyň ýazgylaryny görüp bolmaýar', ru: 'Не удалось показать записи за этот месяц', en: 'Could not show this month’s bookings'),
+                text: t(tk: 'Internet bilen birigip, ýazgylary ýükläň.', ru: 'Подключитесь к интернету, чтобы загрузить записи.', en: 'Connect to the internet to load bookings.'),
+                retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                onRetry: () => bookingProvider.refreshDay(_selected),
+              ),
+            if (monthLoaded && !closedLoaded && closedError == null)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            if (monthLoaded && !closedLoaded && closedError != null)
+              RetryErrorState(
+                title: t(tk: 'Ýapyk wagtlary alyp bolmady', ru: 'Не удалось загрузить закрытое время', en: 'Could not load blocked times'),
+                text: t(tk: 'Boş wagtlary görkezmek üçin täzeden synanyşyň.', ru: 'Повторите попытку, чтобы увидеть свободное время.', en: 'Retry to show available times.'),
+                retryLabel: t(tk: 'Täzeden', ru: 'Повторить', en: 'Retry'),
+                onRetry: () => scheduleProvider.loadClosedTimes(_selected, force: true),
+              ),
+            if (monthLoaded && query.isNotEmpty && entries.isEmpty)
               EmptyState(
                 icon: Icons.search_off,
                 title: t(
@@ -239,6 +310,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             if (query.isEmpty &&
                 entries.isEmpty &&
                 schedule != null &&
+                closedLoaded &&
                 bookingProvider.isMonthLoaded(_selected))
               Padding(
                 padding: const EdgeInsets.only(top: 48),
@@ -282,17 +354,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   ),
                 );
               }
+              if (entry is _ClosedEntry) {
+                return _ClosedTimeRow(
+                  closed: entry.closed,
+                  language: language,
+                  onTap: () => _reopenClosedTime(context, entry.closed),
+                );
+              }
               final free = entry as _FreeEntry;
               return _FreeSlotRow(
                 start: free.start,
                 end: free.end,
                 language: language,
                 onTap: () {
-                  if (!meetsBookingLeadTime(
-                    free.start,
-                    DateTime.now(),
-                    minLeadMinutes,
-                  )) {
+                  if (!free.start.isAfter(DateTime.now())) {
                     setState(() {});
                     AppToast.of(context).error(
                       t(
@@ -303,10 +378,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     );
                     return;
                   }
-                  _NewSlotAppointmentSheet.show(
+                  _showFreeTimeActions(
                     context,
                     start: free.start,
                     end: free.end,
+                    availableEnd: free.availableEnd,
                   );
                 },
               );

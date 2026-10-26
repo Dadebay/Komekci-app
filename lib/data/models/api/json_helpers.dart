@@ -41,6 +41,10 @@ String formatApiDate(DateTime d) => '${d.year}-${_two(d.month)}-${_two(d.day)}';
 String formatApiDateTime(DateTime d) =>
     '${formatApiDate(d)} ${_two(d.hour)}:${_two(d.minute)}:00';
 
+/// ISO 8601 wall time required by `/me/closed-times` (Asia/Ashgabat).
+String formatApiAshgabatDateTime(DateTime d) =>
+    '${formatApiDate(d)}T${_two(d.hour)}:${_two(d.minute)}:00+05:00';
+
 /// `10:30` — schedule times.
 String formatApiTimeOfDay(int hour, int minute) => '${_two(hour)}:${_two(minute)}';
 

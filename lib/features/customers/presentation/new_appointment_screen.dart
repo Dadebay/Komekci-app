@@ -53,7 +53,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
       return;
     }
     if (_saving) return;
-    final tk = context.read<LanguageProvider>().isTurkmen;
+    final language = context.read<LanguageProvider>().language;
     final service = services[_serviceIndex!];
     final startsAt = DateTime(
       _date.year,
@@ -95,24 +95,26 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
     }
     // A brand-new client only exists on the server from this moment.
     customers.load();
-    await _finish(tk, service, startsAt);
+    await _finish(language, service, startsAt);
   }
 
-  Future<void> _finish(bool tk, SalonService service, DateTime startsAt) async {
+  Future<void> _finish(AppLanguage language, SalonService service, DateTime startsAt) async {
     await _showInfoDialog(
       context,
       icon: Icons.check,
-      title: tk ? 'Ýazgy döredildi' : 'Запись создана',
+      title: pickTr(language, tk: 'Ýazgy döredildi', ru: 'Запись создана', en: 'Booking created'),
       message:
           '${widget.customer.name} — ${service.name}\n${formatDate(startsAt)} • ${formatTime(TimeOfDay.fromDateTime(startsAt))}',
-      actionLabel: tk ? 'Bolýar' : 'Готово',
+      actionLabel: pickTr(language, tk: 'Bolýar', ru: 'Готово', en: 'Done'),
     );
     if (mounted) Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final tk = context.watch<LanguageProvider>().isTurkmen;
+    final language = context.watch<LanguageProvider>().language;
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
     final services = context.watch<ServiceProvider>().services;
     final selected = _serviceIndex != null && _serviceIndex! < services.length
         ? services[_serviceIndex!]
@@ -121,7 +123,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
 
     return Scaffold(
       backgroundColor: tokens.surface,
-      appBar: CabinetAppBar(title: tk ? 'Täze ýazgy' : 'Новая запись'),
+      appBar: CabinetAppBar(title: t(tk: 'Täze ýazgy', ru: 'Новая запись', en: 'New booking')),
       body: SafeArea(
         child: Column(
           children: [
@@ -165,17 +167,15 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
                   ),
                   const SizedBox(height: 22),
                   _FieldLabel(
-                    text: tk ? 'Hyzmat saýlaň' : 'Выберите услугу',
+                    text: t(tk: 'Hyzmat saýlaň', ru: 'Выберите услугу', en: 'Choose a service'),
                     required: true,
                   ),
                   const SizedBox(height: 8),
                   if (services.isEmpty)
                     EmptyState(
                       icon: Icons.content_cut,
-                      title: tk ? 'Hyzmat ýok' : 'Услуг нет',
-                      text: tk
-                          ? 'Ilki bilen hyzmat goşuň.'
-                          : 'Сначала добавьте услугу.',
+                      title: t(tk: 'Hyzmat ýok', ru: 'Услуг нет', en: 'No services'),
+                      text: t(tk: 'Ilki bilen hyzmat goşuň.', ru: 'Сначала добавьте услугу.', en: 'Add a service first.'),
                     )
                   else
                     ...services.asMap().entries.map((entry) {
@@ -214,7 +214,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
                                 ),
                               ),
                               Text(
-                                '${entry.value.price} ${context.watch<AppSettingsProvider>().currencyLabel(tk ? AppLanguage.tk : AppLanguage.ru)}',
+                                '${entry.value.price} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: tokens.textSecondary,
@@ -234,10 +234,10 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
                         ),
                       );
                     }),
-                  if (_showErrors && _serviceIndex == null) _ErrorText(tk: tk),
+                  if (_showErrors && _serviceIndex == null) _ErrorText(language: language),
                   const SizedBox(height: 22),
                   _PickerField(
-                    label: tk ? 'Sene we wagt' : 'Дата и время',
+                    label: t(tk: 'Sene we wagt', ru: 'Дата и время', en: 'Date and time'),
                     value: '${formatDate(_date)} • ${formatTime(_time)}',
                     icon: Icons.calendar_month_outlined,
                     onTap: _pickDateTime,
@@ -248,7 +248,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: _MasterActionButton(
-                label: tk ? 'Ýazgyny tassykla' : 'Подтвердить запись',
+                label: t(tk: 'Ýazgyny tassykla', ru: 'Подтвердить запись', en: 'Confirm booking'),
                 enabled: selected != null,
                 leading: Icons.check,
                 onTap: () => _confirm(services),

@@ -42,26 +42,21 @@ class _AppointmentRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final statusColor = _apptStatusColor(appointment.status, tokens);
-    final phone = customer?.phone ?? appointment.clientPhone;
-    final canCall =
-        appointment.status == AppointmentStatus.expected &&
-        phone != null &&
-        phone.trim().isNotEmpty;
+    final phone = _appointmentPhone(appointment, customer);
+    final canCall = phone.isNotEmpty;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Material(
         color: tokens.surfaceElevated,
-        borderRadius: BorderRadius.circular(18),
-        elevation: 1,
-        shadowColor: tokens.textPrimary.withValues(alpha: .10),
+        borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(14),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(15),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(color: statusColor.withValues(alpha: .24)),
             ),
             child: Column(
@@ -71,17 +66,17 @@ class _AppointmentRow extends StatelessWidget {
                   children: [
                     AppIcon(
                       Icons.schedule_outlined,
-                      size: 17,
+                      size: 15,
                       color: statusColor,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         '${formatTime(TimeOfDay.fromDateTime(appointment.startsAt))} – ${formatTime(TimeOfDay.fromDateTime(appointment.endsAt))}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13.5,
                           fontWeight: FontWeight.w800,
                           color: tokens.textPrimary,
                         ),
@@ -95,25 +90,9 @@ class _AppointmentRow extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 13),
-                Divider(height: 1, color: tokens.border),
-                const SizedBox(height: 13),
+                const SizedBox(height: 6),
                 Row(
                   children: [
-                    customer == null
-                        ? CircleAvatar(
-                            radius: 20,
-                            backgroundColor: tokens.accent.withValues(
-                              alpha: .16,
-                            ),
-                            child: AppIcon(
-                              Icons.person_outline,
-                              size: 19,
-                              color: tokens.accent,
-                            ),
-                          )
-                        : _CustomerAvatar(customer: customer!, radius: 20),
-                    const SizedBox(width: 11),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,21 +107,29 @@ class _AppointmentRow extends StatelessWidget {
                               color: tokens.textPrimary,
                             ),
                           ),
-                          if (customer != null)
-                            Text(
-                              '${_handleFor(customer!)} · ${_scheduleCustomerLabel(customer!.status, language)}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                color: tokens.textSecondary,
+                          const SizedBox(height: 2),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 2,
+                            children: [
+                              Text(
+                                appointment.serviceName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 12.5, color: tokens.textSecondary),
                               ),
-                            ),
+                              if (canCall)
+                                Text(
+                                  displayPhone(phone),
+                                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: tokens.accent),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
                     if (canCall) ...[
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 4),
                       IconButton(
                         tooltip: pickTr(
                           language,
@@ -153,60 +140,14 @@ class _AppointmentRow extends StatelessWidget {
                         onPressed: () => launchUrl(
                           Uri(scheme: 'tel', path: phone.replaceAll(' ', '')),
                         ),
-                        constraints: const BoxConstraints.tightFor(
-                          width: 40,
-                          height: 40,
-                        ),
-                        style: IconButton.styleFrom(
-                          backgroundColor: tokens.surface,
-                          side: BorderSide(color: tokens.border),
-                        ),
-                        icon: AppIcon(
-                          Icons.phone_outlined,
-                          size: 18,
-                          color: tokens.textPrimary,
-                        ),
+                        constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+                        icon: AppIcon(Icons.phone_outlined, size: 20, color: tokens.accent),
                       ),
                     ],
                   ],
                 ),
-                const SizedBox(height: 13),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 11,
-                    vertical: 9,
-                  ),
-                  decoration: BoxDecoration(
-                    color: tokens.surfaceElevated,
-                    borderRadius: BorderRadius.circular(11),
-                    border: Border.all(color: tokens.border),
-                  ),
-                  child: Row(
-                    children: [
-                      AppIcon(
-                        Icons.content_cut,
-                        size: 15,
-                        color: tokens.accent,
-                      ),
-                      const SizedBox(width: 9),
-                      Expanded(
-                        child: Text(
-                          appointment.serviceName,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: tokens.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 if (appointment.note.trim().isNotEmpty) ...[
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -312,4 +253,62 @@ class _FreeSlotRow extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _ClosedTimeRow extends StatelessWidget {
+  const _ClosedTimeRow({
+    required this.closed,
+    required this.language,
+    required this.onTap,
+  });
+
+  final ClosedTime closed;
+  final AppLanguage language;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: tokens.surfaceElevated,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: tokens.warning.withValues(alpha: .6)),
+          ),
+          child: Row(
+            children: [
+              AppIcon(Icons.lock_clock_outlined, size: 20, color: tokens.warning),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${formatTime(TimeOfDay.fromDateTime(closed.startsAt))} – ${formatTime(TimeOfDay.fromDateTime(closed.endsAt))} · ${pickTr(language, tk: 'Ýapyk wagt', ru: 'Закрытое время', en: 'Blocked time')}',
+                      style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: tokens.textPrimary),
+                    ),
+                    if (closed.note.isNotEmpty)
+                      Text(
+                        closed.note,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+                      ),
+                  ],
+                ),
+              ),
+              AppIcon(Icons.lock_open_outlined, size: 18, color: tokens.warning),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

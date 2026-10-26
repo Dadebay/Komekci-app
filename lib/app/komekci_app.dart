@@ -23,6 +23,7 @@ import '../core/localization/language_provider.dart';
 import '../core/network/api_client.dart';
 import '../core/network/api_config.dart';
 import '../core/network/api_exception.dart';
+import '../core/offline/master_offline_cache.dart';
 import '../core/services/device_registrar.dart';
 import '../core/services/sms_code_listener.dart';
 import '../core/services/analytics_service.dart';
@@ -41,6 +42,7 @@ import '../features/app/application/app_settings_provider.dart';
 import '../features/auth/application/auth_provider.dart';
 import '../features/billing/application/billing_provider.dart';
 import '../features/booking/application/booking_provider.dart';
+import '../features/booking/application/client_calendar_service.dart';
 import '../features/booking/application/client_bookings_provider.dart';
 import '../features/booking/application/client_masters_provider.dart';
 import '../features/cabinet/application/master_profile_provider.dart';
@@ -147,6 +149,7 @@ part '../features/schedule/presentation/schedule_week_overview_screen.dart';
 part '../features/schedule/presentation/schedule_appointment_row.dart';
 part '../features/schedule/presentation/schedule_customer_picker_sheet.dart';
 part '../features/schedule/presentation/schedule_new_slot_sheet.dart';
+part '../features/schedule/presentation/schedule_free_time_actions_sheet.dart';
 
 class KomekciApp extends StatelessWidget {
   const KomekciApp({super.key});
@@ -156,98 +159,60 @@ class KomekciApp extends StatelessWidget {
       ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ChangeNotifierProvider(create: (_) => LanguageProvider()),
       ChangeNotifierProvider(create: (_) => AppSettingsProvider()),
+      ChangeNotifierProvider(create: (_) => MasterOfflineCache()),
       Provider<ApiClient>(
         create: (context) => ApiClient(
           languageCode: () => context.read<LanguageProvider>().language.name,
+          offlineCache: context.read<MasterOfflineCache>(),
         ),
         dispose: (_, client) => client.close(),
       ),
-      Provider<AuthRepository>(
-        create: (context) => AuthRepository(context.read<ApiClient>()),
-      ),
-      Provider<MeRepository>(
-        create: (context) => MeRepository(context.read<ApiClient>()),
-      ),
-      Provider<MasterRepository>(
-        create: (context) => MasterRepository(context.read<ApiClient>()),
-      ),
-      Provider<BillingRepository>(
-        create: (context) => BillingRepository(context.read<ApiClient>()),
-      ),
-      Provider<ClientRepository>(
-        create: (context) => ClientRepository(context.read<ApiClient>()),
-      ),
-      Provider<DeviceRegistrar>(
-        create: (context) => DeviceRegistrar(context.read<MeRepository>()),
-      ),
+      Provider<AuthRepository>(create: (context) => AuthRepository(context.read<ApiClient>())),
+      Provider<MeRepository>(create: (context) => MeRepository(context.read<ApiClient>())),
+      Provider<MasterRepository>(create: (context) => MasterRepository(context.read<ApiClient>())),
+      Provider<BillingRepository>(create: (context) => BillingRepository(context.read<ApiClient>())),
+      Provider<ClientRepository>(create: (context) => ClientRepository(context.read<ApiClient>())),
+      Provider<DeviceRegistrar>(create: (context) => DeviceRegistrar(context.read<MeRepository>())),
       ChangeNotifierProvider(
-        create: (context) => AuthProvider(
-          api: context.read<ApiClient>(),
-          auth: context.read<AuthRepository>(),
-          meRepository: context.read<MeRepository>(),
-          devices: context.read<DeviceRegistrar>(),
-        ),
+        create: (context) => AuthProvider(api: context.read<ApiClient>(), auth: context.read<AuthRepository>(), meRepository: context.read<MeRepository>(), devices: context.read<DeviceRegistrar>()),
       ),
-      ChangeNotifierProxyProvider<AuthProvider, BillingProvider>(
-        create: (context) =>
-            BillingProvider(context.read<BillingRepository>()),
-        update: (_, auth, billing) => billing!..onSession(auth.me),
-      ),
+      ChangeNotifierProxyProvider<AuthProvider, BillingProvider>(create: (context) => BillingProvider(context.read<BillingRepository>()), update: (_, auth, billing) => billing!..onSession(auth.me)),
       ChangeNotifierProxyProvider<AuthProvider, CustomerProvider>(
-        create: (context) =>
-            CustomerProvider(context.read<MasterRepository>()),
+        create: (context) => CustomerProvider(context.read<MasterRepository>()),
         update: (_, auth, customers) => customers!..onSession(auth.me),
       ),
       ChangeNotifierProxyProvider<AuthProvider, ConnectionRequestsProvider>(
-        create: (context) =>
-            ConnectionRequestsProvider(context.read<MasterRepository>()),
+        create: (context) => ConnectionRequestsProvider(context.read<MasterRepository>()),
         update: (_, auth, requests) => requests!..onSession(auth.me),
       ),
       ChangeNotifierProxyProvider<AuthProvider, ScheduleProvider>(
-        create: (context) =>
-            ScheduleProvider(context.read<MasterRepository>()),
+        create: (context) => ScheduleProvider(context.read<MasterRepository>()),
         update: (_, auth, schedule) => schedule!..onSession(auth.me),
       ),
-      ChangeNotifierProxyProvider<AuthProvider, ServiceProvider>(
-        create: (context) => ServiceProvider(context.read<MasterRepository>()),
-        update: (_, auth, services) => services!..onSession(auth.me),
-      ),
+      ChangeNotifierProxyProvider<AuthProvider, ServiceProvider>(create: (context) => ServiceProvider(context.read<MasterRepository>()), update: (_, auth, services) => services!..onSession(auth.me)),
       ChangeNotifierProxyProvider<AuthProvider, ClientBookingsProvider>(
-        create: (context) =>
-            ClientBookingsProvider(context.read<ClientRepository>()),
-        update: (_, auth, bookings) => bookings!..onSession(auth.me),
+        create: (context) => ClientBookingsProvider(context.read<ClientRepository>()),
+        update: (_, auth, bookings) => bookings!
+          ..onSession(auth.me)
+          ..configureReminders(auth.me),
       ),
       ChangeNotifierProxyProvider<AuthProvider, NotificationProvider>(
-        create: (context) =>
-            NotificationProvider(context.read<MeRepository>()),
-        update: (_, auth, notifications) =>
-            notifications!..onSession(auth.me),
+        create: (context) => NotificationProvider(context.read<MeRepository>()),
+        update: (_, auth, notifications) => notifications!..onSession(auth.me),
       ),
       ChangeNotifierProxyProvider<AuthProvider, MasterProfileProvider>(
-        create: (context) => MasterProfileProvider(
-          me: context.read<MeRepository>(),
-          master: context.read<MasterRepository>(),
-          onMeChanged: context.read<AuthProvider>().applyMe,
-        ),
+        create: (context) => MasterProfileProvider(me: context.read<MeRepository>(), master: context.read<MasterRepository>(), onMeChanged: context.read<AuthProvider>().applyMe),
         update: (_, auth, profile) => profile!..sync(auth.me),
       ),
       ChangeNotifierProxyProvider<AuthProvider, ClientProfileProvider>(
-        create: (context) => ClientProfileProvider(
-          me: context.read<MeRepository>(),
-          onMeChanged: context.read<AuthProvider>().applyMe,
-        ),
+        create: (context) => ClientProfileProvider(me: context.read<MeRepository>(), onMeChanged: context.read<AuthProvider>().applyMe),
         update: (_, auth, profile) => profile!..sync(auth.me),
       ),
       ChangeNotifierProxyProvider<AuthProvider, ClientMastersProvider>(
-        create: (context) =>
-            ClientMastersProvider(context.read<ClientRepository>()),
+        create: (context) => ClientMastersProvider(context.read<ClientRepository>()),
         update: (_, auth, masters) => masters!..onSession(auth.me),
       ),
-      ChangeNotifierProxyProvider<AuthProvider, BookingProvider>(
-        create: (context) =>
-            BookingProvider(context.read<MasterRepository>()),
-        update: (_, auth, booking) => booking!..onSession(auth.me),
-      ),
+      ChangeNotifierProxyProvider<AuthProvider, BookingProvider>(create: (context) => BookingProvider(context.read<MasterRepository>()), update: (_, auth, booking) => booking!..onSession(auth.me)),
     ],
     child: const _KomekciView(),
   );
@@ -268,10 +233,7 @@ class _KomekciViewState extends State<_KomekciView> {
     // The refresh token was rejected: the session is gone, so leave whatever
     // signed-in screen is open and ask for the phone number again.
     context.read<AuthProvider>().onSessionLost = () {
-      _navigatorKey.currentState?.pushAndRemoveUntil(
-        pageRoute(const LoginScreen()),
-        (_) => false,
-      );
+      _navigatorKey.currentState?.pushAndRemoveUntil(pageRoute(const LoginScreen()), (_) => false);
     };
   }
 
@@ -279,11 +241,7 @@ class _KomekciViewState extends State<_KomekciView> {
   Widget build(BuildContext context) => MaterialApp(
     navigatorKey: _navigatorKey,
     debugShowCheckedModeBanner: false,
-    theme: buildThemeData(
-      context.watch<AppSettingsProvider>().themeTokensFor(
-        context.watch<ThemeProvider>().selected,
-      ),
-    ),
+    theme: buildThemeData(context.watch<AppSettingsProvider>().themeTokensFor(context.watch<ThemeProvider>().selected)),
     builder: (context, child) {
       return GlobalSafeAreaWrapper(child: child ?? const SizedBox.shrink());
     },

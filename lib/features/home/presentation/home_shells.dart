@@ -58,6 +58,8 @@ class MasterHome extends StatefulWidget {
 class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
   int tab = 0;
   Timer? _connectionRequestsRefresh;
+  StreamSubscription<List<ConnectivityResult>>? _connectivityChanges;
+  bool _refreshingSavedData = false;
 
   @override
   void initState() {
@@ -67,6 +69,36 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
       const Duration(seconds: 30),
       (_) => _refreshConnectionRequests(),
     );
+    _connectivityChanges = Connectivity().onConnectivityChanged.listen((networks) {
+      if (mounted &&
+          networks.any((network) => network != ConnectivityResult.none) &&
+          context.read<MasterOfflineCache>().usingCachedData) {
+        unawaited(_refreshSavedData());
+      }
+    });
+  }
+
+  Future<void> _refreshSavedData() async {
+    if (_refreshingSavedData || !mounted) return;
+    setState(() => _refreshingSavedData = true);
+    try {
+      try {
+        await context.read<AuthProvider>().refreshMe();
+      } catch (_) {
+        // Keep the locally restored session while the network is unavailable.
+      }
+      if (!mounted) return;
+      await Future.wait([
+        context.read<BookingProvider>().refresh(),
+        context.read<CustomerProvider>().load(),
+        context.read<ScheduleProvider>().load(),
+        context.read<ScheduleProvider>().loadClosedTimes(appToday(), force: true),
+        context.read<ServiceProvider>().load(),
+        context.read<MasterProfileProvider>().refresh(),
+      ]);
+    } finally {
+      if (mounted) setState(() => _refreshingSavedData = false);
+    }
   }
 
   void _refreshConnectionRequests() {
@@ -79,12 +111,18 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _refreshConnectionRequests();
+    if (state == AppLifecycleState.resumed) {
+      _refreshConnectionRequests();
+      if (context.read<MasterOfflineCache>().usingCachedData) {
+        unawaited(_refreshSavedData());
+      }
+    }
   }
 
   @override
   void dispose() {
     _connectionRequestsRefresh?.cancel();
+    _connectivityChanges?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -104,6 +142,7 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
     final language = context.watch<LanguageProvider>().language;
     final pendingRequests =
         context.select<ConnectionRequestsProvider, int>((requests) => requests.count);
+    final showingSavedData = context.watch<MasterOfflineCache>().usingCachedData;
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     // Index 3 ("Müşderi goşmak") is a push-style action, not a persistent tab —
@@ -118,7 +157,43 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
     return Scaffold(
       extendBody: true,
       backgroundColor: tokens.surface,
-      body: SafeArea(bottom: false, child: pages[tab]),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            if (showingSavedData)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                color: tokens.warning.withValues(alpha: .12),
+                child: Row(
+                  children: [
+                    AppIcon(Icons.wifi_off_outlined, color: tokens.textPrimary, size: 18),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        t(
+                          tk: 'Saklanan maglumatlar görkezilýär. Täzelemek we üýtgetmek üçin internet gerek.',
+                          ru: 'Показаны сохранённые данные. Для обновления и изменений нужен интернет.',
+                          en: 'Showing saved data. Internet is needed to refresh or make changes.',
+                        ),
+                        style: TextStyle(fontSize: 11.5, color: tokens.textPrimary),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: t(tk: 'Täzele', ru: 'Обновить', en: 'Refresh'),
+                      onPressed: _refreshingSavedData ? null : _refreshSavedData,
+                      icon: _refreshingSavedData
+                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                          : AppIcon(Icons.refresh, color: tokens.textPrimary, size: 19),
+                    ),
+                  ],
+                ),
+              ),
+            Expanded(child: pages[tab]),
+          ],
+        ),
+      ),
       bottomNavigationBar: GlassNavBar(
         docked: true,
         currentIndex: tab,

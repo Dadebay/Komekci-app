@@ -61,7 +61,8 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
     final raw = _availability?.dates[formatApiDate(day)] ?? const <String>[];
     return [
       for (final s in raw)
-        if (RegExp(r'^\d{1,2}:\d{2}').hasMatch(s)) DateTime(day.year, day.month, day.day, int.parse(s.split(':')[0]), int.parse(s.split(':')[1])),
+        if (RegExp(r'^\d{1,2}:\d{2}').hasMatch(s) && int.parse(s.split(':')[1]) % 30 == 0)
+          DateTime(day.year, day.month, day.day, int.parse(s.split(':')[0]), int.parse(s.split(':')[1])),
     ];
   }
 
@@ -84,7 +85,9 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
         _saving = false;
         _saveError = apiErrorMessage(error, language);
         if (error is ApiException && error.code == ApiErrors.slotTaken) {
-          _suggestions = [for (final s in error.suggestedSlots) ?parseApiTime(s)];
+          _suggestions = [for (final s in error.suggestedSlots) ?parseApiTime(s)]
+              .where((slot) => slot.minute % 30 == 0)
+              .toList();
         }
       });
       return;
@@ -107,7 +110,7 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
     final slots = _slotsFor(_selectedDate);
 
     return AppScaffold(
-      title: t(tk: 'Randevuny üýtget', ru: 'Изменить запись', en: 'Change appointment'),
+      title: t(tk: 'Ýazgyny üýtget', ru: 'Изменить запись', en: 'Change appointment'),
       subtitle: widget.booking.masterName,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,12 +119,12 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
             child: ListView(
               children: [
                 Text(
-                  t(tk: 'Täze tarih', ru: 'Новая дата', en: 'New date'),
+                  t(tk: 'Täze senäni saýlaň', ru: 'Новая дата', en: 'New date'),
                   style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
-                  height: 68,
+                  height: max(100.0, MediaQuery.textScalerOf(context).scale(100)),
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: days.length,

@@ -212,7 +212,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                             activeColor: tokens.textPrimary,
                             title: Text(
                               t(
-                                tk: 'Has erki wagt açylsa maňa habar ber',
+                                tk: 'Has irki wagt açylsa, maňa habar ber',
                                 ru: 'Сообщить, если освободится более раннее время',
                                 en: 'Notify me if an earlier slot opens up',
                               ),

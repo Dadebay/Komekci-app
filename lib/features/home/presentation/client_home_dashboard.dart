@@ -5,6 +5,17 @@ part of '../../../app/komekci_app.dart';
 class ClientHomeDashboard extends StatelessWidget {
   const ClientHomeDashboard({super.key});
 
+  Future<void> _refresh(BuildContext context) async {
+    final bookings = context.read<ClientBookingsProvider>();
+    final masters = context.read<ClientMastersProvider>();
+    final notifications = context.read<NotificationProvider>();
+    await Future.wait<void>([
+      bookings.load(),
+      masters.load(),
+      notifications.load(),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
@@ -15,10 +26,13 @@ class ClientHomeDashboard extends StatelessWidget {
     final upcoming = context.watch<ClientBookingsProvider>().upcoming.take(3).toList();
     return Scaffold(
       backgroundColor: tokens.surface,
-      body: SafeArea(
-        bottom: false,
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(20, 14, 20, canPop ? 20 : 110),
+      body: RefreshIndicator(
+        onRefresh: () => _refresh(context),
+        child: SafeArea(
+          bottom: false,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(20, 14, 20, canPop ? 20 : 110),
           children: [
             const _ClientHomeHeader(),
             const SizedBox(height: 18),
@@ -74,6 +88,7 @@ class ClientHomeDashboard extends StatelessWidget {
             _ClientMasterCarousel(tk: tk),
             const SizedBox(height: 16),
           ],
+          ),
         ),
       ),
     );

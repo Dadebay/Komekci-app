@@ -1,9 +1,6 @@
 part of '../../../app/komekci_app.dart';
 
-/// Notification feed and, for clients, the three notification switches the
-/// API knows (`reminders`, `earlier_slot`, `master_messages` on
-/// `PATCH /me` → `notification_prefs`). Masters see the feed only — their
-/// `N-01`…`N-19` switches have no screen yet.
+/// Notification feed with client and master notification preferences.
 class ClientNotificationSettingsScreen extends StatelessWidget {
   const ClientNotificationSettingsScreen({super.key});
 
@@ -52,15 +49,9 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
         child: RefreshIndicator(
           onRefresh: notifications.load,
           child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.fromLTRB(20, 8, 20, canPop ? 20 : 110),
             children: [
-              if (auth.isMaster) ...[
-                _MasterNotificationTypes(
-                  prefs: prefs,
-                  onChanged: (code, value) => _setPref(context, prefs, code, value),
-                ),
-                const SizedBox(height: 24),
-              ],
               if (!auth.isMaster) ...[
                 _NotificationPrefRow(
                   icon: Icons.calendar_month_outlined,
@@ -70,9 +61,9 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                     en: 'Booking reminders',
                   ),
                   subtitle: t(
-                    tk: 'Duşuşykdan öň habar ber',
-                    ru: 'Уведомлять перед визитом',
-                    en: 'Notify me before my appointment',
+                    tk: 'Duşuşykdan 1 sagat öň ýatlat',
+                    ru: 'Напомнить за час до визита',
+                    en: 'Remind me one hour before my appointment',
                   ),
                   value: pref('reminders'),
                   onChanged: (value) => _setPref(context, prefs, 'reminders', value),
@@ -109,21 +100,62 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
               ],
-              Text(
-                t(
-                  tk: 'Soňky bildirişler',
-                  ru: 'Последние уведомления',
-                  en: 'Recent notifications',
-                ),
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      t(
+                        tk: 'Soňky bildirişler',
+                        ru: 'Последние уведомления',
+                        en: 'Recent notifications',
+                      ),
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: tokens.textPrimary,
+                      ),
+                    ),
+                  ),
+                  if (notifications.unreadCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: tokens.accent.withValues(alpha: .12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '${notifications.unreadCount} ${t(tk: 'täze', ru: 'новых', en: 'new')}',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: tokens.textPrimary,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
               if (notifications.items.isEmpty)
                 notifications.loading
                     ? const Padding(
                         padding: EdgeInsets.symmetric(vertical: 24),
                         child: Center(child: CircularProgressIndicator()),
                       )
+                    : notifications.error != null
+                        ? RetryErrorState(
+                            title: t(
+                              tk: 'Bildirişleri ýükläp bolmady',
+                              ru: 'Не удалось загрузить уведомления',
+                              en: 'Could not load notifications',
+                            ),
+                            text: t(
+                              tk: 'Baglanyşygy barlap, täzeden synanyşyň.',
+                              ru: 'Проверьте соединение и попробуйте ещё раз.',
+                              en: 'Check your connection and try again.',
+                            ),
+                            retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                            onRetry: notifications.load,
+                          )
                     : EmptyState(
                         icon: Icons.notifications_none,
                         title: t(
@@ -151,6 +183,19 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                     ),
                   ),
               ],
+              if (auth.isMaster) ...[
+                const SizedBox(height: 28),
+                Text(
+                  t(tk: 'Sazlamalar', ru: 'Настройки', en: 'Settings'),
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: tokens.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _MasterNotificationToggle(prefs: prefs),
+              ],
             ],
           ),
         ),
@@ -171,7 +216,7 @@ class _NotificationPrefRow extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<bool>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -219,58 +264,62 @@ class _NotificationPrefRow extends StatelessWidget {
   }
 }
 
-/// The master's `N-01`…`N-19` switches (`notification_prefs`). Only the
-/// subscription ones (13–19) are described by the API docs; the rest are
-/// shown by code.
-class _MasterNotificationTypes extends StatelessWidget {
-  const _MasterNotificationTypes({required this.prefs, required this.onChanged});
+/// One control for all of the master's `N-01`…`N-19` notification preferences.
+class _MasterNotificationToggle extends StatefulWidget {
+  const _MasterNotificationToggle({required this.prefs});
   final Map<String, bool> prefs;
-  final void Function(String code, bool value) onChanged;
+
+  @override
+  State<_MasterNotificationToggle> createState() => _MasterNotificationToggleState();
+}
+
+class _MasterNotificationToggleState extends State<_MasterNotificationToggle> {
+  static final _codes = [
+    for (var i = 1; i <= 19; i++) 'N-${i.toString().padLeft(2, '0')}',
+  ];
+  bool? _pendingValue;
+  bool _saving = false;
+
+  Future<void> _setAll(bool value) async {
+    if (_saving) return;
+    setState(() {
+      _pendingValue = value;
+      _saving = true;
+    });
+    final updated = {
+      ...widget.prefs,
+      for (final code in _codes) code: value,
+    };
+    await runApi(
+      context,
+      () => context.read<AuthProvider>().updateNotificationPrefs(updated),
+    );
+    if (!mounted) return;
+    setState(() {
+      _pendingValue = null;
+      _saving = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
-    final tokens = context.appTokens;
-    final known = <String, String>{
-      'N-13': t(tk: 'Abuna tölegi çykaryldy', ru: 'Списание за подписку', en: 'Subscription charged'),
-      'N-14': t(tk: 'Töleg ýatlatmasy (1)', ru: 'Напоминание об оплате (1)', en: 'Payment reminder (1)'),
-      'N-15': t(tk: 'Töleg ýatlatmasy (2)', ru: 'Напоминание об оплате (2)', en: 'Payment reminder (2)'),
-      'N-16': t(tk: 'Töleg ýatlatmasy (3)', ru: 'Напоминание об оплате (3)', en: 'Payment reminder (3)'),
-      'N-17': t(tk: 'Abuna duruzyldy', ru: 'Подписка приостановлена', en: 'Subscription suspended'),
-      'N-18': t(tk: 'Abuna ýene işjeň', ru: 'Подписка снова активна', en: 'Subscription active again'),
-      'N-19': t(tk: 'Balans dolduryldy', ru: 'Баланс пополнен', en: 'Balance topped up'),
-    };
-    final codes = [for (var i = 1; i <= 19; i++) 'N-${i.toString().padLeft(2, '0')}'];
-    return Container(
-      decoration: BoxDecoration(
-        color: tokens.surfaceElevated,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: tokens.border),
+    return _NotificationPrefRow(
+      icon: Icons.notifications_active_outlined,
+      title: t(
+        tk: 'Ähli bildiriş görnüşleri',
+        ru: 'Все типы уведомлений',
+        en: 'All notification types',
       ),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          title: Text(
-            t(tk: 'Bildiriş görnüşleri', ru: 'Типы уведомлений', en: 'Notification types'),
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-          ),
-          children: [
-            for (final code in codes)
-              SwitchListTile(
-                dense: true,
-                activeThumbColor: tokens.accent,
-                title: Text(
-                  known[code] ?? '${t(tk: 'Bildiriş', ru: 'Уведомление', en: 'Notification')} $code',
-                  style: const TextStyle(fontSize: 13),
-                ),
-                value: prefs[code] ?? true,
-                onChanged: (value) => onChanged(code, value),
-              ),
-          ],
-        ),
+      subtitle: t(
+        tk: 'Hemmesini bir wagtda aç ýa-da öçür',
+        ru: 'Включить или выключить все сразу',
+        en: 'Turn every type on or off at once',
       ),
+      value: _pendingValue ?? _codes.every((code) => widget.prefs[code] ?? true),
+      onChanged: _saving ? null : _setAll,
     );
   }
 }

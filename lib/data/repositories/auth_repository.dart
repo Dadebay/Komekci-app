@@ -113,7 +113,7 @@ class AuthRepository {
       json: {'phone': phone, 'code': code},
       auth: false,
     );
-    await _api.saveSession(AuthTokens.fromJson(asMap(body)));
+    await _api.saveSession(AuthTokens.fromJson(asMap(body)), newAccount: true);
   }
 
   /// Revokes the refresh token and forgets the session locally, even if the

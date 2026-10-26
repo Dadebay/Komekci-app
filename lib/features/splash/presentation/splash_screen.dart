@@ -102,6 +102,7 @@ class _SplashScreenState extends State<SplashScreen>
     final devices = context.read<DeviceRegistrar>();
     final notifications = context.read<NotificationProvider>();
     final auth = context.read<AuthProvider>();
+    final bookings = context.read<ClientBookingsProvider>();
     try {
       if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp(
@@ -121,6 +122,7 @@ class _SplashScreenState extends State<SplashScreen>
             body: notification.body ?? '',
             data: message.data,
           );
+          if (!auth.isMaster) unawaited(bookings.load());
         },
       ).initialize();
       await AnalyticsService(FirebaseAnalytics.instance).screen('splash');

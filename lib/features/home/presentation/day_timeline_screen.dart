@@ -16,10 +16,17 @@ class DayTimelineScreen extends StatelessWidget {
     final tokens = context.appTokens;
     final bookingProvider = context.watch<BookingProvider>();
     final customerProvider = context.watch<CustomerProvider>();
-    final schedule = context.watch<ScheduleProvider>().schedule;
+    final scheduleProvider = context.watch<ScheduleProvider>();
+    final schedule = scheduleProvider.schedule;
     bookingProvider.prefetch(day);
+    scheduleProvider.prefetchClosedTimes(day);
     final dayAppointments = bookingProvider.onDay(day);
-    final entries = _buildTimeline(dayAppointments, day, schedule);
+    final entries = _buildTimeline(
+      dayAppointments,
+      day,
+      scheduleProvider.closedTimesLoaded(day) ? schedule : null,
+      closedTimes: scheduleProvider.closedTimesOn(day),
+    );
 
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -69,7 +76,9 @@ class DayTimelineScreen extends StatelessWidget {
                             customer,
                             language,
                           ),
-                      onTapFree: () {},
+                      onTapFree: (start, end, availableEnd) =>
+                          _showFreeTimeActions(context, start: start, end: end, availableEnd: availableEnd),
+                      onTapClosed: (closed) => _reopenClosedTime(context, closed),
                     ),
             ),
           ],

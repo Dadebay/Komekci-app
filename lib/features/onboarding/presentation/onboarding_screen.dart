@@ -1,6 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
   @override
@@ -9,25 +8,52 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   int page = 0;
-  static const slides = [
-    (
-      'Your time, beautifully organised',
-      'Keep every beauty appointment in one private place.',
-      Icons.calendar_month_outlined,
-    ),
-    (
-      'Your personal circle',
-      'Book only with specialists you know and trust.',
-      Icons.people_outline,
-    ),
-    (
-      'Never miss a booking',
-      'Smart reminders and earlier-slot notifications.',
-      Icons.notifications_none,
-    ),
-  ];
   @override
   Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>().language;
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
+    final slides = [
+      (
+        t(
+          tk: 'Wagtyňyzy tertipli saklaň',
+          ru: 'Ваше время под контролем',
+          en: 'Your time, beautifully organised',
+        ),
+        t(
+          tk: 'Ähli gözellik hyzmatlaryna ýazgylaryňyzy bir ýerde saklaň.',
+          ru: 'Храните все записи на услуги красоты в одном месте.',
+          en: 'Keep every beauty appointment in one private place.',
+        ),
+        Icons.calendar_month_outlined,
+      ),
+      (
+        t(
+          tk: 'Öz masterleriňiz',
+          ru: 'Ваш круг мастеров',
+          en: 'Your personal circle',
+        ),
+        t(
+          tk: 'Diňe tanaýan we ynanýan hünärmenleriňize ýazylyň.',
+          ru: 'Записывайтесь только к знакомым и проверенным специалистам.',
+          en: 'Book only with specialists you know and trust.',
+        ),
+        Icons.people_outline,
+      ),
+      (
+        t(
+          tk: 'Ýazgylaryňyzy sypdyrmaň',
+          ru: 'Не пропускайте записи',
+          en: 'Never miss a booking',
+        ),
+        t(
+          tk: 'Ýatlatmalar we has irki boş wagt barada bildirişler alyň.',
+          ru: 'Получайте напоминания и уведомления о более раннем свободном времени.',
+          en: 'Smart reminders and earlier-slot notifications.',
+        ),
+        Icons.notifications_none,
+      ),
+    ];
     final item = slides[page];
     final tokens = context.appTokens;
     return Scaffold(
@@ -79,7 +105,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               const SizedBox(height: 22),
               PrimaryButton(
-                label: page == 2 ? 'Get started' : 'Continue',
+                label: page == 2
+                    ? t(tk: 'Başla', ru: 'Начать', en: 'Get started')
+                    : t(tk: 'Dowam et', ru: 'Продолжить', en: 'Continue'),
                 onTap: () {
                   if (page == 2) {
                     Navigator.pushReplacement(
@@ -96,7 +124,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   context,
                   pageRoute(const RoleScreen()),
                 ),
-                child: const Text('Skip'),
+                child: Text(t(tk: 'Geç', ru: 'Пропустить', en: 'Skip')),
               ),
             ],
           ),

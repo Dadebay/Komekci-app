@@ -60,18 +60,22 @@ class BookingsEmptyState extends StatelessWidget {
     required this.title,
     required this.text,
     this.framed = true,
+    this.compact = false,
   });
 
   final String title;
   final String text;
   final bool framed;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 26),
+      padding: compact
+          ? const EdgeInsets.fromLTRB(16, 8, 16, 14)
+          : const EdgeInsets.fromLTRB(20, 20, 20, 26),
       decoration: framed
           ? BoxDecoration(
               color: tokens.surfaceElevated,
@@ -83,12 +87,12 @@ class BookingsEmptyState extends StatelessWidget {
         children: [
           Image.asset(
             'assets/images/empty_bookings_3d.png',
-            width: 168,
-            height: 168,
+            width: compact ? 92 : 168,
+            height: compact ? 92 : 168,
             fit: BoxFit.contain,
             excludeFromSemantics: true,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: compact ? 4 : 8),
           Text(
             title,
             textAlign: TextAlign.center,
@@ -98,7 +102,7 @@ class BookingsEmptyState extends StatelessWidget {
               color: tokens.textPrimary,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: compact ? 4 : 8),
           Text(
             text,
             textAlign: TextAlign.center,
