@@ -31,7 +31,29 @@ void main() {
     );
 
     expect(original.signature, isNot(moved.signature));
-    expect(original.title, 'Haircut · Ayna');
+    expect(original.title, 'Haircut — Ayna master');
+    expect(
+      original.description,
+      '14 mart · 17:00–18:00\n'
+      'Ýazgyňyz 17:00-da. Haýyş edýäris, bellenen wagtyňyzda geliň.',
+    );
+  });
+
+  test('calendar text matches the booking shown on the phone', () {
+    final booking = CalendarBookingDetails(
+      id: '43',
+      masterName: 'Suleyman',
+      serviceName: 'Saç daramak',
+      startsAt: DateTime(2026, 10, 27, 14, 30),
+      endsAt: DateTime(2026, 10, 27, 15),
+    );
+
+    expect(booking.title, 'Saç daramak — Suleyman master');
+    expect(
+      booking.description,
+      '27 oktýabr · 14:30–15:00\n'
+      'Ýazgyňyz 14:30-da. Haýyş edýäris, bellenen wagtyňyzda geliň.',
+    );
   });
 
   test('Ashgabat time before 05:00 maps to previous UTC day', () {

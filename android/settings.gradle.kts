@@ -25,6 +25,7 @@ plugins {
     // END: FlutterFire Configuration
     // Flutter's dependency validator still reads this version even with AGP built-in Kotlin.
     id("org.jetbrains.kotlin.android") version "2.3.20" apply false
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 include(":app")

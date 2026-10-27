@@ -7,6 +7,7 @@ class LocalNotificationsService {
   static final instance = LocalNotificationsService._();
   final _plugin = FlutterLocalNotificationsPlugin();
   Future<void>? _initializing;
+  void Function(String payload)? onNotificationTap;
   static const _channel = AndroidNotificationChannel(
     'komekci_appointments',
     'Appointment notifications',
@@ -20,19 +21,30 @@ class LocalNotificationsService {
     timezone_data.initializeTimeZones();
     await _plugin.initialize(
       const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('komekci_notification_icon'),
         iOS: DarwinInitializationSettings(
           requestAlertPermission: false,
           requestBadgePermission: false,
           requestSoundPermission: false,
         ),
       ),
+      onDidReceiveNotificationResponse: (response) {
+        final payload = response.payload;
+        if (payload != null) onNotificationTap?.call(payload);
+      },
     );
     await _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(_channel);
+  }
+
+  Future<String?> notificationLaunchPayload() async {
+    await initialize();
+    final launch = await _plugin.getNotificationAppLaunchDetails();
+    if (launch?.didNotificationLaunchApp != true) return null;
+    return launch?.notificationResponse?.payload;
   }
 
   Future<void> show({String? title, String? body, String? payload}) =>
@@ -45,8 +57,12 @@ class LocalNotificationsService {
             'komekci_appointments',
             'Appointment notifications',
             channelDescription: 'Booking, reminder and waitlist notifications',
+            icon: 'komekci_notification_icon',
             importance: Importance.high,
             priority: Priority.high,
+            largeIcon: DrawableResourceAndroidBitmap(
+              'komekci_notification_logo',
+            ),
           ),
           iOS: DarwinNotificationDetails(),
         ),
@@ -123,8 +139,10 @@ class LocalNotificationsService {
           'komekci_appointments',
           'Appointment notifications',
           channelDescription: 'Booking, reminder and waitlist notifications',
+          icon: 'komekci_notification_icon',
           importance: Importance.high,
           priority: Priority.high,
+          largeIcon: DrawableResourceAndroidBitmap('komekci_notification_logo'),
         ),
         iOS: DarwinNotificationDetails(),
       ),

@@ -17,10 +17,24 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   late DateTime _clock = DateTime.now();
   late final AnimationController _numberShimmer;
   late final AnimationController _numberCountUp;
+  late final MasterBookingAlertController _bookingAlerts;
+  String? _refreshedAlertId;
   bool _refreshingNumbers = false;
   Timer? _timer;
 
-  Future<void> _refresh() async {
+  void _refreshForNewBooking() {
+    final alert = _bookingAlerts.visibleAlert;
+    if (alert == null) {
+      _refreshedAlertId = null;
+      return;
+    }
+    if (_refreshedAlertId == alert.id) return;
+    _refreshedAlertId = alert.id;
+    // The FCM handler already refreshes the master's appointment months.
+    unawaited(_refresh(refreshBookings: false));
+  }
+
+  Future<void> _refresh({bool refreshBookings = true}) async {
     if (_refreshingNumbers) return;
     final bookings = context.read<BookingProvider>();
     final customers = context.read<CustomerProvider>();
@@ -33,7 +47,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     _numberShimmer.repeat();
     try {
       await Future.wait<void>([
-        bookings.refreshDay(appToday()),
+        if (refreshBookings) bookings.refreshDay(appToday()),
         customers.load(),
         schedule.load(),
         billing.refresh(),
@@ -73,6 +87,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   @override
   void initState() {
     super.initState();
+    _bookingAlerts = context.read<MasterBookingAlertController>();
+    _bookingAlerts.addListener(_refreshForNewBooking);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _refreshForNewBooking();
+    });
     _numberShimmer = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -89,6 +108,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
   @override
   void dispose() {
+    _bookingAlerts.removeListener(_refreshForNewBooking);
     _timer?.cancel();
     _numberShimmer.dispose();
     _numberCountUp.dispose();
@@ -163,7 +183,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     return Scaffold(
       backgroundColor: tokens.surface,
       body: RefreshIndicator(
-        onRefresh: _refresh,
+        onRefresh: () => _refresh(),
         child: SafeArea(
           bottom: false,
           child: ListView(

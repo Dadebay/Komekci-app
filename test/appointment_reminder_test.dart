@@ -8,7 +8,13 @@ class FakeNotifications implements LocalNotificationsService {
   final cancelled = <int>[];
 
   @override
+  void Function(String payload)? onNotificationTap;
+
+  @override
   Future<void> initialize() async {}
+
+  @override
+  Future<String?> notificationLaunchPayload() async => null;
 
   @override
   Future<List<PendingNotificationRequest>> pending() async =>

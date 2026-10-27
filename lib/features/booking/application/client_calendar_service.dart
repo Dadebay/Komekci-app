@@ -26,7 +26,29 @@ class CalendarBookingDetails {
   final DateTime startsAt;
   final DateTime endsAt;
 
-  String get title => '$serviceName · $masterName';
+  String get title => '$serviceName — $masterName master';
+
+  String get description {
+    const months = [
+      'ýanwar',
+      'fewral',
+      'mart',
+      'aprel',
+      'maý',
+      'iýun',
+      'iýul',
+      'awgust',
+      'sentýabr',
+      'oktýabr',
+      'noýabr',
+      'dekabr',
+    ];
+    String clock(DateTime date) =>
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    final start = clock(startsAt);
+    return '${startsAt.day} ${months[startsAt.month - 1]} · $start–${clock(endsAt)}\n'
+        'Ýazgyňyz $start-da. Haýyş edýäris, bellenen wagtyňyzda geliň.';
+  }
 
   String get signature => jsonEncode([
     title,
@@ -163,6 +185,7 @@ class ClientCalendarService {
             title: booking.title,
             startDate: start,
             endDate: end,
+            description: Patch.set(booking.description),
             reminders: const Patch.set([Duration(hours: 1)]),
           );
           await _writeLink(userId, booking, link.eventId);
@@ -175,7 +198,7 @@ class ClientCalendarService {
         title: booking.title,
         startDate: start,
         endDate: end,
-        description: 'KÖMEKÇI',
+        description: booking.description,
         reminders: const [Duration(hours: 1)],
       );
       try {

@@ -15,7 +15,7 @@ class RoleCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        height: 230,
+        constraints: const BoxConstraints(minHeight: 230),
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: selected && tokens.surfaceElevated != tokens.surface

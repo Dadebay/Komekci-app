@@ -57,7 +57,9 @@ class _SplashScreenState extends State<SplashScreen>
     }
     final networks = result.first as List<ConnectivityResult>;
     _isOnline = networks.any((value) => value != ConnectivityResult.none);
-    if (_isOnline) await _initializeFirebase();
+    // A tapped notification's launch payload is local even if connectivity is
+    // gone by the time the app opens.
+    await _initializeFirebase();
     final me = restore == SessionRestore.signedIn ? auth.me : null;
     if (me != null) {
       // Signed in already: take the account's saved language and theme.
@@ -103,6 +105,8 @@ class _SplashScreenState extends State<SplashScreen>
     final notifications = context.read<NotificationProvider>();
     final auth = context.read<AuthProvider>();
     final bookings = context.read<ClientBookingsProvider>();
+    final masterBookings = context.read<BookingProvider>();
+    final bookingAlerts = context.read<MasterBookingAlertController>();
     try {
       if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp(
@@ -114,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen>
         onToken: (token) async {
           devices.onToken(token);
         },
-        onMessage: (message) {
+        onMessage: (message, {required bool openedFromTap}) {
           final notification = message.notification;
           if (notification == null || !auth.isSignedIn) return;
           notifications.add(
@@ -122,7 +126,21 @@ class _SplashScreenState extends State<SplashScreen>
             body: notification.body ?? '',
             data: message.data,
           );
-          if (!auth.isMaster) unawaited(bookings.load());
+          if (auth.isMaster) {
+            final alert = MasterBookingAlert.fromPush(
+              id: message.messageId ??
+                  '${message.data['notification_id'] ?? message.data['appointment_id'] ?? DateTime.now().microsecondsSinceEpoch}',
+              title: notification.title ?? '',
+              body: notification.body ?? '',
+              data: message.data,
+            );
+            if (alert != null) {
+              bookingAlerts.show(alert, force: openedFromTap);
+              unawaited(masterBookings.refresh());
+            }
+          } else {
+            unawaited(bookings.load());
+          }
         },
       ).initialize();
       await AnalyticsService(FirebaseAnalytics.instance).screen('splash');
@@ -150,11 +168,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    // This screen is the fixed brand moment (see app spec 1.1 "Splash":
-    // "Ivory arka plan, serif KÖMEKÇI logotype") — it intentionally always
-    // renders in Ivory colours (ink/gold/line + the warm gradient below),
-    // never the active AppThemeTokens theme, so it is deliberately left
-    // un-tokenized rather than migrated to context.appTokens.
+    // Keep the splash's warm background and load animation around the
+    // supplied KÖMEKÇI mark, independent of the selected app theme.
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -182,33 +197,33 @@ class _SplashScreenState extends State<SplashScreen>
                         alignment: Alignment.center,
                         children: [
                           Container(
-                            width: 180 * pulse,
-                            height: 180 * pulse,
+                            width: 218 * pulse,
+                            height: 218 * pulse,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: gold.withValues(alpha: .11),
                             ),
                           ),
                           Container(
-                            width: 106,
-                            height: 106,
+                            width: 184,
+                            height: 184,
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: ink,
+                              borderRadius: BorderRadius.circular(40),
                               boxShadow: [
                                 BoxShadow(
-                                  color: gold.withValues(alpha: .35),
-                                  blurRadius: 28,
-                                  spreadRadius: 4,
+                                  color: ink.withValues(alpha: .16),
+                                  blurRadius: 22,
+                                  offset: const Offset(0, 8),
                                 ),
                               ],
                             ),
-                            child: const Center(
-                              child: SizedBox.square(
-                                dimension: 72,
-                                child: CustomPaint(
-                                  painter: _SplashSparklesPainter(),
-                                ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(40),
+                              child: Image.asset(
+                                'assets/images/splash_logo.png',
+                                fit: BoxFit.cover,
+                                filterQuality: FilterQuality.high,
+                                semanticLabel: 'KÖMEKÇI',
                               ),
                             ),
                           ),
@@ -216,20 +231,7 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  Opacity(
-                    opacity: ((_entrance.value - .25) * 1.35).clamp(0, 1),
-                    child: const Text(
-                      'KÖMEKÇI',
-                      style: TextStyle(
-                        fontSize: 40,
-                        letterSpacing: 5,
-                        fontWeight: FontWeight.w500,
-                        color: ink,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 11),
+                  const SizedBox(height: 24),
                   Opacity(
                     opacity: ((_entrance.value - .45) * 1.8).clamp(0, 1),
                     child: const Text(
@@ -308,37 +310,4 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
   }
-}
-
-/// Two filled sparkles stay distinct and legible inside the small splash mark.
-class _SplashSparklesPainter extends CustomPainter {
-  const _SplashSparklesPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.save();
-    canvas.scale(size.width / 64, size.height / 64);
-    final paint = Paint()
-      ..color = const Color(0xffF6E4BC)
-      ..isAntiAlias = true;
-    canvas.drawPath(_sparkle(const Offset(42, 23), 18), paint);
-    canvas.drawPath(_sparkle(const Offset(18, 47), 9), paint);
-    canvas.restore();
-  }
-
-  Path _sparkle(Offset center, double radius) {
-    final x = center.dx;
-    final y = center.dy;
-    final inset = radius * .26;
-    return Path()
-      ..moveTo(x, y - radius)
-      ..quadraticBezierTo(x + inset, y - inset, x + radius, y)
-      ..quadraticBezierTo(x + inset, y + inset, x, y + radius)
-      ..quadraticBezierTo(x - inset, y + inset, x - radius, y)
-      ..quadraticBezierTo(x - inset, y - inset, x, y - radius)
-      ..close();
-  }
-
-  @override
-  bool shouldRepaint(covariant _SplashSparklesPainter oldDelegate) => false;
 }

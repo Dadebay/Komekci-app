@@ -24,7 +24,7 @@ class _ClientHomeState extends State<ClientHome> {
       const ClientBookingsScreen(),
       const ClientProfile(),
     ];
-    return Scaffold(
+    final home = Scaffold(
       extendBody: true,
       backgroundColor: tokens.surface,
       body: SafeArea(bottom: false, child: pages[tab]),
@@ -46,6 +46,7 @@ class _ClientHomeState extends State<ClientHome> {
         ],
       ),
     );
+    return PermissionReminderHost(needsCalendar: true, child: home);
   }
 }
 
@@ -60,10 +61,15 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
   Timer? _connectionRequestsRefresh;
   StreamSubscription<List<ConnectivityResult>>? _connectivityChanges;
   bool _refreshingSavedData = false;
+  late final MasterBookingAlertController _bookingAlerts;
 
   @override
   void initState() {
     super.initState();
+    _bookingAlerts = context.read<MasterBookingAlertController>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _bookingAlerts.setHomeReady(true);
+    });
     WidgetsBinding.instance.addObserver(this);
     _connectionRequestsRefresh = Timer.periodic(
       const Duration(seconds: 30),
@@ -121,6 +127,7 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _bookingAlerts.setHomeReady(false);
     _connectionRequestsRefresh?.cancel();
     _connectivityChanges?.cancel();
     WidgetsBinding.instance.removeObserver(this);
@@ -154,7 +161,7 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
       const SizedBox.shrink(),
       const CabinetScreen(),
     ];
-    return Scaffold(
+    final home = Scaffold(
       extendBody: true,
       backgroundColor: tokens.surface,
       body: SafeArea(
@@ -222,6 +229,7 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
         ],
       ),
     );
+    return PermissionReminderHost(needsCalendar: false, child: home);
   }
 }
 

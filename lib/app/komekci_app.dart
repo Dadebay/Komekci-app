@@ -48,6 +48,9 @@ import '../features/booking/application/client_masters_provider.dart';
 import '../features/cabinet/application/master_profile_provider.dart';
 import '../features/customers/application/customer_provider.dart';
 import '../features/notifications/application/notification_provider.dart';
+import '../features/notifications/application/master_booking_alert_controller.dart';
+import '../features/notifications/presentation/master_booking_alert_overlay.dart';
+import '../features/permissions/presentation/permission_reminder_host.dart';
 import '../features/profile/application/client_profile_provider.dart';
 import '../features/requests/application/connection_requests_provider.dart';
 import '../features/schedule/application/schedule_provider.dart';
@@ -160,6 +163,7 @@ class KomekciApp extends StatelessWidget {
       ChangeNotifierProvider(create: (_) => LanguageProvider()),
       ChangeNotifierProvider(create: (_) => AppSettingsProvider()),
       ChangeNotifierProvider(create: (_) => MasterOfflineCache()),
+      ChangeNotifierProvider(create: (_) => MasterBookingAlertController()),
       Provider<ApiClient>(
         create: (context) => ApiClient(
           languageCode: () => context.read<LanguageProvider>().language.name,
@@ -243,7 +247,9 @@ class _KomekciViewState extends State<_KomekciView> {
     debugShowCheckedModeBanner: false,
     theme: buildThemeData(context.watch<AppSettingsProvider>().themeTokensFor(context.watch<ThemeProvider>().selected)),
     builder: (context, child) {
-      return GlobalSafeAreaWrapper(child: child ?? const SizedBox.shrink());
+      return MasterBookingAlertOverlay(
+        child: GlobalSafeAreaWrapper(child: child ?? const SizedBox.shrink()),
+      );
     },
     home: const SplashScreen(),
   );
