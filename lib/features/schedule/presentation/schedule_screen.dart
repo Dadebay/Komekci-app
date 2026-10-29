@@ -43,33 +43,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     });
   }
 
-  Future<void> _addWorkingHours() async {
-    final scheduleProvider = context.read<ScheduleProvider>();
-    final language = context.read<LanguageProvider>().language;
-    final existing = scheduleProvider.overrides.any(
-      (override) => _sameDay(override.date, _selected),
-    );
-    if (existing) {
-      await Navigator.push(context, pageRoute(const SpecialDaysScreen()));
-      return;
-    }
-    final windows = workingTimeRanges(scheduleProvider.schedule, _selected);
-    final range = await _pickTimeRange(
-      context,
-      language: language,
-      title: pickTr(
-        language,
-        tk: 'Şu gün üçin iş wagty',
-        ru: 'Рабочие часы на этот день',
-        en: 'Working hours for this day',
-      ),
-      start: windows.isEmpty ? '10:00' : formatTime(TimeOfDay.fromDateTime(windows.first.start)),
-      end: windows.isEmpty ? '16:00' : formatTime(TimeOfDay.fromDateTime(windows.last.end)),
-    );
-    if (range == null || !mounted) return;
-    await runApi(context, () => scheduleProvider.addCustomHours(_selected, range.$1, range.$2));
-  }
-
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
@@ -114,52 +87,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
         title: t(tk: 'Senenama', ru: 'Расписание', en: 'Schedule'),
-        action: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (!_sameDay(_selected, appToday()))
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: TextButton(
-                  onPressed: () => _select(appToday()),
-                  child: Text(t(tk: 'Şu gün', ru: 'Сегодня', en: 'Today')),
-                ),
-              ),
-            IconButton(
-              tooltip: t(tk: 'Hepdelik görnüş', ru: 'Неделя', en: 'Week view'),
-              icon: AppIcon(
-                Icons.grid_view_outlined,
-                size: 21,
-                color: tokens.textPrimary,
-              ),
-              onPressed: () => Navigator.push(
-                context,
-                pageRoute(
-                  WeekOverviewScreen(
-                    weekStart: _weekStart,
-                    onSelectDay: _select,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              tooltip: _searching
-                  ? t(
-                      tk: 'Gözlegi ýap',
-                      ru: 'Закрыть поиск',
-                      en: 'Close search',
-                    )
-                  : t(tk: 'Gözle', ru: 'Поиск', en: 'Search'),
-              icon: AppIcon(
-                _searching ? Icons.close : Icons.search,
-                size: 21,
-                color: tokens.textPrimary,
-              ),
-              onPressed: () => setState(() => _searching = !_searching),
-            ),
-          ],
-        ),
+        action: _ScheduleHeaderActions(language: language, selected: _selected, weekStart: _weekStart, searching: _searching, onSelect: _select, onToggleSearch: () => setState(() => _searching = !_searching)),
       ),
       body: SafeArea(
         bottom: false,
@@ -334,59 +262,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   ),
                 ),
               ),
-            ...entries.map((entry) {
-              if (entry is _ApptEntry) {
-                final customer = entry.appointment.customerId == null
-                    ? null
-                    : _findCustomer(
-                        customerProvider.customers,
-                        entry.appointment.customerId!,
-                      );
-                return _AppointmentRow(
-                  appointment: entry.appointment,
-                  customer: customer,
-                  language: language,
-                  onTap: () => _openAppointmentActions(
-                    context,
-                    entry.appointment,
-                    customer,
-                    language,
-                  ),
-                );
-              }
-              if (entry is _ClosedEntry) {
-                return _ClosedTimeRow(
-                  closed: entry.closed,
-                  language: language,
-                  onTap: () => _reopenClosedTime(context, entry.closed),
-                );
-              }
-              final free = entry as _FreeEntry;
-              return _FreeSlotRow(
-                start: free.start,
-                end: free.end,
-                language: language,
-                onTap: () {
-                  if (!free.start.isAfter(DateTime.now())) {
-                    setState(() {});
-                    AppToast.of(context).error(
-                      t(
-                        tk: 'Bu wagt indi elýeterli däl. Başga wagt saýlaň.',
-                        ru: 'Это время уже недоступно. Выберите другое.',
-                        en: 'This time is no longer available. Choose another.',
-                      ),
-                    );
-                    return;
-                  }
-                  _showFreeTimeActions(
-                    context,
-                    start: free.start,
-                    end: free.end,
-                    availableEnd: free.availableEnd,
-                  );
-                },
-              );
-            }),
+            ..._scheduleTimelineRows(context: context, entries: entries, customerProvider: customerProvider, language: language, onExpired: () => setState(() {})),
           ],
         ),
       ),

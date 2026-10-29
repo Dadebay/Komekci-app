@@ -1,7 +1,150 @@
 part of '../../../app/komekci_app.dart';
 
-/// The shell that matches an account's role.
-Widget homeForAccount(Me me) => me.isMaster ? const MasterHome() : const ClientHome();
+/// Entry point after sign-in or session restore.
+Widget homeForAccount(Me me) =>
+    me.isMaster ? const MasterEntryGate() : const ClientHome();
+
+/// Checks fresh server billing before a master can enter the app.
+class MasterEntryGate extends StatefulWidget {
+  const MasterEntryGate({super.key});
+
+  @override
+  State<MasterEntryGate> createState() => _MasterEntryGateState();
+}
+
+class _MasterEntryGateState extends State<MasterEntryGate>
+    with WidgetsBindingObserver {
+  Billing? _billing;
+  Object? _error;
+  bool _checking = true;
+  bool _leaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _check();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        !_checking &&
+        _billing != null &&
+        !_billing!.permitsMasterEntry &&
+        ModalRoute.of(context)?.isCurrent == true) {
+      _check();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<void> _check() async {
+    if (!_checking) {
+      setState(() {
+        _checking = true;
+        _billing = null;
+        _error = null;
+      });
+    }
+    try {
+      final billing = await context.read<BillingRepository>().billing();
+      if (!mounted) return;
+      setState(() {
+        _billing = billing;
+        _error = null;
+        _checking = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _error = error;
+        _checking = false;
+      });
+    }
+  }
+
+  Future<void> _leavePayment() async {
+    if (_leaving) return;
+    final language = context.read<LanguageProvider>().language;
+    final confirmed = await _showConfirmDialog(
+      context,
+      icon: Icons.logout,
+      title: pickTr(
+        language,
+        tk: 'Başga hasaba geçmelimi?',
+        ru: 'Войти в другой аккаунт?',
+        en: 'Switch accounts?',
+      ),
+      message: pickTr(
+        language,
+        tk: 'Master hasabyndan çykyp, müşderi hasabyňyzyň telefon belgisi bilen girip bilersiňiz.',
+        ru: 'Выйдите из аккаунта мастера, затем войдите с номером телефона клиентского аккаунта.',
+        en: 'Sign out of the master account, then use your client account phone number to sign in.',
+      ),
+      confirmLabel: pickTr(language, tk: 'Çyk', ru: 'Выйти', en: 'Sign out'),
+      cancelLabel: pickTr(language, tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
+    );
+    if (!confirmed || !mounted || _leaving) return;
+    setState(() => _leaving = true);
+    final navigator = Navigator.of(context);
+    try {
+      await context.read<AuthProvider>().signOut();
+      if (!mounted) return;
+      navigator.pushAndRemoveUntil(pageRoute(const RoleScreen()), (_) => false);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _leaving = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final billing = _billing;
+    if (billing != null) {
+      return billing.permitsMasterEntry
+          ? const MasterHome()
+          : MasterSubscriptionScreen(onLeave: _leavePayment);
+    }
+    final tokens = context.appTokens;
+    final language = context.watch<LanguageProvider>().language;
+    return Scaffold(
+      backgroundColor: tokens.surface,
+      body: SafeArea(
+        child: Center(
+          child: _checking
+              ? const CircularProgressIndicator()
+              : Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: RetryErrorState(
+                    title: pickTr(
+                      language,
+                      tk: 'Töleg ýagdaýyny barlap bolmady',
+                      ru: 'Не удалось проверить оплату',
+                      en: 'Could not check payment',
+                    ),
+                    text: apiErrorMessage(_error!, language),
+                    retryLabel: pickTr(
+                      language,
+                      tk: 'Täzeden synanyş',
+                      ru: 'Повторить',
+                      en: 'Try again',
+                    ),
+                    onRetry: _check,
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+}
 
 class ClientHome extends StatefulWidget {
   const ClientHome({super.key, this.initialTab = 0});
@@ -75,7 +218,9 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
       const Duration(seconds: 30),
       (_) => _refreshConnectionRequests(),
     );
-    _connectivityChanges = Connectivity().onConnectivityChanged.listen((networks) {
+    _connectivityChanges = Connectivity().onConnectivityChanged.listen((
+      networks,
+    ) {
       if (mounted &&
           networks.any((network) => network != ConnectivityResult.none) &&
           context.read<MasterOfflineCache>().usingCachedData) {
@@ -98,7 +243,10 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
         context.read<BookingProvider>().refresh(),
         context.read<CustomerProvider>().load(),
         context.read<ScheduleProvider>().load(),
-        context.read<ScheduleProvider>().loadClosedTimes(appToday(), force: true),
+        context.read<ScheduleProvider>().loadClosedTimes(
+          appToday(),
+          force: true,
+        ),
         context.read<ServiceProvider>().load(),
         context.read<MasterProfileProvider>().refresh(),
       ]);
@@ -147,9 +295,12 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
-    final pendingRequests =
-        context.select<ConnectionRequestsProvider, int>((requests) => requests.count);
-    final showingSavedData = context.watch<MasterOfflineCache>().usingCachedData;
+    final pendingRequests = context.select<ConnectionRequestsProvider, int>(
+      (requests) => requests.count,
+    );
+    final showingSavedData = context
+        .watch<MasterOfflineCache>()
+        .usingCachedData;
     String t({required String tk, required String ru, required String en}) =>
         pickTr(language, tk: tk, ru: ru, en: en);
     // Index 3 ("Müşderi goşmak") is a push-style action, not a persistent tab —
@@ -175,7 +326,11 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
                 color: tokens.warning.withValues(alpha: .12),
                 child: Row(
                   children: [
-                    AppIcon(Icons.wifi_off_outlined, color: tokens.textPrimary, size: 18),
+                    AppIcon(
+                      Icons.wifi_off_outlined,
+                      color: tokens.textPrimary,
+                      size: 18,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -184,15 +339,28 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
                           ru: 'Показаны сохранённые данные. Для обновления и изменений нужен интернет.',
                           en: 'Showing saved data. Internet is needed to refresh or make changes.',
                         ),
-                        style: TextStyle(fontSize: 11.5, color: tokens.textPrimary),
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: tokens.textPrimary,
+                        ),
                       ),
                     ),
                     IconButton(
                       tooltip: t(tk: 'Täzele', ru: 'Обновить', en: 'Refresh'),
-                      onPressed: _refreshingSavedData ? null : _refreshSavedData,
+                      onPressed: _refreshingSavedData
+                          ? null
+                          : _refreshSavedData,
                       icon: _refreshingSavedData
-                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                          : AppIcon(Icons.refresh, color: tokens.textPrimary, size: 19),
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : AppIcon(
+                              Icons.refresh,
+                              color: tokens.textPrimary,
+                              size: 19,
+                            ),
                     ),
                   ],
                 ),
@@ -230,75 +398,5 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
       ),
     );
     return PermissionReminderHost(needsCalendar: false, child: home);
-  }
-}
-
-class PageViewData extends StatelessWidget {
-  const PageViewData({
-    super.key,
-    required this.title,
-    this.subtitle,
-    this.image = false,
-    required this.entries,
-  });
-  final String title;
-  final String? subtitle;
-  final bool image;
-  final List<String> entries;
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.appTokens;
-    return ListView(
-      padding: const EdgeInsets.all(24),
-      children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w700),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 7),
-          Text(subtitle!, style: TextStyle(color: tokens.textSecondary)),
-        ],
-        if (image) ...[
-          const SizedBox(height: 22),
-          Container(
-            height: 145,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
-              image: const DecorationImage(
-                image: AssetImage('assets/images/inspiration_02.jpeg'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ],
-        const SizedBox(height: 22),
-        ...entries.map(
-          (entry) => Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: tokens.surfaceElevated,
-              borderRadius: BorderRadius.circular(17),
-              border: Border.all(color: tokens.border),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: tokens.accent.withValues(alpha: .18),
-                  child: AppIcon(
-                    Icons.person_outline,
-                    color: tokens.textPrimary,
-                  ),
-                ),
-                const SizedBox(width: 13),
-                Expanded(child: Text(entry)),
-                const AppIcon(Icons.chevron_right),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
   }
 }

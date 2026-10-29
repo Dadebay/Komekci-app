@@ -10,9 +10,27 @@ import 'package:komekci/core/network/token_store.dart';
 import 'package:komekci/core/services/device_registrar.dart';
 import 'package:komekci/data/repositories/auth_repository.dart';
 import 'package:komekci/data/repositories/me_repository.dart';
+import 'package:komekci/data/models/api/master_models.dart';
+import 'package:komekci/data/models/customer.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('client row ID remains separate from push account ID', () {
+    final connected = Customer.fromSummary(
+      ClientSummary.fromJson({'id': 'c12', 'account_id': 15, 'name': 'Client'}),
+    );
+    final offline = Customer.fromSummary(
+      ClientSummary.fromJson({
+        'id': 'o4',
+        'offline': true,
+        'name': 'Offline client',
+      }),
+    );
+    expect(connected.id, 'c12');
+    expect(connected.accountId, 15);
+    expect(offline.accountId, isNull);
+  });
 
   test(
     'master notification sends account IDs and preserves rejected IDs',

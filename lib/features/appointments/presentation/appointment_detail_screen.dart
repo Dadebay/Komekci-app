@@ -14,7 +14,6 @@ class AppointmentDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
-    final tk = language == AppLanguage.tk;
     final tokens = context.appTokens;
 
     final provider = context.watch<ClientBookingsProvider>();
@@ -24,9 +23,6 @@ class AppointmentDetailScreen extends StatelessWidget {
     }
     final isUpcoming = current.status == ClientBookingStatus.expected;
     final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
-    final statusColor = _bookingStatusColor(tokens, current.status);
-    final countdown = _bookingCountdown(current, language);
-    String clock(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -69,62 +65,7 @@ class AppointmentDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                 children: [
                   // When and how it stands: status, countdown, date and time.
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: _flatTintDecoration(tokens, statusColor),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _ClientBookingStatusChip(status: current.status, tk: tk),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                t(
-                                  tk: 'Barmaly wagtyňyz',
-                                  ru: 'Время прихода',
-                                  en: 'Time to arrive',
-                                ),
-                                textAlign: TextAlign.end,
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: tokens.textPrimary),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (countdown != null) ...[
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              AppIcon(Icons.timer_outlined, size: 15, color: tokens.textPrimary),
-                              const SizedBox(width: 4),
-                              Flexible(child: Text(countdown, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800))),
-                            ],
-                          ),
-                        ],
-                        const SizedBox(height: 18),
-                        Text(formatDate(current.startsAt), style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, height: 1.1)),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            AppIcon(Icons.schedule_outlined, size: 22, color: statusColor),
-                            const SizedBox(width: 8),
-                            Text(
-                              clock(current.startsAt),
-                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: statusColor),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '${t(tk: 'Hyzmat wagty', ru: 'Время услуги', en: 'Service time')}: ${clock(current.startsAt)} – ${clock(current.endsAt)}',
-                          style: TextStyle(fontSize: 12, color: tokens.textSecondary),
-                        ),
-                      ],
-                    ),
-                  ),
+                  _AppointmentTimeCard(current: current, language: language),
                   if (current.lateMinutes != null) ...[
                     const SizedBox(height: 12),
                     Container(
@@ -335,131 +276,6 @@ class AppointmentDetailScreen extends StatelessWidget {
                     label: t(tk: 'Täzeden ýazyl', ru: 'Записаться снова', en: 'Book again'),
                     onTap: () => _rebook(context, current, t),
                   ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _confirmCancel(BuildContext context, ClientBooking current, String Function({required String tk, required String ru, required String en}) t) async {
-    final confirmed = await _showConfirmDialog(
-      context,
-      icon: Icons.event_busy_outlined,
-      danger: true,
-      title: t(tk: 'Ýazgyny ýatyrmaly?', ru: 'Отменить запись?', en: 'Cancel this booking?'),
-      message: t(tk: 'Bu hereketi yzyna gaýtaryp bolmaz.', ru: 'Это действие нельзя отменить.', en: 'This action cannot be undone.'),
-      confirmLabel: t(tk: 'Ýatyr', ru: 'Отменить', en: 'Cancel'),
-      cancelLabel: t(tk: 'Ýapmak', ru: 'Закрыть', en: 'Close'),
-    );
-    if (confirmed && context.mounted) {
-      final navigator = Navigator.of(context);
-      final ok = await runApi(context, () => context.read<ClientBookingsProvider>().cancel(current.id));
-      if (ok) navigator.maybePop();
-    }
-  }
-
-  /// "Book again": the server looks for the same time in the coming days
-  /// (`POST /appointments/{id}/rebook`). If that is taken it answers
-  /// `SLOT_TAKEN` with alternatives, offered here to pick from.
-  Future<void> _rebook(BuildContext context, ClientBooking current, String Function({required String tk, required String ru, required String en}) t) async {
-    final bookings = context.read<ClientBookingsProvider>();
-    final language = context.read<LanguageProvider>().language;
-    final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-
-    Future<ClientBooking?> attempt(DateTime? startsAt) async {
-      try {
-        return await bookings.rebook(current.id, startsAt: startsAt);
-      } on ApiException catch (e) {
-        if (e.code == ApiErrors.slotTaken && context.mounted) {
-          final slots = [for (final s in e.suggestedSlots) ?parseApiTime(s)];
-          if (slots.isNotEmpty) {
-            final picked = await showModalBottomSheet<DateTime>(
-              context: context,
-              builder: (sheetContext) => SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        t(tk: 'Şol wagt eýýäm alnan. Ýakyn boş wagtlar:', ru: 'Это время занято. Ближайшее свободное:', en: 'That time is taken. Nearest free times:'),
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          for (final slot in slots)
-                            ActionChip(
-                              label: Text('${formatDate(slot)} · ${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}'),
-                              onPressed: () => Navigator.pop(sheetContext, slot),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-            if (picked != null) return attempt(picked);
-            return null;
-          }
-        }
-        messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(e, language))));
-        return null;
-      } catch (error) {
-        messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
-        return null;
-      }
-    }
-
-    final booking = await attempt(null);
-    if (booking == null || !context.mounted) return;
-    navigator.push(pageRoute(BookingSuccessScreen(appointment: booking, masterName: booking.masterName)));
-  }
-
-  void _showLateSheet(BuildContext context, ClientBooking current, String Function({required String tk, required String ru, required String en}) t) {
-    final tokens = context.appTokens;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: tokens.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                t(tk: 'Näçe minut gijä galýarsyňyz?', ru: 'На сколько минут вы опаздываете?', en: 'How many minutes late?'),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [5, 10].map((minutes) {
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(color: tokens.border),
-                        ),
-                        onPressed: () {
-                          runApi(context, () => context.read<ClientBookingsProvider>().setLate(current.id, minutes));
-                          Navigator.pop(sheetContext);
-                        },
-                        child: Text('$minutes ${t(tk: "min", ru: "мин", en: "min")}'),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
           ),
         ),
       ),

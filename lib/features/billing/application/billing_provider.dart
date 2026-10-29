@@ -8,8 +8,9 @@ import '../../../data/models/api/user_models.dart';
 import '../../../data/repositories/billing_repository.dart';
 
 /// "120" for whole amounts, "120.50" otherwise.
-String formatMoney(double value) =>
-    value == value.roundToDouble() ? '${value.toInt()}' : value.toStringAsFixed(2);
+String formatMoney(double value) => value == value.roundToDouble()
+    ? '${value.toInt()}'
+    : value.toStringAsFixed(2);
 
 /// The master's balance, subscription state and payment history, straight
 /// from `/me/billing`. The server owns every number here: after a payment
@@ -35,7 +36,8 @@ class BillingProvider extends SessionScoped {
 
   double get balanceValue => _billing?.balance ?? 0;
   String get balance => formatMoney(balanceValue);
-  SubscriptionStatus get status => _billing?.status ?? SubscriptionStatus.suspended;
+  SubscriptionStatus get status =>
+      _billing?.status ?? SubscriptionStatus.suspended;
   bool get acceptingBookings => _billing?.acceptingBookings ?? false;
   DateTime? get paidUntil => _billing?.paidUntil;
   DateTime? get nextChargeAt => _billing?.nextChargeAt;
@@ -47,7 +49,8 @@ class BillingProvider extends SessionScoped {
   /// The most recent successful subscription charge, if any is loaded.
   DateTime? get lastChargeAt {
     for (final entry in _history) {
-      if (entry.type == LedgerType.charge && entry.status == LedgerStatus.succeeded) {
+      if (entry.type == LedgerType.charge &&
+          entry.status == LedgerStatus.succeeded) {
         return entry.createdAt;
       }
     }
@@ -134,12 +137,16 @@ class BillingProvider extends SessionScoped {
   // ---- card payment -----------------------------------------------------
 
   /// Creates a bank order; open [CardTopup.formUrl] in a WebView.
-  Future<CardTopup> startCardPayment(num amount) => _repository.topUpCard(amount);
+  Future<CardTopup> startCardPayment(num amount, CardBank bank) =>
+      _repository.topUpCard(amount, bank);
 
   /// Asks the bank (through the server) how the order ended. Pass the
   /// [cardTransactionId] when signed in, or just the bank's [orderId].
   /// On `success` the new balance and subscription are loaded.
-  Future<CardPaymentResult> checkCardPayment({int? cardTransactionId, String? orderId}) async {
+  Future<CardPaymentResult> checkCardPayment({
+    int? cardTransactionId,
+    String? orderId,
+  }) async {
     assert(cardTransactionId != null || orderId != null);
     final result = cardTransactionId != null
         ? await _repository.cardStatus(cardTransactionId)

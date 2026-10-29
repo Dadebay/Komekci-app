@@ -1,8 +1,8 @@
 part of '../../../app/komekci_app.dart';
 
 /// Step 3 of master sign-up: confirms the SMS code sent by
-/// `POST /auth/register`. A verified code signs the account in and moves on
-/// to the subscription payment.
+/// `POST /auth/register`. A verified code signs the account in; the entry
+/// gate decides whether payment is still needed.
 class MasterOtpScreen extends StatefulWidget {
   const MasterOtpScreen({
     super.key,
@@ -113,8 +113,9 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
       _verifying = true;
       _error = null;
     });
+    final Me me;
     try {
-      await auth.verifyOtp(widget.phone, code);
+      me = await auth.verifyOtp(widget.phone, code);
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -127,7 +128,7 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
     }
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      pageRoute(const MasterSubscriptionScreen()),
+      pageRoute(homeForAccount(me)),
       (_) => false,
     );
   }
@@ -247,7 +248,7 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
                 ],
               ),
               const SizedBox(height: 26),
-              _MasterActionButton(
+              MasterActionButton(
                 label: _verifying
                     ? t(tk: 'Barlanýar...', ru: 'Проверка...', en: 'Verifying...')
                     : t(tk: 'Tassyklaň', ru: 'Подтвердить', en: 'Verify'),
@@ -260,47 +261,6 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _PrivacyNote extends StatelessWidget {
-  const _PrivacyNote();
-
-  @override
-  Widget build(BuildContext context) {
-    final language = context.watch<LanguageProvider>().language;
-    final tokens = context.appTokens;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 30,
-          height: 30,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: tokens.surfaceElevated,
-          ),
-          child: AppIcon(Icons.lock_outline, color: tokens.accent, size: 15),
-        ),
-        const SizedBox(width: 11),
-        Expanded(
-          child: Text(
-            pickTr(
-              language,
-              tk: 'Siziň maglumatlaryňyz ygtybarly saklanýar we üçünji taraplar bilen paýlaşylmaýar.',
-              ru: 'Ваши данные хранятся надёжно и не передаются третьим лицам.',
-              en: 'Your data is stored securely and never shared with third parties.',
-            ),
-            style: TextStyle(
-              color: tokens.textSecondary,
-              fontSize: 12,
-              height: 1.4,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

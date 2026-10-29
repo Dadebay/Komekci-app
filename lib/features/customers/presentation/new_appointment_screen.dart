@@ -247,7 +247,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
-              child: _MasterActionButton(
+              child: MasterActionButton(
                 label: t(tk: 'Ýazgyny tassykla', ru: 'Подтвердить запись', en: 'Confirm booking'),
                 enabled: selected != null,
                 leading: Icons.check,

@@ -43,7 +43,7 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
           ru: 'Недавние клиенты',
           en: 'Recent clients',
         ),
-        action: _HelpIconButton(
+        action: AppHelpButton(
           onTap: () =>
               Navigator.push(context, pageRoute(const SupportScreen())),
         ),
@@ -170,7 +170,7 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
-              child: _MasterActionButton(
+              child: MasterActionButton(
                 label:
                     '${t(tk: "Dowam et", ru: "Продолжить", en: "Continue")} (${selected.length})',
                 enabled: selected.isNotEmpty && selected.length <= 50,

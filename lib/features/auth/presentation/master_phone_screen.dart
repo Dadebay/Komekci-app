@@ -194,7 +194,7 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 14),
-          child: _MasterActionButton(
+          child: MasterActionButton(
             label: t(tk: 'Dowam et', ru: 'Продолжить', en: 'Continue'),
             enabled: ready,
             trailingArrow: true,

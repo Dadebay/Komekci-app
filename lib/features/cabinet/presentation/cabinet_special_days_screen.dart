@@ -103,7 +103,7 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
         title: t(tk: 'Aýratyn günler', ru: 'Особые дни', en: 'Special days'),
-        action: _HelpIconButton(
+        action: AppHelpButton(
           onTap: () =>
               Navigator.push(context, pageRoute(const SupportScreen())),
         ),
@@ -256,7 +256,7 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
-              child: _MasterActionButton(
+              child: MasterActionButton(
                 label: t(tk: 'Taýýar', ru: 'Готово', en: 'Done'),
                 enabled: true,
                 leading: Icons.check,

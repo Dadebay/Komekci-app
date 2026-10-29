@@ -21,74 +21,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   String? _refreshedAlertId;
   bool _refreshingNumbers = false;
   Timer? _timer;
+  late final VoidCallback _bookingAlertListener = _refreshForNewBooking;
 
-  void _refreshForNewBooking() {
-    final alert = _bookingAlerts.visibleAlert;
-    if (alert == null) {
-      _refreshedAlertId = null;
-      return;
-    }
-    if (_refreshedAlertId == alert.id) return;
-    _refreshedAlertId = alert.id;
-    // The FCM handler already refreshes the master's appointment months.
-    unawaited(_refresh(refreshBookings: false));
-  }
-
-  Future<void> _refresh({bool refreshBookings = true}) async {
-    if (_refreshingNumbers) return;
-    final bookings = context.read<BookingProvider>();
-    final customers = context.read<CustomerProvider>();
-    final schedule = context.read<ScheduleProvider>();
-    final billing = context.read<BillingProvider>();
-    final profile = context.read<MasterProfileProvider>();
-    final requests = context.read<ConnectionRequestsProvider>();
-    _numberCountUp.stop();
-    setState(() => _refreshingNumbers = true);
-    _numberShimmer.repeat();
-    try {
-      await Future.wait<void>([
-        if (refreshBookings) bookings.refreshDay(appToday()),
-        customers.load(),
-        schedule.load(),
-        billing.refresh(),
-        profile.refresh(),
-        requests.load(),
-        Future<void>.delayed(const Duration(milliseconds: 450)),
-      ]);
-      if (mounted &&
-          (bookings.error != null ||
-              customers.error != null ||
-              schedule.error != null ||
-              billing.error != null ||
-              requests.error != null)) {
-        final language = context.read<LanguageProvider>().language;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              pickTr(
-                language,
-                tk: 'Maglumatlary täzelemek başartmady. Öňki maglumatlar görkezilýär.',
-                ru: 'Не удалось обновить данные. Показаны прежние значения.',
-                en: 'Could not refresh data. Previous values are shown.',
-              ),
-            ),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        _numberShimmer.stop();
-        setState(() => _refreshingNumbers = false);
-        _numberCountUp.forward(from: 0);
-      }
-    }
-  }
+  Future<void> _refresh({bool refreshBookings = true}) =>
+      _refreshDashboard(update: setState, refreshBookings: refreshBookings);
 
   @override
   void initState() {
     super.initState();
     _bookingAlerts = context.read<MasterBookingAlertController>();
-    _bookingAlerts.addListener(_refreshForNewBooking);
+    _bookingAlerts.addListener(_bookingAlertListener);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _refreshForNewBooking();
     });
@@ -108,7 +50,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
   @override
   void dispose() {
-    _bookingAlerts.removeListener(_refreshForNewBooking);
+    _bookingAlerts.removeListener(_bookingAlertListener);
     _timer?.cancel();
     _numberShimmer.dispose();
     _numberCountUp.dispose();

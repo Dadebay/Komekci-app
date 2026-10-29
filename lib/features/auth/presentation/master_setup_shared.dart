@@ -1,6 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-
 /// Master onboarding runs in four steps: 1. phone number, 2. SMS code,
 /// 3. profile details, 4. subscription payment.
 const _masterSetupSteps = 4;
@@ -9,7 +8,6 @@ const _masterSetupSteps = 4;
 /// operator short code with `"<receiver number> <amount>"`, where the receiver
 /// number is the one the server hands out (`POST /me/billing/topup`).
 const _topUpShortCode = '0804';
-
 
 /// Sits under the confirm button in payment dialogs, replacing a back arrow.
 class _DialogCancelButton extends StatelessWidget {
@@ -42,76 +40,11 @@ class _DialogCancelButton extends StatelessWidget {
   }
 }
 
-class _MasterActionButton extends StatelessWidget {
-  const _MasterActionButton({
-    required this.label,
-    required this.enabled,
-    required this.onTap,
-    this.trailingArrow = false,
-    this.leading,
-  });
-  final String label;
-  final bool enabled;
-  final VoidCallback onTap;
-  final bool trailingArrow;
-  final IconData? leading;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.appTokens;
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: FilledButton(
-        style: FilledButton.styleFrom(
-          backgroundColor: enabled
-              ? tokens.textPrimary
-              : tokens.surfaceElevated,
-          foregroundColor: enabled ? tokens.surface : tokens.disabled,
-          disabledBackgroundColor: tokens.surfaceElevated,
-          disabledForegroundColor: tokens.disabled,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-        onPressed: enabled ? onTap : null,
-        child: Row(
-          mainAxisAlignment: trailingArrow
-              ? MainAxisAlignment.spaceBetween
-              : MainAxisAlignment.center,
-          children: [
-            if (trailingArrow) const SizedBox(width: 20),
-            if (leading != null) ...[
-              AppIcon(
-                leading!,
-                color: enabled ? tokens.surface : tokens.disabled,
-                size: 19,
-              ),
-              const SizedBox(width: 10),
-            ],
-            Flexible(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (trailingArrow) const AppIcon(Icons.chevron_right, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _MasterSetupHeader extends StatelessWidget
     implements PreferredSizeWidget {
-  const _MasterSetupHeader({required this.title});
+  const _MasterSetupHeader({required this.title, this.onBack});
   final String title;
+  final VoidCallback? onBack;
 
   @override
   Size get preferredSize => const Size.fromHeight(44);
@@ -126,7 +59,7 @@ class _MasterSetupHeader extends StatelessWidget
       elevation: 0,
       centerTitle: true,
       leading: IconButton(
-        onPressed: () => Navigator.maybePop(context),
+        onPressed: onBack ?? () => Navigator.maybePop(context),
         icon: AppIcon(Icons.arrow_back, color: tokens.textPrimary),
       ),
       title: Text(

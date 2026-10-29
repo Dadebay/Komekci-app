@@ -46,7 +46,7 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
           ru: 'Выбранные клиенты',
           en: 'Selected clients',
         ),
-        action: _HelpIconButton(
+        action: AppHelpButton(
           onTap: () =>
               Navigator.push(context, pageRoute(const SupportScreen())),
         ),
@@ -189,7 +189,7 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
-              child: _MasterActionButton(
+              child: MasterActionButton(
                 label:
                     '${t(tk: "Dowam et", ru: "Продолжить", en: "Continue")} (${selected.length})',
                 enabled: selected.isNotEmpty && selected.length <= 50,

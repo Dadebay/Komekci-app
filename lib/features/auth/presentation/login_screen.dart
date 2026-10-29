@@ -11,8 +11,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _showPhoneError = false;
   bool _busy = false;
   String? _serverError;
-  Object? _lastRequestError;
-  String? _failedPhone;
 
   @override
   void dispose() {
@@ -32,7 +30,13 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset('assets/images/login_hero.png', fit: BoxFit.cover, alignment: const Alignment(0.2, -0.45)),
+            child: ColoredBox(
+              color: const Color(0xFF1C2024),
+              child: FractionalTranslation(
+                translation: const Offset(0, -0.07),
+                child: Image.asset('assets/images/login_hero.png', fit: BoxFit.cover),
+              ),
+            ),
           ),
           const Positioned.fill(
             child: DecoratedBox(
@@ -62,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 27, 24, 22),
                   decoration: BoxDecoration(
-                    color: tokens.surfaceElevated,
+                    color: Colors.white,
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
                   ),
                   child: Column(
@@ -92,8 +96,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             setState(() {
                               _showPhoneError = false;
                               _serverError = null;
-                              _lastRequestError = null;
-                              _failedPhone = null;
                             });
                           }
                         },
@@ -113,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               : _serverError,
                           errorMaxLines: 3,
                           filled: true,
-                          fillColor: tokens.surfaceElevated,
+                          fillColor: Colors.white,
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
                             borderSide: BorderSide(color: tokens.border),
@@ -124,22 +126,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      if (_lastRequestError != null)
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton.icon(
-                            onPressed: _emailErrorReport,
-                            icon: const AppIcon(Icons.mail_outline, size: 18),
-                            label: Text(t(
-                              tk: 'Ýalňyşlygy e-poçta arkaly iber',
-                              ru: 'Отправить отчёт об ошибке',
-                              en: 'Email error report',
-                            )),
-                          ),
-                        ),
                       const SizedBox(height: 14),
                       PrimaryButton(
-                        label: t(tk: 'OTP iber', ru: 'Отправить код', en: 'Send code'),
+                        label: t(tk: 'Kod iber', ru: 'Отправить код', en: 'Send code'),
                         loading: _busy,
                         onTap: _continueToOtp,
                       ),
@@ -179,8 +168,6 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _busy = true;
       _serverError = null;
-      _lastRequestError = null;
-      _failedPhone = null;
     });
     try {
       await auth.requestOtp(phone);
@@ -190,8 +177,6 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _busy = false;
         _serverError = apiErrorMessage(error, language);
-        _lastRequestError = error;
-        _failedPhone = phone;
       });
       return;
     }
@@ -200,57 +185,6 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.push(context, pageRoute(OtpScreen(phone: phone, nextBuilder: homeForAccount)));
   }
 
-  Future<void> _emailErrorReport() async {
-    final error = _lastRequestError;
-    final phone = _failedPhone;
-    if (error == null || phone == null) return;
-
-    final apiError = error is ApiException ? error : null;
-    final code = apiError?.code ?? error.runtimeType.toString();
-    final status = apiError == null || apiError.statusCode == 0
-        ? 'No HTTP response'
-        : '${apiError.statusCode}';
-    final localDigits = phone.replaceAll(RegExp(r'\D'), '').replaceFirst(RegExp(r'^993'), '');
-    final maskedPhone = '+993****${localDigits.substring(localDigits.length - 4)}';
-    final detail = apiError?.message
-            .replaceAll(phone, maskedPhone)
-            .replaceAll(localDigits, '********') ??
-        error.runtimeType.toString();
-    final subject = 'KÖMEKÇI login error [$code]';
-    final body = [
-      'Time (UTC): ${DateTime.now().toUtc().toIso8601String()}',
-      'API request: POST $apiBaseUrl/auth/otp/request',
-      'Request body: {"phone":"$maskedPhone"}',
-      'HTTP status: $status',
-      'Error code: $code',
-      'Error detail: $detail',
-      'Platform: ${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
-      '',
-      'OTP codes and session tokens are not included.',
-    ].join('\n');
-    final uri = Uri(
-      scheme: 'mailto',
-      path: 'dadebaygurbanow333@gmail.com',
-      query: 'subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}',
-    );
-
-    try {
-      if (await launchUrl(uri, mode: LaunchMode.externalApplication)) return;
-    } catch (_) {
-      // No email app is available; keep the report so it can be sent manually.
-    }
-    await Clipboard.setData(ClipboardData(text: 'To: dadebaygurbanow333@gmail.com\nSubject: $subject\n\n$body'));
-    if (!mounted) return;
-    final language = context.read<LanguageProvider>().language;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(pickTr(
-        language,
-        tk: 'E-poçta programmasy tapylmady. Ýalňyşlyk hasabaty göçürildi.',
-        ru: 'Почтовое приложение не найдено. Отчёт скопирован.',
-        en: 'No email app found. The error report was copied.',
-      )),
-    ));
-  }
 }
 
 /// Formats a Turkmen mobile number after its fixed +993 country prefix.

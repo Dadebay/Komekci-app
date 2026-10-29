@@ -29,6 +29,12 @@ class Billing {
   final int phoneDailyLimit;
   final double phoneMinAmount;
 
+  /// A monthly charge can leave zero balance even after a successful payment.
+  bool get permitsMasterEntry =>
+      balance > 0 ||
+      status == SubscriptionStatus.active ||
+      status == SubscriptionStatus.grace;
+
   factory Billing.fromJson(Map<String, dynamic> json) => Billing(
     balance: parseMoney(json['balance']),
     subscriptionPrice: parseMoney(json['subscription_price']),
@@ -37,7 +43,9 @@ class Billing {
     nextChargeAt: parseApiTime(json['next_charge_at']),
     paidUntil: parseApiTime(json['paid_until']),
     paymentMethods: [
-      for (final m in (json['payment_methods'] as List? ?? const ['mobile', 'card'])) '$m',
+      for (final m
+          in (json['payment_methods'] as List? ?? const ['mobile', 'card']))
+        '$m',
     ],
     phone: json['phone'] as String?,
     phoneDailyLimit: parseIntOrNull(json['phone_daily_limit']) ?? 7,
@@ -71,23 +79,24 @@ class LedgerTransaction {
   final LedgerStatus status;
   final DateTime createdAt;
 
-  factory LedgerTransaction.fromJson(Map<String, dynamic> json) => LedgerTransaction(
-    id: parseIntOrNull(json['id']) ?? 0,
-    type: switch (json['type']) {
-      'charge' => LedgerType.charge,
-      'refund' => LedgerType.refund,
-      _ => LedgerType.topup,
-    },
-    amount: parseMoney(json['amount']),
-    balanceAfter: parseMoney(json['balance_after']),
-    method: json['method'] as String? ?? 'system',
-    status: switch (json['status']) {
-      'pending' => LedgerStatus.pending,
-      'failed' => LedgerStatus.failed,
-      _ => LedgerStatus.succeeded,
-    },
-    createdAt: parseApiTime(json['created_at']) ?? DateTime.now(),
-  );
+  factory LedgerTransaction.fromJson(Map<String, dynamic> json) =>
+      LedgerTransaction(
+        id: parseIntOrNull(json['id']) ?? 0,
+        type: switch (json['type']) {
+          'charge' => LedgerType.charge,
+          'refund' => LedgerType.refund,
+          _ => LedgerType.topup,
+        },
+        amount: parseMoney(json['amount']),
+        balanceAfter: parseMoney(json['balance_after']),
+        method: json['method'] as String? ?? 'system',
+        status: switch (json['status']) {
+          'pending' => LedgerStatus.pending,
+          'failed' => LedgerStatus.failed,
+          _ => LedgerStatus.succeeded,
+        },
+        createdAt: parseApiTime(json['created_at']) ?? DateTime.now(),
+      );
 }
 
 /// `POST /me/billing/topup` with `method: mobile` — which number to pay.
@@ -175,7 +184,9 @@ class PhonePayments {
     balance: parseMoney(json['balance']),
     subscriptionStatus: SubscriptionStatus.parse(json['subscription_status']),
     paidUntil: parseApiTime(json['paid_until']),
-    payments: [for (final p in asMapList(json['payments'])) PhonePayment.fromJson(p)],
+    payments: [
+      for (final p in asMapList(json['payments'])) PhonePayment.fromJson(p),
+    ],
   );
 }
 
@@ -194,6 +205,17 @@ enum CardPaymentStatus {
 
   /// Worth asking the server again.
   bool get isPending => this == unfinished || this == unknown;
+}
+
+/// Bank chosen on the card payment screen. These are the only API values.
+enum CardBank {
+  halk('halk', 'Halkbank'),
+  senagat('senagat', 'Senagat bank'),
+  rysgal('rysgal', 'Rysgal bank');
+
+  const CardBank(this.apiValue, this.label);
+  final String apiValue;
+  final String label;
 }
 
 /// `POST /me/billing/topup` with `method: card` — the bank page to open.
@@ -244,13 +266,16 @@ class CardPaymentResult {
   final SubscriptionStatus subscriptionStatus;
   final DateTime? paidUntil;
 
-  factory CardPaymentResult.fromJson(Map<String, dynamic> json) => CardPaymentResult(
-    cardTransactionId: parseIntOrNull(json['card_transaction_id']) ?? 0,
-    bankOrderId: json['bank_order_id'] as String?,
-    status: CardPaymentStatus.parse(json['status']),
-    amount: parseMoney(json['amount']),
-    balance: parseMoney(json['balance']),
-    subscriptionStatus: SubscriptionStatus.parse(json['subscription_status']),
-    paidUntil: parseApiTime(json['paid_until']),
-  );
+  factory CardPaymentResult.fromJson(Map<String, dynamic> json) =>
+      CardPaymentResult(
+        cardTransactionId: parseIntOrNull(json['card_transaction_id']) ?? 0,
+        bankOrderId: json['bank_order_id'] as String?,
+        status: CardPaymentStatus.parse(json['status']),
+        amount: parseMoney(json['amount']),
+        balance: parseMoney(json['balance']),
+        subscriptionStatus: SubscriptionStatus.parse(
+          json['subscription_status'],
+        ),
+        paidUntil: parseApiTime(json['paid_until']),
+      );
 }

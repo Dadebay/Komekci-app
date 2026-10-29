@@ -1,5 +1,5 @@
 name: komekci
-description: "A new Flutter project."
+description: "Kömekçi appointment booking for clients and service providers."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -43,13 +43,9 @@ dependencies:
   url_launcher: ^6.3.2
   image_picker: ^1.2.3
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
   background_sms:
     path: third_party/background_sms
   permission_handler: ^11.3.1
-  restart_app: ^1.8.3
   flutter_secure_storage: ^11.2.0
   webview_flutter: ^4.14.1
   image: ^4.10.1
@@ -86,8 +82,19 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
-    - assets/images/banks/
+    - assets/images/banks/halk.png
+    - assets/images/banks/rysgal.png
+    - assets/images/banks/senagat.jpeg
+    - assets/images/empty_bookings_3d.png
+    - assets/images/empty_connection_requests_3d.png
+    - assets/images/inspiration_02.jpeg
+    - assets/images/login_hero.png
+    - assets/images/onboarding_01.png
+    - assets/images/onboarding_02.png
+    - assets/images/onboarding_03.png
+    - assets/images/role_client.jpg
+    - assets/images/role_master.png
+    - assets/images/splash_logo.png
   fonts:
     - family: Gilroy
       fonts:

@@ -212,7 +212,7 @@ class _PaymentResultPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 22),
-          _MasterActionButton(
+          MasterActionButton(
             label: isSuccess
                 ? t(tk: 'Dowam et', ru: 'Продолжить', en: 'Continue')
                 : outcome == _PaymentOutcome.pending

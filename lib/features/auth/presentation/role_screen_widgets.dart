@@ -18,9 +18,10 @@ class RoleCard extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: 230),
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: selected && tokens.surfaceElevated != tokens.surface
-              ? Color.alphaBlend(tokens.accent.withValues(alpha: .1), tokens.surfaceElevated)
-              : tokens.surfaceElevated,
+          color: Color.alphaBlend(
+            tokens.accent.withValues(alpha: selected ? .035 : .01),
+            tokens.surface,
+          ),
           borderRadius: BorderRadius.circular(28),
           border: Border.all(color: selected ? tokens.accent : tokens.border, width: selected ? 1.6 : 1),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .025), blurRadius: 8, offset: const Offset(0, 3))],

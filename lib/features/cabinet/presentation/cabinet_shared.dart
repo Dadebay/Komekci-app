@@ -117,7 +117,7 @@ Future<(String, String)?> _pickTimeRange(
                 ),
               ],
               const SizedBox(height: 20),
-              _MasterActionButton(
+              MasterActionButton(
                 label: t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save'),
                 enabled: !invalid,
                 leading: Icons.save_outlined,
@@ -128,67 +128,6 @@ Future<(String, String)?> _pickTimeRange(
           ),
         );
       },
-    ),
-  );
-}
-
-/// Bottom sheet listing a fixed set of numeric choices (buffer minutes, reminder days, ...).
-Future<int?> _pickDuration(
-  BuildContext context, {
-  required AppLanguage language,
-  required int current,
-  required List<int> options,
-  required String unit,
-}) {
-  final tokens = context.appTokens;
-  return showModalBottomSheet<int>(
-    context: context,
-    backgroundColor: tokens.surface,
-    isScrollControlled: true,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (sheetContext) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                pickTr(
-                  language,
-                  tk: 'Sany saýlaň',
-                  ru: 'Выберите значение',
-                  en: 'Choose a value',
-                ),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ...options.map(
-                (n) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    '$n $unit',
-                    style: const TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  trailing: n == current
-                      ? AppIcon(Icons.check, color: tokens.accent)
-                      : null,
-                  onTap: () => Navigator.pop(sheetContext, n),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     ),
   );
 }
