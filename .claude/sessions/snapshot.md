@@ -1,27 +1,27 @@
-# Session Snapshot — 2026-10-27 16:00
+# Session Snapshot — 2026-10-29 18:58
 
 ## Files Changed
-- .claude/completions/2026-10-22-appointment-translations.md
-- .claude/completions/2026-10-22-arrival-time-label.md
-- .claude/completions/2026-10-22-home-number-shimmer.md
-- .claude/completions/2026-10-22-home-pull-refresh.md
-- .claude/completions/2026-10-26-cabinet-notifications-design.md
-- .claude/completions/2026-10-26-client-message-recipients.md
-- .claude/completions/2026-10-26-client-phone-calendar-reminder.md
-- .claude/completions/2026-10-26-expansion-tile-material-warning.md
-- .claude/completions/2026-10-26-master-closed-times-calendar.md
-- .claude/completions/2026-10-26-master-offline-data.md
+- .claude/completions/2026-10-27-release-cleanup.md
+- .claude/sessions/.claude-md-validated-2026-10-29
+- .claude/sessions/.ghost-checked-20261029
+- .claude/sessions/.snapshot-injected-2026-10-29
+- .claude/sessions/snapshot.md
+- .claude/sessions/token-log.md
+- analysis_options.yaml
+- android/app/build.gradle.kts
+- android/key.properties.example
+- assets/fonts/NormsProBold.otf
 
 ## Recent Commits
+- 31abcd5 Oct 29
+- a60d1fd Oct 27
 - c564542 Oct 26
 - c764cf1 Oct 22
 - 3334904 Oct 16
-- 2f0ff84 Connect Flutter public settings and OTP flows
-- fe871cb Save current Flutter app changes
 
 ## Token Estimate
 ~669 tokens in auto-loaded files
 
 ## Last Turn
-[Ayrı oturumda](#local_34b5ae08-a9a6-406d-91a3-8f7e25e3e793) BEUMER hattı (GP-001) X ile işaretlediğin yere taşındı ve o
+**Dikkat:** Hizmet ekledikten sonra kart kendiliğinden yenilenmeyebilir, yenilenmesi için ekranı aşağı çekmen ya da geri
 

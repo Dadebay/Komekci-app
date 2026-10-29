@@ -2,7 +2,10 @@ part of '../../../app/komekci_app.dart';
 
 /// Free nickname alternatives offered by the server after `NICKNAME_TAKEN`.
 class _NicknameSuggestionChips extends StatelessWidget {
-  const _NicknameSuggestionChips({required this.suggestions, required this.onPick});
+  const _NicknameSuggestionChips({
+    required this.suggestions,
+    required this.onPick,
+  });
   final List<String> suggestions;
   final ValueChanged<String> onPick;
 
@@ -21,13 +24,22 @@ class _NicknameSuggestionChips extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               onTap: () => onPick(s),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: tokens.surfaceElevated,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: tokens.border),
                 ),
-                child: Text('@$s', style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+                child: Text(
+                  '@$s',
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
         ],
@@ -40,7 +52,10 @@ class _NicknameSuggestionChips extends StatelessWidget {
 /// so the phone field reads like `+993 XX XXXXXX` end to end.
 class _PhoneNumberFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final allDigits = newValue.text.replaceAll(RegExp(r'\D'), '');
     final digits = allDigits.length > 8 ? allDigits.substring(0, 8) : allDigits;
     final buffer = StringBuffer();
@@ -63,14 +78,215 @@ class _FieldError extends StatelessWidget {
     padding: const EdgeInsets.only(top: 6, left: 4),
     child: Row(
       children: [
-        AppIcon(Icons.warning_amber_rounded, size: 13, color: context.appTokens.danger),
+        AppIcon(
+          Icons.warning_amber_rounded,
+          size: 13,
+          color: context.appTokens.danger,
+        ),
         const SizedBox(width: 5),
         Expanded(
-          child: Text(message, style: TextStyle(fontSize: 11.5, color: context.appTokens.danger)),
+          child: Text(
+            message,
+            style: TextStyle(fontSize: 11.5, color: context.appTokens.danger),
+          ),
         ),
       ],
     ),
   );
+}
+
+/// Pop-up version of [PhoneTakenNotice], so the message is not left below
+/// the fold of a long form.
+Future<void> showPhoneTakenDialog(BuildContext context, String phone) {
+  return showDialog<void>(
+    context: context,
+    barrierColor: context.appTokens.scrim,
+    builder: (dialogContext) => _PhoneTakenDialog(phone: phone),
+  );
+}
+
+class _PhoneTakenDialog extends StatefulWidget {
+  const _PhoneTakenDialog({required this.phone});
+  final String phone;
+
+  @override
+  State<_PhoneTakenDialog> createState() => _PhoneTakenDialogState();
+}
+
+class _PhoneTakenDialogState extends State<_PhoneTakenDialog> {
+  bool _busy = false;
+  String? _message;
+
+  Future<void> _signIn() async {
+    if (_busy) return;
+    final auth = context.read<AuthProvider>();
+    final language = context.read<LanguageProvider>().language;
+    final navigator = Navigator.of(context);
+    setState(() {
+      _busy = true;
+      _message = null;
+    });
+    try {
+      await auth.requestOtp(widget.phone);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _message =
+            error is ApiException && error.code == ApiErrors.phoneNotFound
+            ? pickTr(
+                language,
+                tk: 'Bu belgi bilen hasap açylypdyr, ýöne tassyklanmandyr. Goldaw bilen habarlaşyň.',
+                ru: 'Аккаунт с этим номером создан, но не подтверждён. Обратитесь в поддержку.',
+                en: 'An account with this number was started but never confirmed. Please contact support.',
+              )
+            : apiErrorMessage(error, language);
+      });
+      return;
+    }
+    if (!mounted) return;
+    navigator.pop();
+    navigator.push(
+      pageRoute(OtpScreen(phone: widget.phone, nextBuilder: homeForAccount)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>().language;
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
+    final tokens = context.appTokens;
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 30),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 12),
+        decoration: BoxDecoration(
+          color: tokens.surfaceElevated,
+          borderRadius: BorderRadius.circular(26),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: tokens.accent.withValues(alpha: 0.14),
+                shape: BoxShape.circle,
+              ),
+              child: AppIcon(
+                Icons.person_outline_rounded,
+                size: 28,
+                color: tokens.accent,
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              t(
+                tk: 'Bu belgi eýýäm hasaba alnypdyr',
+                ru: 'Этот номер уже зарегистрирован',
+                en: 'This number is already registered',
+              ),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 17.5,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: tokens.surface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: tokens.border),
+              ),
+              child: Text(
+                displayPhone(widget.phone),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              t(
+                tk: 'Täze hasap açmak mümkin däl. Şol hasaba SMS kod bilen girip bilersiňiz.',
+                ru: 'Создать новый аккаунт нельзя. Вы можете войти в существующий по SMS-коду.',
+                en: 'A new account cannot be created. You can sign in to the existing one with an SMS code.',
+              ),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13.5,
+                height: 1.45,
+                color: tokens.textSecondary,
+              ),
+            ),
+            if (_message != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                _message!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  color: Color(0xffC0392B),
+                ),
+              ),
+            ],
+            const SizedBox(height: 22),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: tokens.textPrimary,
+                  shape: const StadiumBorder(),
+                ),
+                onPressed: _busy ? null : _signIn,
+                child: _busy
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          color: tokens.surface,
+                        ),
+                      )
+                    : Text(
+                        t(
+                          tk: 'Şu belgi bilen giriş',
+                          ru: 'Войти по этому номеру',
+                          en: 'Sign in with this number',
+                        ),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: tokens.surface,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            TextButton(
+              onPressed: _busy ? null : () => Navigator.pop(context),
+              child: Text(
+                t(
+                  tk: 'Başga belgi ulan',
+                  ru: 'Другой номер',
+                  en: 'Use another number',
+                ),
+                style: TextStyle(color: tokens.textSecondary),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Shown when sign-up answers `PHONE_TAKEN`. A number belongs to one account,
@@ -79,7 +295,10 @@ class _FieldError extends StatelessWidget {
 /// the number, the earlier sign-up was never confirmed (a pending account),
 /// which only the backend can clear.
 class PhoneTakenNotice extends StatefulWidget {
-  const PhoneTakenNotice({super.key, required this.phone});
+  const PhoneTakenNotice({super.key, required this.phone, this.beforeSignIn});
+
+  /// Runs right before the code screen opens (e.g. to close a dialog).
+  final VoidCallback? beforeSignIn;
 
   /// `+993XXXXXXXX`.
   final String phone;
@@ -106,7 +325,8 @@ class _PhoneTakenNoticeState extends State<PhoneTakenNotice> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _message = error is ApiException && error.code == ApiErrors.phoneNotFound
+        _message =
+            error is ApiException && error.code == ApiErrors.phoneNotFound
             ? pickTr(
                 language,
                 tk: 'Bu belgi bilen hasap açylypdyr, ýöne tassyklanmandyr. Goldaw bilen habarlaşyň.',
@@ -119,6 +339,7 @@ class _PhoneTakenNoticeState extends State<PhoneTakenNotice> {
     }
     if (!mounted) return;
     setState(() => _busy = false);
+    widget.beforeSignIn?.call();
     Navigator.push(
       context,
       pageRoute(OtpScreen(phone: widget.phone, nextBuilder: homeForAccount)),
@@ -128,7 +349,8 @@ class _PhoneTakenNoticeState extends State<PhoneTakenNotice> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     return Container(
       margin: const EdgeInsets.only(top: 10),
@@ -153,11 +375,27 @@ class _PhoneTakenNoticeState extends State<PhoneTakenNotice> {
           SizedBox(
             height: 44,
             child: FilledButton(
-              style: FilledButton.styleFrom(backgroundColor: tokens.textPrimary, shape: const StadiumBorder()),
+              style: FilledButton.styleFrom(
+                backgroundColor: tokens.textPrimary,
+                shape: const StadiumBorder(),
+              ),
               onPressed: _busy ? null : _signIn,
               child: _busy
-                  ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2.2, color: tokens.surface))
-                  : Text(t(tk: 'Şu belgi bilen giriş', ru: 'Войти по этому номеру', en: 'Sign in with this number')),
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: tokens.surface,
+                      ),
+                    )
+                  : Text(
+                      t(
+                        tk: 'Şu belgi bilen giriş',
+                        ru: 'Войти по этому номеру',
+                        en: 'Sign in with this number',
+                      ),
+                    ),
             ),
           ),
           if (_message != null) _FieldError(_message!),

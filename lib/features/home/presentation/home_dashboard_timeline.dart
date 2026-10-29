@@ -56,7 +56,10 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 color: context.appTokens.brightness == Brightness.dark
-                    ? Color.alphaBlend(widget.accent.withValues(alpha: .14), context.appTokens.surfaceElevated)
+                    ? Color.alphaBlend(
+                        widget.accent.withValues(alpha: .14),
+                        context.appTokens.surfaceElevated,
+                      )
                     : widget.accentBg,
                 borderRadius: BorderRadius.circular(18),
               ),
@@ -89,9 +92,9 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                        color: context.appTokens.brightness == Brightness.dark
-                            ? context.appTokens.success
-                            : widget.accent,
+                      color: context.appTokens.brightness == Brightness.dark
+                          ? context.appTokens.success
+                          : widget.accent,
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -157,7 +160,8 @@ class _HomeApptTable extends StatelessWidget {
   /// (schedule) screen uses — it no longer navigates away from home.
   final void Function(Appointment appointment, Customer? customer)
   onTapAppointment;
-  final void Function(DateTime start, DateTime end, DateTime availableEnd) onTapFree;
+  final void Function(DateTime start, DateTime end, DateTime availableEnd)
+  onTapFree;
   final void Function(ClosedTime closed) onTapClosed;
 
   @override

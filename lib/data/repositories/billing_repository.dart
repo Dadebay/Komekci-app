@@ -10,6 +10,20 @@ class BillingRepository {
   Future<Billing> billing() async =>
       Billing.fromJson(asMap(unwrapData(await _api.get('/me/billing'))));
 
+  Future<PromoStatus> promo() async =>
+      PromoStatus.fromJson(asMap(unwrapData(await _api.get('/me/promo'))));
+
+  /// Starts the free month. 422 `SERVICES_REQUIRED` (create a service first),
+  /// 409 `PROMO_ALREADY_USED`.
+  Future<PromoStatus> activatePromo(String deviceId) async =>
+      PromoStatus.fromJson(
+        asMap(
+          unwrapData(
+            await _api.post('/me/promo', json: {'device_id': deviceId}),
+          ),
+        ),
+      );
+
   Future<ApiPage<LedgerTransaction>> transactions({String? cursor}) async =>
       ApiPage.fromJson(
         await _api.get('/me/billing/transactions', query: {'cursor': cursor}),

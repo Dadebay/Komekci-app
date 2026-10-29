@@ -9,7 +9,8 @@ class MasterRegistrationScreen extends StatefulWidget {
   final String phone;
 
   @override
-  State<MasterRegistrationScreen> createState() => _MasterRegistrationScreenState();
+  State<MasterRegistrationScreen> createState() =>
+      _MasterRegistrationScreenState();
 }
 
 class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
@@ -49,11 +50,16 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
 
   String _text(int index) => _controllers[index].text.trim();
 
-  bool _missing(int index) => index < _firstOptionalIndex && _text(index).isEmpty;
+  bool _missing(int index) =>
+      index < _firstOptionalIndex && _text(index).isEmpty;
 
-  bool get _complete => !List.generate(_controllers.length, _missing).contains(true) && _photo != null && _banner != null;
+  bool get _complete =>
+      !List.generate(_controllers.length, _missing).contains(true) &&
+      _photo != null &&
+      _banner != null;
 
-  String get _nickname => _text(_nicknameIndex).toLowerCase().replaceFirst('@', '');
+  String get _nickname =>
+      _text(_nicknameIndex).toLowerCase().replaceFirst('@', '');
 
   /// Format first, then (after a pause in typing) ask the server whether the
   /// nickname is free.
@@ -85,12 +91,15 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
         final check = await repository.nicknameAvailable(value);
         if (!mounted || value != _nickname) return;
         setState(() {
-          _nicknameState = check.available ? _NicknameState.free : _NicknameState.taken;
+          _nicknameState = check.available
+              ? _NicknameState.free
+              : _NicknameState.taken;
           _nicknameSuggestions = check.suggestions;
         });
       } catch (_) {
         // Offline or rate limited: the server re-checks on submit.
-        if (mounted && value == _nickname) setState(() => _nicknameState = _NicknameState.idle);
+        if (mounted && value == _nickname)
+          setState(() => _nicknameState = _NicknameState.idle);
       }
     });
   }
@@ -129,8 +138,14 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
     }
   }
 
-  Future<void> _continue(String Function({required String tk, required String ru, required String en}) t) =>
-      _continueRegistration(t, update: setState);
+  Future<void> _continue(
+    String Function({
+      required String tk,
+      required String ru,
+      required String en,
+    })
+    t,
+  ) => _continueRegistration(t, update: setState);
 
   Widget _photoHeader(AppThemeTokens tokens, _Tr t) =>
       _buildPhotoHeader(tokens, t, update: setState);
@@ -138,29 +153,74 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
 
     final nicknameSuffix = switch (_nicknameState) {
-      _NicknameState.checking => SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: tokens.textSecondary)),
-      _NicknameState.free => AppIcon(Icons.check_circle, size: 20, color: tokens.success),
-      _NicknameState.taken || _NicknameState.invalid => AppIcon(Icons.cancel, size: 20, color: tokens.danger),
+      _NicknameState.checking => SizedBox(
+        width: 16,
+        height: 16,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: tokens.textSecondary,
+        ),
+      ),
+      _NicknameState.free => AppIcon(
+        Icons.check_circle,
+        size: 20,
+        color: tokens.success,
+      ),
+      _NicknameState.taken || _NicknameState.invalid => AppIcon(
+        Icons.cancel,
+        size: 20,
+        color: tokens.danger,
+      ),
       _NicknameState.idle => null,
     };
     final nicknameNote = switch (_nicknameState) {
-      _NicknameState.free => (t(tk: 'Bu lakam elýeterli', ru: 'Никнейм свободен', en: 'Nickname is available'), tokens.success),
-      _NicknameState.taken => (t(tk: 'Bu lakam eýesiz däl', ru: 'Этот никнейм уже занят', en: 'This nickname is taken'), tokens.danger),
-      _NicknameState.invalid => (
-        t(tk: '3–20 simwol: a–z, 0–9 we _ (sanly başlap bilmez)', ru: '3–20 символов: a–z, 0–9 и _ (не с цифры)', en: '3–20 characters: a–z, 0–9 and _ (no leading digit)'),
+      _NicknameState.free => (
+        t(
+          tk: 'Bu lakam elýeterli',
+          ru: 'Никнейм свободен',
+          en: 'Nickname is available',
+        ),
+        tokens.success,
+      ),
+      _NicknameState.taken => (
+        t(
+          tk: 'Bu lakam eýesiz däl',
+          ru: 'Этот никнейм уже занят',
+          en: 'This nickname is taken',
+        ),
         tokens.danger,
       ),
-      _ => (t(tk: 'Müşderiler sizi şu lakam bilen tapar', ru: 'Клиенты найдут вас по этому никнейму', en: 'Clients will find you by this nickname'), tokens.textSecondary),
+      _NicknameState.invalid => (
+        t(
+          tk: '3–20 simwol: a–z, 0–9 we _ (sanly başlap bilmez)',
+          ru: '3–20 символов: a–z, 0–9 и _ (не с цифры)',
+          en: '3–20 characters: a–z, 0–9 and _ (no leading digit)',
+        ),
+        tokens.danger,
+      ),
+      _ => (
+        t(
+          tk: 'Müşderiler sizi şu lakam bilen tapar',
+          ru: 'Клиенты найдут вас по этому никнейму',
+          en: 'Clients will find you by this nickname',
+        ),
+        tokens.textSecondary,
+      ),
     };
 
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: _MasterSetupHeader(
-        title: t(tk: 'MASTER HASABY', ru: 'ПРОФИЛЬ МАСТЕРА', en: 'MASTER PROFILE'),
+        title: t(
+          tk: 'MASTER HASABY',
+          ru: 'ПРОФИЛЬ МАСТЕРА',
+          en: 'MASTER PROFILE',
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -173,14 +233,26 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
               const SizedBox(height: 24),
               Center(
                 child: Text(
-                  t(tk: 'Profiliňizi dörediň', ru: 'Создайте профиль', en: 'Create your profile'),
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -.3),
+                  t(
+                    tk: 'Profiliňizi dörediň',
+                    ru: 'Создайте профиль',
+                    en: 'Create your profile',
+                  ),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -.3,
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
               Center(
                 child: Text(
-                  t(tk: 'Müşderiler sizi şeýle görer', ru: 'Так вас увидят клиенты', en: 'This is how clients will see you'),
+                  t(
+                    tk: 'Müşderiler sizi şeýle görer',
+                    ru: 'Так вас увидят клиенты',
+                    en: 'This is how clients will see you',
+                  ),
                   style: TextStyle(fontSize: 13.5, color: tokens.textSecondary),
                 ),
               ),
@@ -193,7 +265,11 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
                 t,
                 index: _nameIndex,
                 label: t(tk: 'Adyňyz', ru: 'Имя', en: 'Your name'),
-                hint: t(tk: 'Adyňyzy ýazyň', ru: 'Введите имя', en: 'Enter your name'),
+                hint: t(
+                  tk: 'Adyňyzy ýazyň',
+                  ru: 'Введите имя',
+                  en: 'Enter your name',
+                ),
                 icon: Icons.person_outline,
                 capitalization: TextCapitalization.words,
                 maxLength: 50,
@@ -207,14 +283,25 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
                 icon: Icons.alternate_email,
                 suffix: nicknameSuffix,
                 maxLength: 21,
-                formatters: [FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9_@]'))],
+                formatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9_@]')),
+                ],
                 onChanged: (_) => _onNicknameChanged(),
               ),
               Transform.translate(
                 offset: const Offset(0, -12),
                 child: Padding(
                   padding: const EdgeInsets.only(left: 4, bottom: 6),
-                  child: Text(_serverErrors[_nicknameIndex] == null ? nicknameNote.$1 : '', style: TextStyle(fontSize: 11.5, height: 1.35, color: nicknameNote.$2)),
+                  child: Text(
+                    _serverErrors[_nicknameIndex] == null
+                        ? nicknameNote.$1
+                        : '',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      height: 1.35,
+                      color: nicknameNote.$2,
+                    ),
+                  ),
                 ),
               ),
               if (_nicknameSuggestions.isNotEmpty)
@@ -232,8 +319,16 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
                 tokens,
                 t,
                 index: _addressIndex,
-                label: t(tk: 'Iş salgyňyz', ru: 'Рабочий адрес', en: 'Work address'),
-                hint: t(tk: 'Şäher, etrap, köçe', ru: 'Город, район, улица', en: 'City, district, street'),
+                label: t(
+                  tk: 'Iş salgyňyz',
+                  ru: 'Рабочий адрес',
+                  en: 'Work address',
+                ),
+                hint: t(
+                  tk: 'Şäher, etrap, köçe',
+                  ru: 'Город, район, улица',
+                  en: 'City, district, street',
+                ),
                 icon: Icons.location_on_outlined,
                 maxLength: 255,
               ),
@@ -242,23 +337,57 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
                 t,
                 index: _aboutIndex,
                 label: t(tk: 'Özüňiz barada', ru: 'О себе', en: 'About you'),
-                hint: t(tk: 'Tejribäňiz, hyzmatlaryňyz barada gysgaça ýazyň', ru: 'Коротко об опыте и услугах', en: 'A few words about your experience and services'),
+                hint: t(
+                  tk: 'Tejribäňiz, hyzmatlaryňyz barada gysgaça ýazyň',
+                  ru: 'Коротко об опыте и услугах',
+                  en: 'A few words about your experience and services',
+                ),
                 icon: Icons.edit_outlined,
                 maxLines: 4,
                 maxLength: 2000,
                 capitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 4),
-              _section(t(tk: 'Sosial ulgamlar', ru: 'Соцсети', en: 'Social media')),
-              _field(tokens, t, index: _instagramIndex, label: 'Instagram', hint: '@instagram_lakam', icon: Icons.camera_alt_outlined, required: false, keyboardType: TextInputType.url),
-              _field(tokens, t, index: _tiktokIndex, label: 'TikTok', hint: '@tiktok_lakam', icon: Icons.music_note_outlined, required: false, keyboardType: TextInputType.url),
-              if (_formError != null) ...[_FieldError(_formError!), const SizedBox(height: 10)],
-              if (_phoneTaken) ...[PhoneTakenNotice(phone: widget.phone), const SizedBox(height: 14)],
+              _section(
+                t(tk: 'Sosial ulgamlar', ru: 'Соцсети', en: 'Social media'),
+              ),
+              _field(
+                tokens,
+                t,
+                index: _instagramIndex,
+                label: 'Instagram',
+                hint: '@instagram_lakam',
+                icon: Icons.camera_alt_outlined,
+                required: false,
+                keyboardType: TextInputType.url,
+              ),
+              _field(
+                tokens,
+                t,
+                index: _tiktokIndex,
+                label: 'TikTok',
+                hint: '@tiktok_lakam',
+                icon: Icons.music_note_outlined,
+                required: false,
+                keyboardType: TextInputType.url,
+              ),
+              if (_formError != null) ...[
+                _FieldError(_formError!),
+                const SizedBox(height: 10),
+              ],
+              if (_phoneTaken) ...[
+                PhoneTakenNotice(phone: widget.phone),
+                const SizedBox(height: 14),
+              ],
               if (_showErrors && !_complete)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
-                    t(tk: 'Dowam etmek üçin * bilen bellenen meýdanlary dolduryň.', ru: 'Заполните поля, отмеченные *, чтобы продолжить.', en: 'Fill in the fields marked * to continue.'),
+                    t(
+                      tk: 'Dowam etmek üçin * bilen bellenen meýdanlary dolduryň.',
+                      ru: 'Заполните поля, отмеченные *, чтобы продолжить.',
+                      en: 'Fill in the fields marked * to continue.',
+                    ),
                     style: TextStyle(fontSize: 12, color: tokens.danger),
                   ),
                 ),
@@ -270,7 +399,9 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 14),
           child: MasterActionButton(
-            label: _submitting ? t(tk: 'Iberilýär...', ru: 'Отправка...', en: 'Sending...') : t(tk: 'Kod iber', ru: 'Отправить код', en: 'Send code'),
+            label: _submitting
+                ? t(tk: 'Iberilýär...', ru: 'Отправка...', en: 'Sending...')
+                : t(tk: 'Kod iber', ru: 'Отправить код', en: 'Send code'),
             enabled: !_submitting,
             trailingArrow: true,
             onTap: () => _continue(t),

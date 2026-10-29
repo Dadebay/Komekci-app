@@ -142,7 +142,9 @@ class MasterRepository {
   Future<Schedule> saveSchedule(List<ScheduleDay> days) async {
     final body = await _api.put(
       '/me/schedule',
-      json: {'days': [for (final d in days) d.toJson()]},
+      json: {
+        'days': [for (final d in days) d.toJson()],
+      },
     );
     return Schedule.fromJson(asMap(unwrapData(body)));
   }
@@ -172,7 +174,10 @@ class MasterRepository {
   Future<Vacation> addVacation(DateTime start, DateTime end) async {
     final body = await _api.post(
       '/me/vacations',
-      json: {'start_date': formatApiDate(start), 'end_date': formatApiDate(end)},
+      json: {
+        'start_date': formatApiDate(start),
+        'end_date': formatApiDate(end),
+      },
     );
     return Vacation.fromJson(asMap(unwrapData(body)));
   }
@@ -183,10 +188,14 @@ class MasterRepository {
 
   /// A private blocked interval; clients only see its effect on availability.
   Future<List<ClosedTime>> closedTimes(DateTime day) async => [
-    for (final item in asMapList(unwrapData(await _api.get(
-      '/me/closed-times',
-      query: {'from': formatApiDate(day), 'to': formatApiDate(day)},
-    ))))
+    for (final item in asMapList(
+      unwrapData(
+        await _api.get(
+          '/me/closed-times',
+          query: {'from': formatApiDate(day), 'to': formatApiDate(day)},
+        ),
+      ),
+    ))
       ClosedTime.fromJson(item),
   ];
 
@@ -194,14 +203,20 @@ class MasterRepository {
     required DateTime start,
     required DateTime end,
     String? note,
-  }) async => ClosedTime.fromJson(asMap(unwrapData(await _api.post(
-    '/me/closed-times',
-    json: {
-      'starts_at': formatApiAshgabatDateTime(start),
-      'ends_at': formatApiAshgabatDateTime(end),
-      if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
-    },
-  ))));
+  }) async => ClosedTime.fromJson(
+    asMap(
+      unwrapData(
+        await _api.post(
+          '/me/closed-times',
+          json: {
+            'starts_at': formatApiAshgabatDateTime(start),
+            'ends_at': formatApiAshgabatDateTime(end),
+            if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+          },
+        ),
+      ),
+    ),
+  );
 
   Future<void> deleteClosedTime(int id) async {
     await _api.delete('/me/closed-times/$id');
@@ -209,7 +224,11 @@ class MasterRepository {
 
   // ---- calendar & appointments -----------------------------------------
 
-  Future<List<MasterAppointment>> calendar(DateTime from, DateTime to, {bool offlineFallback = true}) async => [
+  Future<List<MasterAppointment>> calendar(
+    DateTime from,
+    DateTime to, {
+    bool offlineFallback = true,
+  }) async => [
     for (final a in asMapList(
       unwrapData(
         await _api.get(
@@ -243,7 +262,10 @@ class MasterRepository {
   }
 
   Future<void> setAppointmentStatus(int id, ApiAppointmentStatus status) async {
-    await _api.patch('/me/appointments/$id/status', json: {'status': status.wire});
+    await _api.patch(
+      '/me/appointments/$id/status',
+      json: {'status': status.wire},
+    );
   }
 
   Future<void> moveAppointment(int id, DateTime startsAt) async {
@@ -256,18 +278,21 @@ class MasterRepository {
   // ---- clients ----------------------------------------------------------
 
   /// [sort]: `nearest` (default), `name`, `last_visit`, `visits`.
-  Future<ApiPage<ClientSummary>> clients({String? query, String? sort, String? cursor}) async =>
-      ApiPage.fromJson(
-        await _api.get(
-          '/me/clients',
-          query: {
-            'query': (query == null || query.isEmpty) ? null : query,
-            'sort': sort,
-            'cursor': cursor,
-          },
-        ),
-        ClientSummary.fromJson,
-      );
+  Future<ApiPage<ClientSummary>> clients({
+    String? query,
+    String? sort,
+    String? cursor,
+  }) async => ApiPage.fromJson(
+    await _api.get(
+      '/me/clients',
+      query: {
+        'query': (query == null || query.isEmpty) ? null : query,
+        'sort': sort,
+        'cursor': cursor,
+      },
+    ),
+    ClientSummary.fromJson,
+  );
 
   Future<ClientCard> clientCard(String id) async =>
       ClientCard.fromJson(asMap(unwrapData(await _api.get('/me/clients/$id'))));
@@ -283,7 +308,9 @@ class MasterRepository {
   // ---- connection requests ---------------------------------------------
 
   Future<List<ConnectionRequest>> connectionRequests() async => [
-    for (final r in asMapList(unwrapData(await _api.get('/me/connection-requests'))))
+    for (final r in asMapList(
+      unwrapData(await _api.get('/me/connection-requests')),
+    ))
       ConnectionRequest.fromJson(r),
   ];
 
@@ -295,5 +322,6 @@ class MasterRepository {
     await _api.post('/me/connection-requests/$id/decline');
   }
 
-  static String _num(double v) => v == v.roundToDouble() ? '${v.toInt()}' : '$v';
+  static String _num(double v) =>
+      v == v.roundToDouble() ? '${v.toInt()}' : '$v';
 }

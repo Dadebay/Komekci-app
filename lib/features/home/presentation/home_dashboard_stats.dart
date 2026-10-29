@@ -83,7 +83,10 @@ class _HomeStatCard extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           hint,
-          style: TextStyle(fontSize: 10.5, color: context.appTokens.textSecondary),
+          style: TextStyle(
+            fontSize: 10.5,
+            color: context.appTokens.textSecondary,
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -142,20 +145,21 @@ class _DashboardNumber extends StatelessWidget {
               animation: shimmer,
               builder: (context, _) => ShaderMask(
                 blendMode: BlendMode.srcIn,
-                shaderCallback: (bounds) => LinearGradient(
-                  colors: [
-                    color.withValues(alpha: .12),
-                    color.withValues(alpha: .38),
-                    color.withValues(alpha: .12),
-                  ],
-                ).createShader(
-                  Rect.fromLTWH(
-                    bounds.left + (shimmer.value * 2 - 1) * bounds.width,
-                    bounds.top,
-                    bounds.width,
-                    bounds.height,
-                  ),
-                ),
+                shaderCallback: (bounds) =>
+                    LinearGradient(
+                      colors: [
+                        color.withValues(alpha: .12),
+                        color.withValues(alpha: .38),
+                        color.withValues(alpha: .12),
+                      ],
+                    ).createShader(
+                      Rect.fromLTWH(
+                        bounds.left + (shimmer.value * 2 - 1) * bounds.width,
+                        bounds.top,
+                        bounds.width,
+                        bounds.height,
+                      ),
+                    ),
                 child: Container(
                   width: placeholderWidth,
                   height: placeholderHeight,
@@ -194,7 +198,8 @@ class _DashboardNumber extends StatelessWidget {
     if (number == null) return target;
     final decimals = target.contains('.') ? target.split('.').last.length : 0;
     final current = number * fraction;
-    return decimals == 0 ? current.round().toString() : current.toStringAsFixed(decimals);
+    return decimals == 0
+        ? current.round().toString()
+        : current.toStringAsFixed(decimals);
   }
 }
-

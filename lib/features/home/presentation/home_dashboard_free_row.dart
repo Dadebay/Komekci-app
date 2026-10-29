@@ -63,7 +63,9 @@ class _HomeFreeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    final freeColor = closed != null ? tokens.warning : tokens.brightness == Brightness.dark
+    final freeColor = closed != null
+        ? tokens.warning
+        : tokens.brightness == Brightness.dark
         ? tokens.success
         : const Color(0xff2A5DB0);
     final minutes = end.difference(start).inMinutes;
@@ -73,7 +75,9 @@ class _HomeFreeRow extends StatelessWidget {
         horizontal: _apptRowInset,
       ),
       decoration: BoxDecoration(
-        color: closed != null ? tokens.surfaceElevated : tokens.brightness == Brightness.dark
+        color: closed != null
+            ? tokens.surfaceElevated
+            : tokens.brightness == Brightness.dark
             ? freeSlotSurface(tokens)
             : freeSlotBg.withValues(alpha: .5),
         border: showDivider
@@ -111,7 +115,9 @@ class _HomeFreeRow extends StatelessWidget {
                 Row(
                   children: [
                     AppIcon(
-                      closed == null ? Icons.schedule_outlined : Icons.lock_clock_outlined,
+                      closed == null
+                          ? Icons.schedule_outlined
+                          : Icons.lock_clock_outlined,
                       size: 14,
                       color: freeColor,
                     ),
@@ -119,8 +125,18 @@ class _HomeFreeRow extends StatelessWidget {
                     Flexible(
                       child: Text(
                         closed == null
-                            ? pickTr(language, tk: 'Boş aralyk', ru: 'Свободно', en: 'Free slot')
-                            : pickTr(language, tk: 'Ýapyk wagt', ru: 'Закрытое время', en: 'Blocked time'),
+                            ? pickTr(
+                                language,
+                                tk: 'Boş aralyk',
+                                ru: 'Свободно',
+                                en: 'Free slot',
+                              )
+                            : pickTr(
+                                language,
+                                tk: 'Ýapyk wagt',
+                                ru: 'Закрытое время',
+                                en: 'Blocked time',
+                              ),
                         style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,
@@ -163,10 +179,18 @@ class _HomeFreeRow extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               visualDensity: VisualDensity.compact,
             ),
-            icon: AppIcon(closed == null ? Icons.edit_outlined : Icons.lock_open_outlined, size: 12),
+            icon: AppIcon(
+              closed == null ? Icons.edit_outlined : Icons.lock_open_outlined,
+              size: 12,
+            ),
             label: Text(
               closed == null
-                  ? pickTr(language, tk: 'Üýtgetmek', ru: 'Изменить', en: 'Edit')
+                  ? pickTr(
+                      language,
+                      tk: 'Üýtgetmek',
+                      ru: 'Изменить',
+                      en: 'Edit',
+                    )
                   : pickTr(language, tk: 'Açmak', ru: 'Открыть', en: 'Reopen'),
               style: const TextStyle(
                 fontSize: 10.5,

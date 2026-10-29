@@ -14,6 +14,7 @@ class Billing {
     this.phone,
     this.phoneDailyLimit = 7,
     this.phoneMinAmount = 20,
+    this.promo,
   });
 
   final double balance;
@@ -29,9 +30,13 @@ class Billing {
   final int phoneDailyLimit;
   final double phoneMinAmount;
 
+  /// Free first month; null when the server did not send it.
+  final PromoStatus? promo;
+
   /// A monthly charge can leave zero balance even after a successful payment.
   bool get permitsMasterEntry =>
       balance > 0 ||
+      (promo?.active ?? false) ||
       status == SubscriptionStatus.active ||
       status == SubscriptionStatus.grace;
 
@@ -50,6 +55,57 @@ class Billing {
     phone: json['phone'] as String?,
     phoneDailyLimit: parseIntOrNull(json['phone_daily_limit']) ?? 7,
     phoneMinAmount: parseMoney(json['phone_min_amount'] ?? '20.00'),
+    promo: json['promo'] is Map<String, dynamic>
+        ? PromoStatus.fromJson(json['promo'] as Map<String, dynamic>)
+        : null,
+  );
+}
+
+/// Free first month: `GET/POST /me/promo` and `promo` in `GET /me/billing`.
+class PromoStatus {
+  const PromoStatus({
+    required this.eligible,
+    required this.used,
+    required this.active,
+    required this.paidAccess,
+    required this.topupRequired,
+    this.startsAt,
+    this.endsAt,
+    this.daysLeft = 0,
+    this.reason,
+  });
+
+  final bool eligible;
+  final bool used;
+
+  /// While true, online booking is open without payment.
+  final bool active;
+  final bool paidAccess;
+
+  /// Promo is over and nothing is paid: ask for a top-up.
+  final bool topupRequired;
+  final DateTime? startsAt;
+  final DateTime? endsAt;
+  final int daysLeft;
+  final String? reason;
+
+  /// No service yet: the free month can start once one is created.
+  bool get servicesRequired => !used && reason == 'services_required';
+
+  /// The free month has ended and the master has not paid. `topup_required`
+  /// is also true before the promo was ever started, so it only counts after.
+  bool get needsTopup => used && !active && !paidAccess;
+
+  factory PromoStatus.fromJson(Map<String, dynamic> json) => PromoStatus(
+    eligible: json['eligible'] as bool? ?? false,
+    used: json['used'] as bool? ?? false,
+    active: json['active'] as bool? ?? false,
+    paidAccess: json['paid_access'] as bool? ?? false,
+    topupRequired: json['topup_required'] as bool? ?? false,
+    startsAt: parseApiTime(json['starts_at']),
+    endsAt: parseApiTime(json['ends_at']),
+    daysLeft: parseIntOrNull(json['days_left']) ?? 0,
+    reason: json['reason'] as String?,
   );
 }
 

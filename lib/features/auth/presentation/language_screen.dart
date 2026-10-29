@@ -128,10 +128,7 @@ class LanguageScreen extends StatelessWidget {
                           );
                           Navigator.maybePop(context);
                         })()
-                      : Navigator.push(
-                          context,
-                          pageRoute(const RoleScreen()),
-                        ),
+                      : Navigator.push(context, pageRoute(const RoleScreen())),
                 ),
                 const SizedBox(height: 4),
               ],

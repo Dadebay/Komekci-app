@@ -25,7 +25,12 @@ class _ClientMasterCarouselState extends State<_ClientMasterCarousel> {
     if (masters.isEmpty) {
       return EmptyState(
         icon: Icons.groups_outlined,
-        title: pickTr(language, tk: 'Baglanan masteriňiz ýok', ru: 'Связанных мастеров нет', en: 'No connected masters yet'),
+        title: pickTr(
+          language,
+          tk: 'Baglanan masteriňiz ýok',
+          ru: 'Связанных мастеров нет',
+          en: 'No connected masters yet',
+        ),
         text: pickTr(
           language,
           tk: 'Lakamy ýa-da telefon belgisi bilen masteri tapyp baglanyň.',
@@ -68,7 +73,10 @@ class _ClientMasterCard extends StatelessWidget {
     final language = context.watch<LanguageProvider>().language;
     final open = master.acceptingBookings;
     return GestureDetector(
-      onTap: () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master))),
+      onTap: () => Navigator.push(
+        context,
+        pageRoute(MasterProfileScreen(master: master)),
+      ),
       child: Container(
         clipBehavior: Clip.antiAlias,
         decoration: _bookingCardDecoration(tokens),
@@ -90,7 +98,13 @@ class _ClientMasterCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: tokens.surface,
                       border: Border.all(color: tokens.accent, width: 1.6),
-                      boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .10), blurRadius: 12, offset: const Offset(0, 5))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: tokens.textPrimary.withValues(alpha: .10),
+                          blurRadius: 12,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
                     ),
                     child: MasterAvatar(url: master.photoUrl, radius: 26),
                   ),
@@ -105,14 +119,20 @@ class _ClientMasterCard extends StatelessWidget {
                     Text(
                       master.name,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 3),
                     Text(
                       '@${master.nickname}',
-                      style: TextStyle(fontSize: 12.5, color: tokens.textSecondary),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: tokens.textSecondary,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -120,12 +140,19 @@ class _ClientMasterCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        AppIcon(Icons.location_on_outlined, size: 13, color: tokens.textSecondary),
+                        AppIcon(
+                          Icons.location_on_outlined,
+                          size: 13,
+                          color: tokens.textSecondary,
+                        ),
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
                             master.address.isEmpty ? '—' : master.address,
-                            style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: tokens.textSecondary,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -143,12 +170,31 @@ class _ClientMasterCard extends StatelessWidget {
                           padding: EdgeInsets.zero,
                           shape: const StadiumBorder(),
                         ),
-                        onPressed: open ? () => Navigator.push(context, pageRoute(BookingPage(master: master))) : null,
+                        onPressed: open
+                            ? () => Navigator.push(
+                                context,
+                                pageRoute(BookingPage(master: master)),
+                              )
+                            : null,
                         child: Text(
                           open
-                              ? pickTr(language, tk: 'Ýazyl', ru: 'Записаться', en: 'Book')
-                              : pickTr(language, tk: 'Wagtlaýyn ýapyk', ru: 'Запись закрыта', en: 'Paused'),
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: open ? tokens.surface : tokens.textSecondary),
+                              ? pickTr(
+                                  language,
+                                  tk: 'Ýazyl',
+                                  ru: 'Записаться',
+                                  en: 'Book',
+                                )
+                              : pickTr(
+                                  language,
+                                  tk: 'Wagtlaýyn ýapyk',
+                                  ru: 'Запись закрыта',
+                                  en: 'Paused',
+                                ),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: open ? tokens.surface : tokens.textSecondary,
+                          ),
                         ),
                       ),
                     ),
@@ -172,7 +218,8 @@ class _AddMasterCard extends StatelessWidget {
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
     return GestureDetector(
-      onTap: () => Navigator.push(context, pageRoute(const ConnectMasterScreen())),
+      onTap: () =>
+          Navigator.push(context, pageRoute(const ConnectMasterScreen())),
       child: Container(
         decoration: BoxDecoration(
           color: tokens.surfaceElevated,
@@ -186,18 +233,31 @@ class _AddMasterCard extends StatelessWidget {
               width: 56,
               height: 56,
               alignment: Alignment.center,
-              decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .15), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: tokens.accent.withValues(alpha: .15),
+                shape: BoxShape.circle,
+              ),
               child: AppIcon(Icons.add, size: 26, color: tokens.accent),
             ),
             const SizedBox(height: 12),
             Text(
-              pickTr(language, tk: 'Master goş', ru: 'Добавить мастера', en: 'Add master'),
+              pickTr(
+                language,
+                tk: 'Master goş',
+                ru: 'Добавить мастера',
+                en: 'Add master',
+              ),
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 4),
             Text(
-              pickTr(language, tk: 'Lakam ýa-da telefon', ru: 'Никнейм или телефон', en: 'Nickname or phone'),
+              pickTr(
+                language,
+                tk: 'Lakam ýa-da telefon',
+                ru: 'Никнейм или телефон',
+                en: 'Nickname or phone',
+              ),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
             ),

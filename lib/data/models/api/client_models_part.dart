@@ -46,6 +46,7 @@ class ClientSummary {
   final String? nickname;
   final String? phone;
   final String? photoUrl;
+
   /// Numeric account ID needed by `POST /me/notifications/send`.
   /// The `c12` row ID is a connection ID and must not be used here.
   final int? accountId;
@@ -66,7 +67,9 @@ class ClientSummary {
       phone: json['phone'] as String?,
       photoUrl: json['photo_url'] as String?,
       accountId: parseIntOrNull(json['account_id']),
-      appointment: appt is Map<String, dynamic> ? ClientAppointmentRef.fromJson(appt) : null,
+      appointment: appt is Map<String, dynamic>
+          ? ClientAppointmentRef.fromJson(appt)
+          : null,
       lastVisit: parseApiTime(json['last_visit']),
       visits: parseIntOrNull(json['visits']) ?? 0,
       noShows: parseIntOrNull(json['no_shows']) ?? 0,
@@ -116,7 +119,11 @@ class ClientHistoryItem {
 
 /// `GET /me/clients/{id}`.
 class ClientCard {
-  const ClientCard({required this.client, this.privateNote, this.history = const []});
+  const ClientCard({
+    required this.client,
+    this.privateNote,
+    this.history = const [],
+  });
   final ClientSummary client;
   final String? privateNote;
   final List<ClientHistoryItem> history;
@@ -124,7 +131,9 @@ class ClientCard {
   factory ClientCard.fromJson(Map<String, dynamic> json) => ClientCard(
     client: ClientSummary.fromJson(asMap(json['client'])),
     privateNote: json['private_note'] as String?,
-    history: [for (final h in asMapList(json['history'])) ClientHistoryItem.fromJson(h)],
+    history: [
+      for (final h in asMapList(json['history'])) ClientHistoryItem.fromJson(h),
+    ],
   );
 }
 

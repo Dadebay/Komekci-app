@@ -40,4 +40,3 @@ class _PrivacyNote extends StatelessWidget {
     );
   }
 }
-

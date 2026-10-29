@@ -8,7 +8,8 @@ class MeRepository {
   MeRepository(this._api);
   final ApiClient _api;
 
-  Future<Me> me() async => Me.fromJson(asMap(unwrapData(await _api.get('/me'))));
+  Future<Me> me() async =>
+      Me.fromJson(asMap(unwrapData(await _api.get('/me'))));
 
   /// Any subset of fields. A [photoPath] switches the call to multipart.
   Future<Me> updateMe({
@@ -60,7 +61,10 @@ class MeRepository {
 
   /// Step 2: confirms the code; returns the updated account.
   Future<Me> verifyPhoneChange(String phone, String code) async {
-    final body = await _api.post('/me/phone/verify', json: {'phone': phone, 'code': code});
+    final body = await _api.post(
+      '/me/phone/verify',
+      json: {'phone': phone, 'code': code},
+    );
     return Me.fromJson(asMap(unwrapData(body)));
   }
 
@@ -84,15 +88,19 @@ class MeRepository {
     required String title,
     required String body,
     required List<int> accountIds,
-  }) async => asMap(await _api.post('/me/notifications/send', json: {
-    'title': title,
-    'body': body,
-    'account_ids': accountIds,
-  }));
+  }) async => asMap(
+    await _api.post(
+      '/me/notifications/send',
+      json: {'title': title, 'body': body, 'account_ids': accountIds},
+    ),
+  );
 
   /// [platform] is `android` or `ios`.
   Future<void> registerDevice(String token, String platform) async {
-    await _api.post('/me/devices', json: {'token': token, 'platform': platform});
+    await _api.post(
+      '/me/devices',
+      json: {'token': token, 'platform': platform},
+    );
   }
 
   Future<void> unregisterDevice(String token) async {

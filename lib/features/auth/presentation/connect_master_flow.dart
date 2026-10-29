@@ -64,7 +64,9 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
       _result = null;
     });
     try {
-      final found = await masters.lookup(isPhone ? toApiPhone(query) : query.toLowerCase());
+      final found = await masters.lookup(
+        isPhone ? toApiPhone(query) : query.toLowerCase(),
+      );
       if (!mounted) return;
       setState(() {
         _searching = false;
@@ -115,7 +117,10 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
 
   /// Seeds the field with a prefix and puts the caret after it.
   void _fill(String prefix) {
-    _controller.value = TextEditingValue(text: prefix, selection: TextSelection.collapsed(offset: prefix.length));
+    _controller.value = TextEditingValue(
+      text: prefix,
+      selection: TextSelection.collapsed(offset: prefix.length),
+    );
     _focus.requestFocus();
     setState(() {
       _result = null;
@@ -127,7 +132,8 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final masters = context.watch<ClientMastersProvider>();
     final result = _result;
@@ -156,17 +162,36 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                       decoration: BoxDecoration(
                         color: tokens.surface,
                         shape: BoxShape.circle,
-                        border: Border.all(color: tokens.border.withValues(alpha: .8)),
-                        boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .06), blurRadius: 10, offset: const Offset(0, 3))],
+                        border: Border.all(
+                          color: tokens.border.withValues(alpha: .8),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: tokens.textPrimary.withValues(alpha: .06),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                      child: AppIcon(Icons.arrow_back, size: 19, color: tokens.textPrimary),
+                      child: AppIcon(
+                        Icons.arrow_back,
+                        size: 19,
+                        color: tokens.textPrimary,
+                      ),
                     ),
                   ),
                   Expanded(
                     child: Text(
-                      t(tk: 'Master goş', ru: 'Добавить мастера', en: 'Add master'),
+                      t(
+                        tk: 'Master goş',
+                        ru: 'Добавить мастера',
+                        en: 'Add master',
+                      ),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 44),
@@ -175,11 +200,16 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
             ),
             Expanded(
               child: ListView(
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
                 children: [
                   _ConnectHero(
-                    title: t(tk: 'Masteriňize baglanyň', ru: 'Подключитесь к мастеру', en: 'Connect to your master'),
+                    title: t(
+                      tk: 'Masteriňize baglanyň',
+                      ru: 'Подключитесь к мастеру',
+                      en: 'Connect to your master',
+                    ),
                     subtitle: t(
                       tk: 'Masteriň lakamyny ýa-da telefon belgisini giriziň',
                       ru: 'Введите никнейм или номер телефона мастера',
@@ -191,16 +221,28 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                     controller: _controller,
                     focusNode: _focus,
                     searching: _searching,
-                    hint: t(tk: '@lakam ýa-da +993 telefon', ru: '@никнейм или телефон +993', en: '@nickname or +993 phone'),
+                    hint: t(
+                      tk: '@lakam ýa-da +993 telefon',
+                      ru: '@никнейм или телефон +993',
+                      en: '@nickname or +993 phone',
+                    ),
                     onSearch: _search,
                     onClear: _clear,
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      _HintChip(icon: Icons.person_outline, label: t(tk: 'Lakam', ru: 'Никнейм', en: 'Nickname'), onTap: () => _fill('@')),
+                      _HintChip(
+                        icon: Icons.person_outline,
+                        label: t(tk: 'Lakam', ru: 'Никнейм', en: 'Nickname'),
+                        onTap: () => _fill('@'),
+                      ),
                       const SizedBox(width: 8),
-                      _HintChip(icon: Icons.phone_outlined, label: t(tk: 'Telefon', ru: 'Телефон', en: 'Phone'), onTap: () => _fill('+993 ')),
+                      _HintChip(
+                        icon: Icons.phone_outlined,
+                        label: t(tk: 'Telefon', ru: 'Телефон', en: 'Phone'),
+                        onTap: () => _fill('+993 '),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -217,7 +259,11 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                     )
                   else if (_notFound)
                     _NotFoundNote(
-                      title: t(tk: 'Master tapylmady', ru: 'Мастер не найден', en: 'No master found'),
+                      title: t(
+                        tk: 'Master tapylmady',
+                        ru: 'Мастер не найден',
+                        en: 'No master found',
+                      ),
                       text: t(
                         tk: 'Lakamy ýa-da telefon belgisini doly we dogry ýazandygyňyzy barlaň. Gözleg takyk deňleşdirme bilen işleýär.',
                         ru: 'Проверьте, что никнейм или номер введены полностью и без ошибок. Поиск работает по точному совпадению.',
@@ -226,21 +272,45 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                     )
                   else if (!_searching)
                     _HowItWorks(
-                      title: t(tk: 'Nähili işleýär?', ru: 'Как это работает?', en: 'How it works'),
+                      title: t(
+                        tk: 'Nähili işleýär?',
+                        ru: 'Как это работает?',
+                        en: 'How it works',
+                      ),
                       steps: [
                         (
                           Icons.chat_bubble_outline,
-                          t(tk: 'Masterden lakamyny soraň', ru: 'Узнайте никнейм у мастера', en: 'Ask your master for their nickname'),
-                          t(tk: 'Ýa-da onuň telefon belgisini ulanyň.', ru: 'Или воспользуйтесь его номером телефона.', en: 'Or use their phone number.'),
+                          t(
+                            tk: 'Masterden lakamyny soraň',
+                            ru: 'Узнайте никнейм у мастера',
+                            en: 'Ask your master for their nickname',
+                          ),
+                          t(
+                            tk: 'Ýa-da onuň telefon belgisini ulanyň.',
+                            ru: 'Или воспользуйтесь его номером телефона.',
+                            en: 'Or use their phone number.',
+                          ),
                         ),
                         (
                           Icons.search,
-                          t(tk: 'Gözläň we haýyş iberiň', ru: 'Найдите и отправьте запрос', en: 'Search and send a request'),
-                          t(tk: 'Master sizi öz müşderileriniň hataryna goşar.', ru: 'Мастер добавит вас в свои клиенты.', en: 'The master adds you to their clients.'),
+                          t(
+                            tk: 'Gözläň we haýyş iberiň',
+                            ru: 'Найдите и отправьте запрос',
+                            en: 'Search and send a request',
+                          ),
+                          t(
+                            tk: 'Master sizi öz müşderileriniň hataryna goşar.',
+                            ru: 'Мастер добавит вас в свои клиенты.',
+                            en: 'The master adds you to their clients.',
+                          ),
                         ),
                         (
                           Icons.calendar_month_outlined,
-                          t(tk: 'Ýazylyň', ru: 'Записывайтесь', en: 'Book appointments'),
+                          t(
+                            tk: 'Ýazylyň',
+                            ru: 'Записывайтесь',
+                            en: 'Book appointments',
+                          ),
                           t(
                             tk: 'Kabul edilenden soň hyzmatlary we boş wagtlary görersiňiz.',
                             ru: 'После принятия вы увидите услуги и свободное время.',
@@ -253,10 +323,21 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.pushAndRemoveUntil(context, pageRoute(const ClientHome()), (_) => false),
+              onPressed: () => Navigator.pushAndRemoveUntil(
+                context,
+                pageRoute(const ClientHome()),
+                (_) => false,
+              ),
               child: Text(
-                t(tk: 'Soňrak baglanaryn', ru: 'Подключусь позже', en: 'I’ll connect later'),
-                style: TextStyle(color: tokens.textSecondary, fontWeight: FontWeight.w600),
+                t(
+                  tk: 'Soňrak baglanaryn',
+                  ru: 'Подключусь позже',
+                  en: 'I’ll connect later',
+                ),
+                style: TextStyle(
+                  color: tokens.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             const SizedBox(height: 6),

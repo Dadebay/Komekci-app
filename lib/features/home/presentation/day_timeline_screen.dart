@@ -77,8 +77,14 @@ class DayTimelineScreen extends StatelessWidget {
                             language,
                           ),
                       onTapFree: (start, end, availableEnd) =>
-                          _showFreeTimeActions(context, start: start, end: end, availableEnd: availableEnd),
-                      onTapClosed: (closed) => _reopenClosedTime(context, closed),
+                          _showFreeTimeActions(
+                            context,
+                            start: start,
+                            end: end,
+                            availableEnd: availableEnd,
+                          ),
+                      onTapClosed: (closed) =>
+                          _reopenClosedTime(context, closed),
                     ),
             ),
           ],

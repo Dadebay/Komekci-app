@@ -34,14 +34,26 @@ class _LoginScreenState extends State<LoginScreen> {
               color: const Color(0xFF1C2024),
               child: FractionalTranslation(
                 translation: const Offset(0, -0.07),
-                child: Image.asset('assets/images/login_hero.png', fit: BoxFit.cover),
+                child: Image.asset(
+                  'assets/images/login_hero.png',
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
           const Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
-                gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0x22000000), Color(0x00000000), Color(0xAA000000)], stops: [0, .38, 1]),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0x22000000),
+                    Color(0x00000000),
+                    Color(0xAA000000),
+                  ],
+                  stops: [0, .38, 1],
+                ),
               ),
             ),
           ),
@@ -50,12 +62,20 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 18),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 26,
+                    vertical: 18,
+                  ),
                   child: Row(
                     children: [
                       const Text(
                         'KÖMEKÇI',
-                        style: TextStyle(color: Colors.white, fontSize: 22, letterSpacing: 2.6, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          letterSpacing: 2.6,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const Spacer(),
                     ],
@@ -67,15 +87,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.fromLTRB(24, 27, 24, 22),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(30),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        t(tk: 'Hoş geldiňiz', ru: 'Добро пожаловать', en: 'Welcome'),
-                        style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w700),
+                        t(
+                          tk: 'Hoş geldiňiz',
+                          ru: 'Добро пожаловать',
+                          en: 'Welcome',
+                        ),
+                        style: const TextStyle(
+                          fontSize: 27,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 7),
                       Text(
@@ -84,7 +113,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           ru: 'Продолжите с номером телефона.',
                           en: 'Continue with your phone number.',
                         ),
-                        style: TextStyle(color: tokens.textSecondary, fontSize: 14),
+                        style: TextStyle(
+                          color: tokens.textSecondary,
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(height: 22),
                       TextField(
@@ -99,11 +131,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             });
                           }
                         },
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
                         decoration: InputDecoration(
                           hintText: '65 65 65 65',
                           hintStyle: TextStyle(color: tokens.textSecondary),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
                           prefixIcon: phonePrefix(context, fontSize: 17),
                           prefixIconConstraints: phonePrefixConstraints,
                           errorText: _showPhoneError
@@ -122,13 +160,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
-                            borderSide: BorderSide(color: tokens.accent, width: 1.5),
+                            borderSide: BorderSide(
+                              color: tokens.accent,
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 14),
                       PrimaryButton(
-                        label: t(tk: 'Kod iber', ru: 'Отправить код', en: 'Send code'),
+                        label: t(
+                          tk: 'Kod iber',
+                          ru: 'Отправить код',
+                          en: 'Send code',
+                        ),
                         loading: _busy,
                         onTap: _continueToOtp,
                       ),
@@ -141,7 +186,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             en: 'By continuing, you accept the terms of service.',
                           ),
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: tokens.textSecondary, fontSize: 11, height: 1.35),
+                          style: TextStyle(
+                            color: tokens.textSecondary,
+                            fontSize: 11,
+                            height: 1.35,
+                          ),
                         ),
                       ),
                     ],
@@ -182,9 +231,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     if (!mounted) return;
     setState(() => _busy = false);
-    Navigator.push(context, pageRoute(OtpScreen(phone: phone, nextBuilder: homeForAccount)));
+    Navigator.push(
+      context,
+      pageRoute(OtpScreen(phone: phone, nextBuilder: homeForAccount)),
+    );
   }
-
 }
 
 /// Formats a Turkmen mobile number after its fixed +993 country prefix.
@@ -193,7 +244,10 @@ class _TurkmenPhoneFormatter extends TextInputFormatter {
   const _TurkmenPhoneFormatter();
 
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final rawDigits = newValue.text.replaceAll(RegExp(r'\D'), '');
     final digits = rawDigits.length > 8 ? rawDigits.substring(0, 8) : rawDigits;
     final groups = <String>[];

@@ -236,3 +236,136 @@ class _PaymentResultPanel extends StatelessWidget {
     );
   }
 }
+
+/// Free first month: offer, countdown, or "now pay" depending on the server's
+/// `promo` state. Renders nothing when there is nothing to say.
+class _PromoCard extends StatefulWidget {
+  const _PromoCard({this.onActivated});
+
+  /// Called after the free month started (the entry gate re-checks access).
+  final VoidCallback? onActivated;
+
+  @override
+  State<_PromoCard> createState() => _PromoCardState();
+}
+
+class _PromoCardState extends State<_PromoCard> {
+  bool _busy = false;
+
+  Future<void> _activate() async {
+    if (_busy) return;
+    final promo = context.read<BillingProvider>().promo;
+    if (promo != null && promo.servicesRequired) {
+      // The server would answer SERVICES_REQUIRED; go straight to the form.
+      Navigator.push(context, pageRoute(const ServiceFormScreen()));
+      return;
+    }
+    final language = context.read<LanguageProvider>().language;
+    final billing = context.read<BillingProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    setState(() => _busy = true);
+    try {
+      await billing.activatePromo();
+      if (!mounted) return;
+      widget.onActivated?.call();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      if (e.code == 'SERVICES_REQUIRED') {
+        // Same button works again once a service is saved.
+        navigator.push(pageRoute(const ServiceFormScreen()));
+      } else if (e.code == 'PROMO_ALREADY_USED') {
+        await billing.refresh();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(apiErrorMessage(e, language))),
+      );
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final language = context.watch<LanguageProvider>().language;
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
+    final promo = context.watch<BillingProvider>().promo;
+    if (promo == null) return const SizedBox.shrink();
+    final tokens = context.appTokens;
+
+    if (promo.active) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: _InfoBanner(
+          icon: Icons.card_giftcard_outlined,
+          text: t(
+            tk: 'Mugt aý işjeň: ${promo.daysLeft} gün galdy. Soň abuna üçin balansyňyzy dolduryň.',
+            ru: 'Бесплатный месяц активен: осталось ${promo.daysLeft} дн. Затем пополните баланс для подписки.',
+            en: 'Free month is active: ${promo.daysLeft} days left. Afterwards top up your balance to continue.',
+          ),
+        ),
+      );
+    }
+    if (promo.needsTopup) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: _InfoBanner(
+          icon: Icons.info_outline,
+          text: t(
+            tk: 'Mugt aý gutardy. Onlaýn ýazgylary dowam etmek üçin balansyňyzy dolduryň.',
+            ru: 'Бесплатный месяц закончился. Пополните баланс, чтобы продолжить онлайн-запись.',
+            en: 'Your free month has ended. Top up your balance to keep online booking open.',
+          ),
+        ),
+      );
+    }
+    if (!promo.eligible && !promo.servicesRequired) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: tokens.surfaceElevated,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: tokens.accent),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            t(tk: '1 aý mugt', ru: '1 месяц бесплатно', en: '1 month free'),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            t(
+              tk: 'Ilki bir aý töleg talap edilmeýär. Işjeňleşdirmek üçin iň bolmanda bir hyzmat goşuň. 2-nji aýdan başlap töleg hökmany.',
+              ru: 'Первый месяц без оплаты. Для активации нужна хотя бы одна услуга. Со 2-го месяца оплата обязательна.',
+              en: 'The first month is free. Add at least one service to activate it. From the 2nd month payment is required.',
+            ),
+            style: TextStyle(
+              fontSize: 12.5,
+              height: 1.4,
+              color: tokens.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          MasterActionButton(
+            label: t(
+              tk: 'Mugt aýy işjeňleşdir',
+              ru: 'Активировать бесплатный месяц',
+              en: 'Activate free month',
+            ),
+            enabled: !_busy,
+            onTap: _activate,
+          ),
+        ],
+      ),
+    );
+  }
+}

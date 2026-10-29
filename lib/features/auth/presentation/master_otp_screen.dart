@@ -127,10 +127,9 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
       return;
     }
     if (!mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      pageRoute(homeForAccount(me)),
-      (_) => false,
-    );
+    Navigator.of(
+      context,
+    ).pushAndRemoveUntil(pageRoute(homeForAccount(me)), (_) => false);
   }
 
   @override
@@ -243,14 +242,21 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
                   if (_secondsLeft > 0)
                     Text(
                       '($countdown)',
-                      style: TextStyle(color: tokens.textSecondary, fontSize: 13),
+                      style: TextStyle(
+                        color: tokens.textSecondary,
+                        fontSize: 13,
+                      ),
                     ),
                 ],
               ),
               const SizedBox(height: 26),
               MasterActionButton(
                 label: _verifying
-                    ? t(tk: 'Barlanýar...', ru: 'Проверка...', en: 'Verifying...')
+                    ? t(
+                        tk: 'Barlanýar...',
+                        ru: 'Проверка...',
+                        en: 'Verifying...',
+                      )
                     : t(tk: 'Tassyklaň', ru: 'Подтвердить', en: 'Verify'),
                 enabled: _codeReady && !_verifying,
                 onTap: _verify,
@@ -264,4 +270,3 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
     );
   }
 }
-

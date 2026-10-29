@@ -13,7 +13,11 @@ class _NotesList extends StatelessWidget {
       children: [
         Row(
           children: [
-            AppIcon(Icons.warning_amber_rounded, color: tokens.accent, size: 18),
+            AppIcon(
+              Icons.warning_amber_rounded,
+              color: tokens.accent,
+              size: 18,
+            ),
             const SizedBox(width: 8),
             Text(
               heading,
@@ -48,11 +52,21 @@ class _NotesList extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(note.$2, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700)),
+                      Text(
+                        note.$2,
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                       const SizedBox(height: 3),
                       Text(
                         note.$3,
-                        style: TextStyle(fontSize: 12.5, color: tokens.textSecondary, height: 1.4),
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: tokens.textSecondary,
+                          height: 1.4,
+                        ),
                       ),
                     ],
                   ),
@@ -90,7 +104,11 @@ class _TransferInstructions extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          t(tk: 'Pul geçirilmeli belgi', ru: 'Номер для перевода', en: 'Number to send to'),
+          t(
+            tk: 'Pul geçirilmeli belgi',
+            ru: 'Номер для перевода',
+            en: 'Number to send to',
+          ),
           style: TextStyle(color: tokens.textSecondary, fontSize: 12.5),
         ),
         const SizedBox(height: 8),
@@ -105,17 +123,29 @@ class _TransferInstructions extends StatelessWidget {
               Expanded(
                 child: Text(
                   displayPhone(topup.phone),
-                  style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700, letterSpacing: .4),
+                  style: const TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: .4,
+                  ),
                 ),
               ),
               IconButton(
                 tooltip: t(tk: 'Göçür', ru: 'Копировать', en: 'Copy'),
-                icon: AppIcon(Icons.copy_outlined, color: tokens.accent, size: 19),
+                icon: AppIcon(
+                  Icons.copy_outlined,
+                  color: tokens.accent,
+                  size: 19,
+                ),
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: topup.phone));
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(t(tk: 'Göçürildi', ru: 'Скопировано', en: 'Copied'))),
+                    SnackBar(
+                      content: Text(
+                        t(tk: 'Göçürildi', ru: 'Скопировано', en: 'Copied'),
+                      ),
+                    ),
                   );
                 },
               ),
@@ -129,13 +159,23 @@ class _TransferInstructions extends StatelessWidget {
             ru: 'Переведите на этот номер $amount $cur одним переводом (минимум ${formatMoney(topup.phoneMinAmount)} $cur). Откроется SMS на номер "$_topUpShortCode" — отправьте его.',
             en: 'Send $amount $cur to this number in a single transfer (minimum ${formatMoney(topup.phoneMinAmount)} $cur). The SMS to "$_topUpShortCode" opens pre-filled — just send it.',
           ),
-          style: TextStyle(color: tokens.textSecondary, fontSize: 12.5, height: 1.45),
+          style: TextStyle(
+            color: tokens.textSecondary,
+            fontSize: 12.5,
+            height: 1.45,
+          ),
         ),
         const SizedBox(height: 6),
         TextButton.icon(
           onPressed: onResendSms,
           icon: AppIcon(Icons.sms_outlined, size: 17, color: tokens.accent),
-          label: Text(t(tk: 'SMS-i täzeden aç', ru: 'Открыть SMS снова', en: 'Open the SMS again')),
+          label: Text(
+            t(
+              tk: 'SMS-i täzeden aç',
+              ru: 'Открыть SMS снова',
+              en: 'Open the SMS again',
+            ),
+          ),
         ),
         if (pendingMessage != null) ...[
           const SizedBox(height: 8),
@@ -145,13 +185,20 @@ class _TransferInstructions extends StatelessWidget {
               color: tokens.warning.withValues(alpha: .12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Text(pendingMessage!, style: const TextStyle(fontSize: 12.5, height: 1.4)),
+            child: Text(
+              pendingMessage!,
+              style: const TextStyle(fontSize: 12.5, height: 1.4),
+            ),
           ),
         ] else ...[
           const SizedBox(height: 8),
           Row(
             children: [
-              const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+              const SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(

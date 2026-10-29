@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_scoped.dart';
@@ -17,9 +20,13 @@ String formatMoney(double value) => value == value.roundToDouble()
 /// the app only asks again ([refresh]); it never edits the balance or the
 /// subscription status itself.
 class BillingProvider extends SessionScoped {
-  BillingProvider(this._repository);
+  BillingProvider(this._repository, {FlutterSecureStorage? storage})
+    : _storage = storage ?? const FlutterSecureStorage();
 
   final BillingRepository _repository;
+  final FlutterSecureStorage _storage;
+
+  static const _installIdKey = 'komekci.install_id';
 
   Billing? _billing;
   final List<LedgerTransaction> _history = [];
@@ -41,6 +48,7 @@ class BillingProvider extends SessionScoped {
   bool get acceptingBookings => _billing?.acceptingBookings ?? false;
   DateTime? get paidUntil => _billing?.paidUntil;
   DateTime? get nextChargeAt => _billing?.nextChargeAt;
+  PromoStatus? get promo => _billing?.promo;
 
   /// Newest first.
   List<LedgerTransaction> get history => List.unmodifiable(_history);
@@ -113,6 +121,36 @@ class BillingProvider extends SessionScoped {
     }
     _loadingMore = false;
     notifyListeners();
+  }
+
+  // ---- free month -------------------------------------------------------
+
+  /// Stable per-install id the server uses to give the free month once.
+  Future<String> _installId() async {
+    try {
+      final saved = await _storage.read(key: _installIdKey);
+      if (saved != null && saved.length >= 8) return saved;
+    } catch (e) {
+      debugPrint('Reading install id failed: $e');
+    }
+    final rnd = Random.secure();
+    final id =
+        'install-${List.generate(24, (_) => rnd.nextInt(16).toRadixString(16)).join()}';
+    try {
+      await _storage.write(key: _installIdKey, value: id);
+    } catch (e) {
+      debugPrint('Saving install id failed: $e');
+    }
+    return id;
+  }
+
+  /// Activates the free month. Throws `SERVICES_REQUIRED` (422) when the
+  /// master has no service yet and `PROMO_ALREADY_USED` (409). On success the
+  /// billing summary is re-read.
+  Future<PromoStatus> activatePromo() async {
+    final result = await _repository.activatePromo(await _installId());
+    await refresh();
+    return result;
   }
 
   // ---- phone payment ----------------------------------------------------

@@ -102,7 +102,11 @@ class AuthRepository {
 
   /// SMS code for an existing, active account.
   Future<int> requestOtp(String phone) async {
-    final response = await _api.post('/auth/otp/request', json: {'phone': phone}, auth: false);
+    final response = await _api.post(
+      '/auth/otp/request',
+      json: {'phone': phone},
+      auth: false,
+    );
     return parseIntOrNull(asMap(response)['retry_after']) ?? 60;
   }
 

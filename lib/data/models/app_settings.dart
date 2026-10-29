@@ -108,7 +108,9 @@ class AppSettings {
       }
       for (final theme in KomekciTheme.values) {
         if (theme.name == item['code']) {
-          themeColors[theme] = BackendThemeColors.fromJson(item['colors'] as Map);
+          themeColors[theme] = BackendThemeColors.fromJson(
+            item['colors'] as Map,
+          );
         }
       }
     }

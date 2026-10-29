@@ -73,9 +73,17 @@ class _DashboardHero extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   if (banner != null)
-                    Image.file(banner, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink())
+                    Image.file(
+                      banner,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    )
                   else if (bannerUrl != null)
-                    Image.network(bannerUrl, fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink()),
+                    Image.network(
+                      bannerUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
                     child: Row(
@@ -83,7 +91,11 @@ class _DashboardHero extends StatelessWidget {
                       children: [
                         _HeroChip(
                           icon: Icons.chat_bubble_outline,
-                          label: t(tk: 'Habarlaşmak', ru: 'Связаться', en: 'Contact us'),
+                          label: t(
+                            tk: 'Habarlaşmak',
+                            ru: 'Связаться',
+                            en: 'Contact us',
+                          ),
                           onTap: () => Navigator.push(
                             context,
                             pageRoute(const SupportScreen()),
@@ -154,7 +166,12 @@ class _DashboardHero extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: Text(
                   '$hh:$mm',
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: tokens.textPrimary, height: 1),
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    color: tokens.textPrimary,
+                    height: 1,
+                  ),
                 ),
               ),
             ),
@@ -167,7 +184,11 @@ class _DashboardHero extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-                  AppIcon(Icons.calendar_today_outlined, size: 18, color: tokens.textSecondary),
+                  AppIcon(
+                    Icons.calendar_today_outlined,
+                    size: 18,
+                    color: tokens.textSecondary,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -175,11 +196,19 @@ class _DashboardHero extends StatelessWidget {
                       children: [
                         Text(
                           '${today.day} ${months[today.month - 1]} ${today.year}',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: tokens.textPrimary),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: tokens.textPrimary,
+                          ),
                         ),
                         Text(
                           weekdays[today.weekday - 1],
-                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary),
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: tokens.textSecondary,
+                          ),
                         ),
                       ],
                     ),

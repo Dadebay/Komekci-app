@@ -13,7 +13,10 @@ extension _HomeDashboardRefresh on _HomeDashboardScreenState {
     unawaited(_refresh(refreshBookings: false));
   }
 
-  Future<void> _refreshDashboard({required void Function(VoidCallback) update, bool refreshBookings = true}) async {
+  Future<void> _refreshDashboard({
+    required void Function(VoidCallback) update,
+    bool refreshBookings = true,
+  }) async {
     if (_refreshingNumbers) return;
     final bookings = context.read<BookingProvider>();
     final customers = context.read<CustomerProvider>();
@@ -62,5 +65,4 @@ extension _HomeDashboardRefresh on _HomeDashboardScreenState {
       }
     }
   }
-
 }

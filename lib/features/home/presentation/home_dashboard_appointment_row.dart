@@ -19,7 +19,11 @@ class _HomeApptRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    final (lightStatusColor, lightStatusBg, statusIcon) = switch (appointment.status) {
+    final (
+      lightStatusColor,
+      lightStatusBg,
+      statusIcon,
+    ) = switch (appointment.status) {
       AppointmentStatus.completed => (
         freeSlotColorDark,
         freeSlotBg,
@@ -109,7 +113,9 @@ class _HomeApptRow extends StatelessWidget {
                       customer == null
                           ? CircleAvatar(
                               radius: 16,
-                              backgroundColor: tokens.accent.withValues(alpha: .18),
+                              backgroundColor: tokens.accent.withValues(
+                                alpha: .18,
+                              ),
                               child: AppIcon(
                                 Icons.person_outline,
                                 size: 15,

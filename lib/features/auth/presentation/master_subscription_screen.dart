@@ -12,8 +12,12 @@ class MasterSubscriptionScreen extends StatefulWidget {
     super.key,
     this.onboarding = true,
     this.onLeave,
+    this.onPromoActivated,
   });
   final bool onboarding;
+
+  /// Called once the free month started.
+  final VoidCallback? onPromoActivated;
 
   /// Offered when this is the only route and the master needs another account.
   final VoidCallback? onLeave;
@@ -90,6 +94,7 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _PromoCard(onActivated: widget.onPromoActivated),
                 if (widget.onboarding) ...[
                   const _MasterProgressIndicator(step: 4),
                   const SizedBox(height: 22),

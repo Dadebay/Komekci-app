@@ -95,13 +95,16 @@ class ScheduleOverride {
   final String? startTime;
   final String? endTime;
 
-  factory ScheduleOverride.fromJson(Map<String, dynamic> json) => ScheduleOverride(
-    id: parseIntOrNull(json['id']) ?? 0,
-    date: parseApiTime(json['date']) ?? DateTime.now(),
-    type: json['type'] == 'custom_hours' ? OverrideType.customHours : OverrideType.dayOff,
-    startTime: _hhmm(json['start_time']),
-    endTime: _hhmm(json['end_time']),
-  );
+  factory ScheduleOverride.fromJson(Map<String, dynamic> json) =>
+      ScheduleOverride(
+        id: parseIntOrNull(json['id']) ?? 0,
+        date: parseApiTime(json['date']) ?? DateTime.now(),
+        type: json['type'] == 'custom_hours'
+            ? OverrideType.customHours
+            : OverrideType.dayOff,
+        startTime: _hhmm(json['start_time']),
+        endTime: _hhmm(json['end_time']),
+      );
 }
 
 class Vacation {
@@ -158,8 +161,13 @@ class Schedule {
     gridStepMin: parseIntOrNull(json['grid_step_min']) ?? 15,
     minLeadMin: parseIntOrNull(json['min_lead_min']) ?? 30,
     days: [for (final d in asMapList(json['days'])) ScheduleDay.fromJson(d)],
-    overrides: [for (final o in asMapList(json['overrides'])) ScheduleOverride.fromJson(o)],
-    vacations: [for (final v in asMapList(json['vacations'])) Vacation.fromJson(v)],
+    overrides: [
+      for (final o in asMapList(json['overrides']))
+        ScheduleOverride.fromJson(o),
+    ],
+    vacations: [
+      for (final v in asMapList(json['vacations'])) Vacation.fromJson(v),
+    ],
   );
 }
 
@@ -196,12 +204,13 @@ class ServiceSnapshot {
   final double price;
   final int durationMin;
 
-  factory ServiceSnapshot.fromJson(Map<String, dynamic> json) => ServiceSnapshot(
-    id: parseIntOrNull(json['id']) ?? 0,
-    name: json['name'] as String? ?? '',
-    price: parseMoney(json['price']),
-    durationMin: parseIntOrNull(json['duration_min']) ?? 0,
-  );
+  factory ServiceSnapshot.fromJson(Map<String, dynamic> json) =>
+      ServiceSnapshot(
+        id: parseIntOrNull(json['id']) ?? 0,
+        name: json['name'] as String? ?? '',
+        price: parseMoney(json['price']),
+        durationMin: parseIntOrNull(json['duration_min']) ?? 0,
+      );
 }
 
 /// The client of a master's appointment. `id` is a string: `a15` for a
@@ -222,14 +231,15 @@ class AppointmentClient {
   final String? photoUrl;
   final bool offline;
 
-  factory AppointmentClient.fromJson(Map<String, dynamic> json) => AppointmentClient(
-    id: '${json['id']}',
-    name: json['name'] as String? ?? '',
-    nickname: json['nickname'] as String?,
-    phone: json['phone'] as String?,
-    photoUrl: json['photo_url'] as String?,
-    offline: json['offline'] as bool? ?? false,
-  );
+  factory AppointmentClient.fromJson(Map<String, dynamic> json) =>
+      AppointmentClient(
+        id: '${json['id']}',
+        name: json['name'] as String? ?? '',
+        nickname: json['nickname'] as String?,
+        phone: json['phone'] as String?,
+        photoUrl: json['photo_url'] as String?,
+        offline: json['offline'] as bool? ?? false,
+      );
 }
 
 /// An appointment as the master sees it (`/me/calendar`, `/me/appointments`).

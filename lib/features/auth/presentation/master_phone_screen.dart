@@ -33,7 +33,9 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
     if (!_phoneReady) return;
     Navigator.push(
       context,
-      pageRoute(MasterRegistrationScreen(phone: toApiPhone(_phoneController.text))),
+      pageRoute(
+        MasterRegistrationScreen(phone: toApiPhone(_phoneController.text)),
+      ),
     );
   }
 
@@ -70,7 +72,11 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
                   shape: BoxShape.circle,
                   color: tokens.surfaceElevated,
                 ),
-                child: AppIcon(Icons.smartphone_outlined, size: 34, color: tokens.accent),
+                child: AppIcon(
+                  Icons.smartphone_outlined,
+                  size: 34,
+                  color: tokens.accent,
+                ),
               ),
               const SizedBox(height: 22),
               Text(
@@ -95,7 +101,11 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
                   en: "We'll text a verification code to this number once your profile is filled in.",
                 ),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: tokens.textSecondary, height: 1.45, fontSize: 14),
+                style: TextStyle(
+                  color: tokens.textSecondary,
+                  height: 1.45,
+                  fontSize: 14,
+                ),
               ),
               const SizedBox(height: 34),
               // One bordered box holding the prefix and the input, so there is
@@ -162,7 +172,11 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
                           ? Padding(
                               key: const ValueKey('ok'),
                               padding: const EdgeInsets.only(right: 16),
-                              child: AppIcon(Icons.check_circle, size: 22, color: tokens.success),
+                              child: AppIcon(
+                                Icons.check_circle,
+                                size: 22,
+                                color: tokens.success,
+                              ),
                             )
                           : const SizedBox(key: ValueKey('no'), width: 16),
                     ),
@@ -176,8 +190,16 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
                   padding: const EdgeInsets.only(left: 4),
                   child: Text(
                     ready
-                        ? t(tk: 'Belgi dogry görünýär', ru: 'Номер выглядит верно', en: 'Number looks good')
-                        : t(tk: '8 sanly belgini giriziň', ru: 'Введите 8 цифр номера', en: 'Enter the 8-digit number'),
+                        ? t(
+                            tk: 'Belgi dogry görünýär',
+                            ru: 'Номер выглядит верно',
+                            en: 'Number looks good',
+                          )
+                        : t(
+                            tk: '8 sanly belgini giriziň',
+                            ru: 'Введите 8 цифр номера',
+                            en: 'Enter the 8-digit number',
+                          ),
                     style: TextStyle(
                       fontSize: 12.5,
                       color: ready ? tokens.success : tokens.textSecondary,

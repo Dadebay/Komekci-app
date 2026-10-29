@@ -111,7 +111,10 @@ class _MasterEntryGateState extends State<MasterEntryGate>
     if (billing != null) {
       return billing.permitsMasterEntry
           ? const MasterHome()
-          : MasterSubscriptionScreen(onLeave: _leavePayment);
+          : MasterSubscriptionScreen(
+              onLeave: _leavePayment,
+              onPromoActivated: _check,
+            );
     }
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;

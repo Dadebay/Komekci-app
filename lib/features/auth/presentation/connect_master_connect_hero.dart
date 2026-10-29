@@ -17,9 +17,23 @@ class _ConnectHero extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800, height: 1.2)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800,
+                    height: 1.2,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text(subtitle, style: TextStyle(fontSize: 13.5, height: 1.4, color: tokens.textSecondary)),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    height: 1.4,
+                    color: tokens.textSecondary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -28,7 +42,10 @@ class _ConnectHero extends StatelessWidget {
             width: 84,
             height: 84,
             alignment: Alignment.center,
-            decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .16), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: tokens.accent.withValues(alpha: .16),
+              shape: BoxShape.circle,
+            ),
             child: Container(
               width: 60,
               height: 60,
@@ -36,9 +53,19 @@ class _ConnectHero extends StatelessWidget {
               decoration: BoxDecoration(
                 color: tokens.surface,
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: tokens.accent.withValues(alpha: .3), blurRadius: 16, offset: const Offset(0, 6))],
+                boxShadow: [
+                  BoxShadow(
+                    color: tokens.accent.withValues(alpha: .3),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
-              child: AppIcon(Icons.person_search_outlined, size: 28, color: tokens.accent),
+              child: AppIcon(
+                Icons.person_search_outlined,
+                size: 28,
+                color: tokens.accent,
+              ),
             ),
           ),
         ],
@@ -49,7 +76,11 @@ class _ConnectHero extends StatelessWidget {
 
 /// Tap to start the field with "@" or "+993 ".
 class _HintChip extends StatelessWidget {
-  const _HintChip({required this.icon, required this.label, required this.onTap});
+  const _HintChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -71,7 +102,14 @@ class _HintChip extends StatelessWidget {
           children: [
             AppIcon(icon, size: 14, color: tokens.textSecondary),
             const SizedBox(width: 6),
-            Text(label, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: tokens.textSecondary,
+              ),
+            ),
           ],
         ),
       ),
@@ -105,14 +143,29 @@ class _SearchBox extends StatelessWidget {
         decoration: BoxDecoration(
           color: tokens.surface,
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: focusNode.hasFocus ? tokens.accent : tokens.border, width: focusNode.hasFocus ? 1.6 : 1),
-          boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .06), blurRadius: 18, offset: const Offset(0, 8))],
+          border: Border.all(
+            color: focusNode.hasFocus ? tokens.accent : tokens.border,
+            width: focusNode.hasFocus ? 1.6 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: tokens.textPrimary.withValues(alpha: .06),
+              blurRadius: 18,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 16, right: 10),
-              child: AppIcon(Icons.search, size: 22, color: focusNode.hasFocus ? tokens.accent : tokens.textSecondary),
+              child: AppIcon(
+                Icons.search,
+                size: 22,
+                color: focusNode.hasFocus
+                    ? tokens.accent
+                    : tokens.textSecondary,
+              ),
             ),
             Expanded(
               child: TextField(
@@ -122,10 +175,16 @@ class _SearchBox extends StatelessWidget {
                 enableSuggestions: false,
                 textInputAction: TextInputAction.search,
                 onSubmitted: (_) => onSearch(),
-                style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.w600,
+                ),
                 decoration: InputDecoration(
                   hintText: hint,
-                  hintStyle: TextStyle(color: tokens.disabled, fontWeight: FontWeight.w400),
+                  hintStyle: TextStyle(
+                    color: tokens.disabled,
+                    fontWeight: FontWeight.w400,
+                  ),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,
@@ -137,7 +196,11 @@ class _SearchBox extends StatelessWidget {
             if (controller.text.isNotEmpty && !searching)
               IconButton(
                 onPressed: onClear,
-                icon: AppIcon(Icons.close, size: 18, color: tokens.textSecondary),
+                icon: AppIcon(
+                  Icons.close,
+                  size: 18,
+                  color: tokens.textSecondary,
+                ),
               ),
             Padding(
               padding: const EdgeInsets.all(6),
@@ -148,12 +211,25 @@ class _SearchBox extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: tokens.textPrimary,
                     padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                   onPressed: searching ? null : onSearch,
                   child: searching
-                      ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2.2, color: tokens.surface))
-                      : AppIcon(Icons.arrow_forward, size: 20, color: tokens.surface),
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            color: tokens.surface,
+                          ),
+                        )
+                      : AppIcon(
+                          Icons.arrow_forward,
+                          size: 20,
+                          color: tokens.surface,
+                        ),
                 ),
               ),
             ),
@@ -181,21 +257,23 @@ class _MasterResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
     final status = connection?.status;
     final connected = status == ConnectionStatus.accepted;
     final pending = status == ConnectionStatus.pending;
-    final statusColor = master.acceptingBookings ? tokens.success : tokens.warning;
+    final statusColor = master.acceptingBookings
+        ? tokens.success
+        : tokens.warning;
 
     return Container(
       clipBehavior: Clip.antiAlias,
-      decoration: _bookingCardDecoration(tokens).copyWith(borderRadius: BorderRadius.circular(26)),
+      decoration: _bookingCardDecoration(
+        tokens,
+      ).copyWith(borderRadius: BorderRadius.circular(26)),
       child: Column(
         children: [
-          Container(
-            height: 78,
-            color: tokens.surfaceElevated,
-          ),
+          Container(height: 78, color: tokens.surfaceElevated),
           // Only 46px of layout height: the avatar hangs 40px up into the banner.
           SizedBox(
             height: 46,
@@ -210,11 +288,20 @@ class _MasterResultCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: tokens.surface,
-                    boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .12), blurRadius: 14, offset: const Offset(0, 6))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: tokens.textPrimary.withValues(alpha: .12),
+                        blurRadius: 14,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
                   child: Container(
                     padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: tokens.accent, width: 1.8)),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: tokens.accent, width: 1.8),
+                    ),
                     child: MasterAvatar(url: master.photoUrl, radius: 36),
                   ),
                 ),
@@ -229,7 +316,10 @@ class _MasterResultCard extends StatelessWidget {
                   master.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -238,12 +328,24 @@ class _MasterResultCard extends StatelessWidget {
                   runSpacing: 8,
                   children: [
                     _ProfilePill(label: '@${master.nickname}'),
-                    if (master.address.isNotEmpty) _ProfilePill(icon: Icons.location_on_outlined, label: master.address),
+                    if (master.address.isNotEmpty)
+                      _ProfilePill(
+                        icon: Icons.location_on_outlined,
+                        label: master.address,
+                      ),
                     _ProfilePill(
                       dotColor: statusColor,
                       label: master.acceptingBookings
-                          ? t(tk: 'Ýazgy kabul edýär', ru: 'Принимает записи', en: 'Accepting bookings')
-                          : t(tk: 'Wagtlaýyn ýapyk', ru: 'Запись временно закрыта', en: 'Bookings paused'),
+                          ? t(
+                              tk: 'Ýazgy kabul edýär',
+                              ru: 'Принимает записи',
+                              en: 'Accepting bookings',
+                            )
+                          : t(
+                              tk: 'Wagtlaýyn ýapyk',
+                              ru: 'Запись временно закрыта',
+                              en: 'Bookings paused',
+                            ),
                     ),
                   ],
                 ),
@@ -257,24 +359,49 @@ class _MasterResultCard extends StatelessWidget {
                       disabledBackgroundColor: tokens.surfaceElevated,
                       shape: const StadiumBorder(),
                     ),
-                    onPressed: connected || pending || connecting ? null : onConnect,
+                    onPressed: connected || pending || connecting
+                        ? null
+                        : onConnect,
                     icon: connecting
-                        ? SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2.2, color: tokens.surface))
+                        ? SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: tokens.surface,
+                            ),
+                          )
                         : AppIcon(
-                            connected ? Icons.check : (pending ? Icons.hourglass_empty : Icons.person_add_alt_1),
+                            connected
+                                ? Icons.check
+                                : (pending
+                                      ? Icons.hourglass_empty
+                                      : Icons.person_add_alt_1),
                             size: 19,
-                            color: connected || pending ? tokens.textSecondary : tokens.surface,
+                            color: connected || pending
+                                ? tokens.textSecondary
+                                : tokens.surface,
                           ),
                     label: Text(
                       connected
-                          ? t(tk: 'Eýýäm baglanyşykly', ru: 'Уже подключены', en: 'Already connected')
+                          ? t(
+                              tk: 'Eýýäm baglanyşykly',
+                              ru: 'Уже подключены',
+                              en: 'Already connected',
+                            )
                           : pending
-                          ? t(tk: 'Haýyş iberildi', ru: 'Запрос отправлен', en: 'Request sent')
+                          ? t(
+                              tk: 'Haýyş iberildi',
+                              ru: 'Запрос отправлен',
+                              en: 'Request sent',
+                            )
                           : t(tk: 'Baglan', ru: 'Подключиться', en: 'Connect'),
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: connected || pending ? tokens.textSecondary : tokens.surface,
+                        color: connected || pending
+                            ? tokens.textSecondary
+                            : tokens.surface,
                       ),
                     ),
                   ),
@@ -287,4 +414,3 @@ class _MasterResultCard extends StatelessWidget {
     );
   }
 }
-

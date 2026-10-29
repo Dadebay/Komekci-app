@@ -59,6 +59,7 @@ class BillingScreen extends StatelessWidget {
                   ),
                 )
               else ...[
+                const _PromoCard(),
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(

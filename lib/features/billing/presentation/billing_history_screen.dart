@@ -202,11 +202,21 @@ class BillingHistoryScreen extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: TextButton(
-                          onPressed: billing.loadingMore ? null : billing.loadMoreHistory,
+                          onPressed: billing.loadingMore
+                              ? null
+                              : billing.loadMoreHistory,
                           child: Text(
                             billing.loadingMore
-                                ? t(tk: 'Ýüklenýär...', ru: 'Загрузка...', en: 'Loading...')
-                                : t(tk: 'Köpräk görkez', ru: 'Показать ещё', en: 'Show more'),
+                                ? t(
+                                    tk: 'Ýüklenýär...',
+                                    ru: 'Загрузка...',
+                                    en: 'Loading...',
+                                  )
+                                : t(
+                                    tk: 'Köpräk görkez',
+                                    ru: 'Показать ещё',
+                                    en: 'Show more',
+                                  ),
                           ),
                         ),
                       ),

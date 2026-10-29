@@ -33,7 +33,9 @@ class _OtpCodeField extends StatelessWidget {
             listenable: Listenable.merge([controller, focusNode]),
             builder: (context, _) {
               final text = controller.text;
-              final active = focusNode.hasFocus ? text.length.clamp(0, length - 1) : -1;
+              final active = focusNode.hasFocus
+                  ? text.length.clamp(0, length - 1)
+                  : -1;
               return Row(
                 children: [
                   for (var i = 0; i < length; i++) ...[
@@ -43,7 +45,9 @@ class _OtpCodeField extends StatelessWidget {
                         duration: const Duration(milliseconds: 140),
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: i < text.length ? tokens.surface : tokens.surfaceElevated,
+                          color: i < text.length
+                              ? tokens.surface
+                              : tokens.surfaceElevated,
                           borderRadius: BorderRadius.circular(15),
                           border: Border.all(
                             color: hasError
@@ -59,10 +63,17 @@ class _OtpCodeField extends StatelessWidget {
                         child: i < text.length
                             ? Text(
                                 text[i],
-                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               )
                             : i == active
-                            ? Container(width: 2, height: 24, color: tokens.accent)
+                            ? Container(
+                                width: 2,
+                                height: 24,
+                                color: tokens.accent,
+                              )
                             : null,
                       ),
                     ),
