@@ -39,7 +39,7 @@ class ClientProfile extends StatelessWidget {
           _ClientProfileMenuRow(
             icon: Icons.brush_outlined,
             title: t(tk: 'Görnüşi', ru: 'Оформление', en: 'Appearance'),
-            subtitle: _themeName(theme, language),
+            subtitle: _themeName(theme),
             onTap: () => _showThemeSheet(context),
           ),
           _ClientProfileMenuRow(
@@ -100,15 +100,13 @@ class ClientProfile extends StatelessWidget {
   }
 }
 
-String _themeName(KomekciTheme theme, AppLanguage language) => switch (
+String _themeName(KomekciTheme theme) => switch (
   themeStyleFor(theme)
 ) {
-  KomekciThemeStyle.gold =>
-    pickTr(language, tk: 'Altyn', ru: 'Золотой', en: 'Gold'),
-  KomekciThemeStyle.blue =>
-    pickTr(language, tk: 'Mawy', ru: 'Синий', en: 'Blue'),
-  KomekciThemeStyle.red =>
-    pickTr(language, tk: 'Gyzyl', ru: 'Красный', en: 'Red'),
+  KomekciThemeStyle.gold => 'Ivory',
+  KomekciThemeStyle.blue => 'Onyx',
+  KomekciThemeStyle.red => 'Champagne',
+  KomekciThemeStyle.dark => 'Rose',
 };
 
 String _languageName(AppLanguage language) => switch (language) {
@@ -192,10 +190,12 @@ void _showThemeSheet(BuildContext context) {
       final goldCode = enabledThemeForStyle(enabledThemes, KomekciThemeStyle.gold);
       final blueCode = enabledThemeForStyle(enabledThemes, KomekciThemeStyle.blue);
       final redCode = enabledThemeForStyle(enabledThemes, KomekciThemeStyle.red);
+      final darkCode = enabledThemeForStyle(enabledThemes, KomekciThemeStyle.dark);
       final options = <(KomekciTheme, AppThemeTokens)>[
         if (goldCode != null) (goldCode, settings.themeTokensFor(goldCode)),
         if (blueCode != null) (blueCode, settings.themeTokensFor(blueCode)),
         if (redCode != null) (redCode, settings.themeTokensFor(redCode)),
+        if (darkCode != null) (darkCode, settings.themeTokensFor(darkCode)),
       ];
       String t({required String tk, required String ru, required String en}) =>
           pickTr(language, tk: tk, ru: ru, en: en);
@@ -270,7 +270,7 @@ void _showThemeSheet(BuildContext context) {
                   ),
                 for (final option in options) ...[
                   _ThemeOptionCard(
-                    title: _themeName(option.$1, language),
+                    title: _themeName(option.$1),
                     description: _themeDescription(themeStyleFor(option.$1), language),
                     palette: option.$2,
                     selected: themeStyleFor(selected) == themeStyleFor(option.$1),
@@ -296,4 +296,5 @@ String _themeDescription(KomekciThemeStyle style, AppLanguage language) =>
       KomekciThemeStyle.gold => pickTr(language, tk: 'Adaty görnüş', ru: 'Классический стиль', en: 'Classic look'),
       KomekciThemeStyle.blue => pickTr(language, tk: 'Mawy öwüşgin', ru: 'Синие акценты', en: 'Blue accents'),
       KomekciThemeStyle.red => pickTr(language, tk: 'Gyzyl öwüşgin', ru: 'Красные акценты', en: 'Red accents'),
+      KomekciThemeStyle.dark => pickTr(language, tk: 'Gara görnüş', ru: 'Тёмная тема', en: 'Dark theme'),
     };

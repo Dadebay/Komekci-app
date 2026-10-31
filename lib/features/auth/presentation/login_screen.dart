@@ -86,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 27, 24, 22),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: tokens.surface,
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(30),
                     ),
@@ -153,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               : _serverError,
                           errorMaxLines: 3,
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: tokens.surface,
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(18),
                             borderSide: BorderSide(color: tokens.border),

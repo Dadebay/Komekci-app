@@ -98,7 +98,7 @@ class CabinetSettingsScreen extends StatelessWidget {
             _CabinetPreferenceTile(
               icon: Icons.brush_outlined,
               title: t(tk: 'Görnüşi', ru: 'Оформление', en: 'Appearance'),
-              value: _themeName(theme, language),
+              value: _themeName(theme),
               onTap: () => _showThemeSheet(context),
             ),
             const SizedBox(height: 8),

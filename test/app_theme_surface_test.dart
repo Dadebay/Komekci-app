@@ -21,9 +21,19 @@ class _SettingsRepository extends SettingsRepository {
             },
           },
           {
+            'code': 'onyx',
+            'enabled': true,
+            'colors': {'background': '#121212', 'accent': '#D4D4D4'},
+          },
+          {
             'code': 'champagne',
             'enabled': true,
             'colors': {'background': '#F8F1E7', 'secondary': '#C6A57B'},
+          },
+          {
+            'code': 'rose',
+            'enabled': true,
+            'colors': {'background': '#FDF6F7', 'accent': '#A14B5D'},
           },
         ],
       });
@@ -42,9 +52,30 @@ void main() {
       expect(ivory.border, goldTokens.border);
       expect(ivory.accent, const Color(0xff8C7355));
 
-      final champagne = settings.themeTokensFor(KomekciTheme.champagne);
-      expect(champagne.surface, const Color(0xffF8F1E7));
-      expect(champagne.surfaceElevated, const Color(0xffC6A57B));
+      expect(
+        settings.themeTokensFor(KomekciTheme.onyx).accent,
+        blueTokens.accent,
+      );
+      expect(
+        settings.themeTokensFor(KomekciTheme.champagne).accent,
+        redTokens.accent,
+      );
+      final rose = settings.themeTokensFor(KomekciTheme.rose);
+      expect(rose.surface, darkTokens.surface);
+      expect(rose.brightness, Brightness.dark);
     },
   );
+
+  test('Ivory is the gold default and all four names have distinct styles', () {
+    expect(ThemeProvider().selected, KomekciTheme.ivory);
+    expect(tokensFor(KomekciTheme.ivory), goldTokens);
+    expect(tokensFor(KomekciTheme.onyx), blueTokens);
+    expect(tokensFor(KomekciTheme.champagne), redTokens);
+    expect(tokensFor(KomekciTheme.rose), darkTokens);
+    expect(
+      enabledThemeForStyle(AppSettings.fallback.themes, KomekciThemeStyle.dark),
+      KomekciTheme.rose,
+    );
+    expect(buildThemeData(darkTokens).brightness, Brightness.dark);
+  });
 }

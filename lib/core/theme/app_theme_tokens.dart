@@ -181,10 +181,30 @@ const redTokens = AppThemeTokens(
   scrim: Colors.black45,
 );
 
+const darkTokens = AppThemeTokens(
+  brightness: Brightness.dark,
+  surface: Color(0xff121212),
+  surfaceElevated: Color(0xff242424),
+  textPrimary: Color(0xffF5F5F5),
+  textSecondary: Color(0xffB8B8B8),
+  border: Color(0xff3A3A3A),
+  primary: Color(0xffF5F5F5),
+  accent: Color(0xffD4D4D4),
+  accentOn: Color(0xff121212),
+  button: Color(0xffF5F5F5),
+  buttonText: Color(0xff121212),
+  success: Color(0xff5FBE85),
+  warning: Color(0xffE0B75B),
+  danger: Color(0xffE5766B),
+  disabled: Color(0xff666666),
+  scrim: Colors.black87,
+);
+
 AppThemeTokens tokensFor(KomekciTheme theme) => switch (themeStyleFor(theme)) {
   KomekciThemeStyle.gold => goldTokens,
   KomekciThemeStyle.blue => blueTokens,
   KomekciThemeStyle.red => redTokens,
+  KomekciThemeStyle.dark => darkTokens,
 };
 
 /// The app's font (declared in `pubspec.yaml`). Widgets that set their own

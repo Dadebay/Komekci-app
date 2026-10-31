@@ -69,7 +69,7 @@ class _ThemeOptionCard extends StatelessWidget {
   }
 }
 
-/// Solid swatch of the theme's accent colour as sent by the backend.
+/// Solid swatch of the theme's main visual colour.
 class _ThemeMiniPreview extends StatelessWidget {
   const _ThemeMiniPreview({required this.palette});
 
@@ -80,7 +80,7 @@ class _ThemeMiniPreview extends StatelessWidget {
     width: 55,
     height: 60,
     decoration: BoxDecoration(
-      color: palette.accent,
+      color: palette.brightness == Brightness.dark ? palette.surface : palette.accent,
       borderRadius: BorderRadius.circular(14),
       border: Border.all(color: palette.border),
     ),

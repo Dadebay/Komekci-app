@@ -30,17 +30,24 @@ class AppSettingsProvider extends ChangeNotifier {
   List<KomekciTheme> get themes => _settings.themes;
   AppThemeTokens themeTokensFor(KomekciTheme theme) {
     final bundled = tokensFor(theme);
-    final tokens = _settings.themeColors[theme]?.applyTo(bundled) ?? bundled;
-    // The server's ivory secondary is dark beige; keep app surfaces light so
-    // onboarding fields and disabled actions retain their white appearance.
+    // Keep the existing Ivory look, including its server-provided gold detail.
     if (theme == KomekciTheme.ivory) {
+      final tokens = _settings.themeColors[theme]?.applyTo(bundled) ?? bundled;
       return tokens.copyWith(
         surface: goldTokens.surface,
         surfaceElevated: goldTokens.surface,
         border: goldTokens.border,
       );
     }
-    // Keep red-theme cards and inputs white even if the API sends a pink secondary.
+    // Public settings still contain the old Onyx/Champagne/Rose palettes.
+    // These named choices have fixed app palettes until the server catches up.
+    if (theme == KomekciTheme.onyx ||
+        theme == KomekciTheme.champagne ||
+        theme == KomekciTheme.rose) {
+      return bundled;
+    }
+    final tokens = _settings.themeColors[theme]?.applyTo(bundled) ?? bundled;
+    // Legacy red-theme cards and inputs stay white.
     return themeStyleFor(theme) == KomekciThemeStyle.red
         ? tokens.copyWith(surfaceElevated: tokens.surface)
         : tokens;
