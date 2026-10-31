@@ -5,9 +5,15 @@ import 'app_icon.dart';
 
 /// Shared header used across cabinet/customer/schedule/booking destinations.
 class CabinetAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const CabinetAppBar({super.key, required this.title, this.action});
+  const CabinetAppBar({
+    super.key,
+    required this.title,
+    this.action,
+    this.onBack,
+  });
   final String title;
   final Widget? action;
+  final VoidCallback? onBack;
 
   @override
   Size get preferredSize => const Size.fromHeight(52);
@@ -22,20 +28,36 @@ class CabinetAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: true,
 
       automaticallyImplyLeading: false,
-      leading: canPop
+      leading: canPop || onBack != null
           ? IconButton(
-              onPressed: () => Navigator.maybePop(context),
-              icon: AppIcon(Icons.arrow_back, color: context.appTokens.textPrimary, size: 20),
+              onPressed: onBack ?? () => Navigator.maybePop(context),
+              icon: AppIcon(
+                Icons.arrow_back,
+                color: context.appTokens.textPrimary,
+                size: 20,
+              ),
             )
           : null,
-      title: Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-      actions: [if (action != null) Padding(padding: const EdgeInsets.only(right: 12), child: action!)],
+      title: Text(
+        title,
+        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+      ),
+      actions: [
+        if (action != null)
+          Padding(padding: const EdgeInsets.only(right: 12), child: action!),
+      ],
     );
   }
 }
 
 class IconActionButton extends StatelessWidget {
-  const IconActionButton({super.key, required this.icon, required this.onTap, this.filled = false, this.bare = false});
+  const IconActionButton({
+    super.key,
+    required this.icon,
+    required this.onTap,
+    this.filled = false,
+    this.bare = false,
+  });
   final IconData icon;
   final VoidCallback onTap;
   final bool filled;
@@ -50,7 +72,15 @@ class IconActionButton extends StatelessWidget {
     if (bare) {
       return GestureDetector(
         onTap: onTap,
-        child: SizedBox(width: 46, height: 46, child: AppIcon(icon, color: filled ? tokens.accent : tokens.textPrimary, size: 21)),
+        child: SizedBox(
+          width: 46,
+          height: 46,
+          child: AppIcon(
+            icon,
+            color: filled ? tokens.accent : tokens.textPrimary,
+            size: 21,
+          ),
+        ),
       );
     }
     return GestureDetector(
@@ -64,7 +94,11 @@ class IconActionButton extends StatelessWidget {
           shape: BoxShape.circle,
           border: filled ? null : Border.all(color: tokens.border),
         ),
-        child: AppIcon(icon, color: filled ? tokens.surface : tokens.textPrimary, size: 19),
+        child: AppIcon(
+          icon,
+          color: filled ? tokens.surface : tokens.textPrimary,
+          size: 19,
+        ),
       ),
     );
   }

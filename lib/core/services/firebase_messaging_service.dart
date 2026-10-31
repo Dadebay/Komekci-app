@@ -22,7 +22,11 @@ class FirebaseMessagingService {
   /// The normal permission flow also registers the device token when granted.
   static Future<void> requestNotificationPermission() async {
     final active = _active;
-    if (active != null) await active._requestPermission();
+    if (active != null) {
+      await active._requestPermission();
+    } else if (Platform.isAndroid || Platform.isIOS) {
+      await FirebaseMessaging.instance.requestPermission();
+    }
   }
 
   /// Fired for every message that carries a [RemoteMessage.notification] —

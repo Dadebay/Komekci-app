@@ -33,6 +33,51 @@ void main() {
     // The server can charge the first month immediately, leaving zero balance.
     expect(billing(0, SubscriptionStatus.active).permitsMasterEntry, true);
     expect(billing(0, SubscriptionStatus.grace).permitsMasterEntry, true);
+    expect(
+      billing(0, SubscriptionStatus.suspended)
+          .withPromo(
+            const PromoStatus(
+              eligible: true,
+              used: false,
+              active: false,
+              paidAccess: false,
+              topupRequired: true,
+              code: 'promo_available',
+            ),
+          )
+          .permitsMasterEntry,
+      true,
+    );
+    expect(
+      billing(0, SubscriptionStatus.suspended)
+          .withPromo(
+            const PromoStatus(
+              eligible: false,
+              used: true,
+              active: true,
+              paidAccess: false,
+              topupRequired: false,
+              code: 'promo_active',
+            ),
+          )
+          .permitsMasterEntry,
+      true,
+    );
+    expect(
+      billing(40, SubscriptionStatus.suspended)
+          .withPromo(
+            const PromoStatus(
+              eligible: false,
+              used: true,
+              active: false,
+              paidAccess: false,
+              topupRequired: true,
+              code: 'account_restricted',
+            ),
+          )
+          .permitsMasterEntry,
+      false,
+    );
   });
 
   testWidgets('restored unpaid master returns to the payment screen', (

@@ -8,6 +8,7 @@ import '../../../core/services/device_registrar.dart';
 import '../../../data/models/api/user_models.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/me_repository.dart';
+import '../../services/application/master_service_reminder_scheduler.dart';
 
 enum UserRole { client, master }
 
@@ -23,7 +24,7 @@ enum SessionRestore { signedIn, none, offline }
 /// always the account's own role — the API has no way for one account to act
 /// as both.
 class AuthProvider extends ChangeNotifier {
-  AuthProvider({required this._api, required this._auth, required this._meRepository, required this._devices}) {
+  AuthProvider({required this._api, required this._auth, required this._meRepository, required this._devices, this.serviceReminder}) {
     _api.onSessionExpired = _handleSessionExpired;
   }
 
@@ -31,6 +32,7 @@ class AuthProvider extends ChangeNotifier {
   final AuthRepository _auth;
   final MeRepository _meRepository;
   final DeviceRegistrar _devices;
+  final MasterServiceReminderScheduler? serviceReminder;
 
   UserRole _role = UserRole.client;
   AuthStep _step = AuthStep.signedOut;
@@ -162,6 +164,14 @@ class AuthProvider extends ChangeNotifier {
   }
 
   void _clear() {
+    final reminder = serviceReminder;
+    if (reminder != null) {
+      unawaited(
+        reminder.sync(masterId: null, hasServices: false, locale: 'tk').catchError((Object error) {
+          debugPrint('Could not cancel master service reminder: $error');
+        }),
+      );
+    }
     _me = null;
     _step = AuthStep.signedOut;
     _role = UserRole.client;

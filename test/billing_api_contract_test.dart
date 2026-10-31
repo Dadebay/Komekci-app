@@ -10,6 +10,78 @@ import 'package:komekci/data/repositories/billing_repository.dart';
 
 void main() {
   test(
+    'promo code can come from its endpoint and activation uses an install id',
+    () async {
+      final requests = <http.Request>[];
+      final api = ApiClient(
+        baseUrl: 'https://example.test/api',
+        tokenStore: MemoryTokenStore(),
+        client: MockClient((request) async {
+          requests.add(request);
+          if (request.url.path == '/api/me/billing') {
+            return http.Response(
+              jsonEncode({
+                'balance': '0.00',
+                'subscription_price': '20.00',
+                'subscription_status': 'suspended',
+                'accepting_bookings': false,
+              }),
+              200,
+            );
+          }
+          if (request.url.path == '/api/me/promo' && request.method == 'GET') {
+            return http.Response(
+              jsonEncode({
+                'code': 'promo_available',
+                'eligible': true,
+                'used': false,
+                'active': false,
+                'paid_access': false,
+                'topup_required': true,
+              }),
+              200,
+            );
+          }
+          if (request.url.path == '/api/me/promo' && request.method == 'POST') {
+            return http.Response(
+              jsonEncode({
+                'code': 'promo_active',
+                'eligible': false,
+                'used': true,
+                'active': true,
+                'paid_access': false,
+                'topup_required': false,
+                'days_left': 31,
+              }),
+              200,
+            );
+          }
+          return http.Response('{}', 404);
+        }),
+      );
+      await api.saveSession(
+        const AuthTokens(access: 'access', refresh: 'refresh'),
+      );
+      final repository = BillingRepository(api);
+
+      final summary = await repository.billing();
+      expect(summary.promo?.isAvailable, true);
+      expect(summary.permitsMasterEntry, true);
+      expect(requests.map((r) => r.url.path), [
+        '/api/me/billing',
+        '/api/me/promo',
+      ]);
+
+      const installId = 'install-12345678';
+      final activated = await repository.activatePromo(installId);
+      expect(activated.active, true);
+      expect(requests.last.headers['Authorization'], 'Bearer access');
+      expect(jsonDecode(requests.last.body), {'device_id': installId});
+      api.close();
+    },
+  );
+
+  test(
     'card top-up sends the selected bank and checks the transaction',
     () async {
       final requests = <http.Request>[];

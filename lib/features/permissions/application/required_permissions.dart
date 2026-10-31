@@ -39,7 +39,9 @@ class DeviceRequiredPermissions implements RequiredPermissions {
         ? await DeviceCalendar.instance.hasPermissions()
         : CalendarPermissionStatus.granted;
     return MissingAppPermissions(
-      notifications: notificationStatus != AuthorizationStatus.authorized,
+      notifications:
+          notificationStatus != AuthorizationStatus.authorized &&
+          notificationStatus != AuthorizationStatus.provisional,
       // Write-only access cannot reconcile moved or cancelled bookings.
       calendar: calendarStatus != CalendarPermissionStatus.granted,
     );
@@ -49,6 +51,15 @@ class DeviceRequiredPermissions implements RequiredPermissions {
   Future<void> request(MissingAppPermissions permissions) async {
     if (permissions.notifications) {
       await FirebaseMessagingService.requestNotificationPermission();
+      // After a permanent denial the system shows no dialog, so "Allow" would
+      // appear to do nothing; send the user to the app settings instead.
+      final status =
+          (await FirebaseMessaging.instance.getNotificationSettings())
+              .authorizationStatus;
+      if (status != AuthorizationStatus.authorized &&
+          status != AuthorizationStatus.provisional) {
+        await openAppSettings();
+      }
     }
     if (permissions.calendar) {
       await DeviceCalendar.instance.requestPermissions();

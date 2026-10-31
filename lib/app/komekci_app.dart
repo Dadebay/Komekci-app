@@ -55,6 +55,7 @@ import '../features/requests/application/connection_requests_provider.dart';
 import '../features/schedule/application/schedule_provider.dart';
 import '../features/schedule/domain/working_time.dart';
 import '../features/services/application/service_provider.dart';
+import '../features/services/application/master_service_reminder_scheduler.dart';
 import '../data/models/salon_service.dart';
 import '../data/models/customer.dart';
 import '../data/models/appointment.dart';

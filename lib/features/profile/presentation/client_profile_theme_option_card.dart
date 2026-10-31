@@ -69,6 +69,7 @@ class _ThemeOptionCard extends StatelessWidget {
   }
 }
 
+/// Solid swatch of the theme's accent colour as sent by the backend.
 class _ThemeMiniPreview extends StatelessWidget {
   const _ThemeMiniPreview({required this.palette});
 
@@ -79,22 +80,9 @@ class _ThemeMiniPreview extends StatelessWidget {
     width: 55,
     height: 60,
     decoration: BoxDecoration(
-      color: palette.surface,
-      borderRadius: BorderRadius.circular(12),
+      color: palette.accent,
+      borderRadius: BorderRadius.circular(14),
       border: Border.all(color: palette.border),
-    ),
-    clipBehavior: Clip.antiAlias,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(height: 16, color: palette.accent),
-        const SizedBox(height: 8),
-        Container(width: 30, height: 4, margin: const EdgeInsets.only(left: 8), decoration: BoxDecoration(color: palette.textPrimary.withValues(alpha: .65), borderRadius: BorderRadius.circular(2))),
-        const SizedBox(height: 5),
-        Container(width: 22, height: 4, margin: const EdgeInsets.only(left: 8), decoration: BoxDecoration(color: palette.border, borderRadius: BorderRadius.circular(2))),
-        const Spacer(),
-        Container(width: 37, height: 8, margin: const EdgeInsets.fromLTRB(8, 0, 0, 7), decoration: BoxDecoration(color: palette.accent, borderRadius: BorderRadius.circular(3))),
-      ],
     ),
   );
 }

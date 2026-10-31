@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 
 /// A new client booking delivered by push to the signed-in master.
 class MasterBookingAlert {
@@ -68,7 +69,24 @@ class MasterBookingAlertController extends ChangeNotifier {
       _alert = null;
       _lastMessageId = null;
     }
-    notifyListeners();
+    // Called from State.dispose(), where the widget tree is locked and
+    // listeners (InheritedProvider) can't be marked dirty; defer to after the frame.
+    final binding = SchedulerBinding.instance;
+    if (binding.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+      binding.addPostFrameCallback((_) {
+        if (!_disposed) notifyListeners();
+      });
+    } else {
+      notifyListeners();
+    }
+  }
+
+  bool _disposed = false;
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
   void dismiss(String id) {

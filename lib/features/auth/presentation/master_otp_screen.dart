@@ -108,6 +108,9 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
     if (!_codeReady || _verifying) return;
     final code = _code.text;
     final auth = context.read<AuthProvider>();
+    final serviceReminder = widget.registration == null
+        ? null
+        : context.read<MasterServiceReminderScheduler>();
     final language = context.read<LanguageProvider>().language;
     setState(() {
       _verifying = true;
@@ -125,6 +128,13 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
       _code.clear();
       _focus.requestFocus();
       return;
+    }
+    if (serviceReminder != null && me.isMaster) {
+      try {
+        await serviceReminder.registered(masterId: me.id, locale: me.locale);
+      } catch (error) {
+        debugPrint('Could not schedule master service reminder: $error');
+      }
     }
     if (!mounted) return;
     Navigator.of(

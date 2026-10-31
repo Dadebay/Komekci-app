@@ -27,6 +27,7 @@ class BillingProvider extends SessionScoped {
   final FlutterSecureStorage _storage;
 
   static const _installIdKey = 'komekci.install_id';
+  static final _installIdPattern = RegExp(r'^[A-Za-z0-9._:-]{8,128}$');
 
   Billing? _billing;
   final List<LedgerTransaction> _history = [];
@@ -129,7 +130,7 @@ class BillingProvider extends SessionScoped {
   Future<String> _installId() async {
     try {
       final saved = await _storage.read(key: _installIdKey);
-      if (saved != null && saved.length >= 8) return saved;
+      if (saved != null && _installIdPattern.hasMatch(saved)) return saved;
     } catch (e) {
       debugPrint('Reading install id failed: $e');
     }
@@ -140,15 +141,19 @@ class BillingProvider extends SessionScoped {
       await _storage.write(key: _installIdKey, value: id);
     } catch (e) {
       debugPrint('Saving install id failed: $e');
+      rethrow;
     }
     return id;
   }
 
-  /// Activates the free month. Throws `SERVICES_REQUIRED` (422) when the
-  /// master has no service yet and `PROMO_ALREADY_USED` (409). On success the
-  /// billing summary is re-read.
+  /// Activates the free month after an explicit user action. Keep the returned
+  /// access state even if refreshing the billing summary then fails.
   Future<PromoStatus> activatePromo() async {
     final result = await _repository.activatePromo(await _installId());
+    if (_billing != null) {
+      _billing = _billing!.withPromo(result);
+      notifyListeners();
+    }
     await refresh();
     return result;
   }

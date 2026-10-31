@@ -31,6 +31,7 @@ class _SplashScreenState extends State<SplashScreen>
     final language = context.read<LanguageProvider>();
     final theme = context.read<ThemeProvider>();
     final auth = context.read<AuthProvider>();
+    final serviceReminder = context.read<MasterServiceReminderScheduler>();
     final requestedLocale = language.language;
     final result = await Future.wait<Object?>([
       Connectivity().checkConnectivity(),
@@ -41,7 +42,8 @@ class _SplashScreenState extends State<SplashScreen>
     final restore = result[3] as SessionRestore;
     // The backend decides which languages exist; don't leave the app on one
     // it has switched off.
-    if (settings.locales.isNotEmpty && !settings.locales.contains(language.language)) {
+    if (settings.locales.isNotEmpty &&
+        !settings.locales.contains(language.language)) {
       language.select(settings.locales.first);
     }
     if (settings.themes.isNotEmpty) {
@@ -61,6 +63,17 @@ class _SplashScreenState extends State<SplashScreen>
     // gone by the time the app opens.
     await _initializeFirebase();
     final me = restore == SessionRestore.signedIn ? auth.me : null;
+    if (me?.isMaster != true) {
+      try {
+        await serviceReminder.sync(
+          masterId: null,
+          hasServices: false,
+          locale: 'tk',
+        );
+      } catch (error) {
+        debugPrint('Could not clear master service reminder: $error');
+      }
+    }
     if (me != null) {
       // Signed in already: take the account's saved language and theme.
       for (final candidate in settings.locales) {
@@ -76,7 +89,8 @@ class _SplashScreenState extends State<SplashScreen>
           break;
         }
       }
-      if ((settings.locales.isNotEmpty && me.locale != language.language.name) ||
+      if ((settings.locales.isNotEmpty &&
+              me.locale != language.language.name) ||
           (settings.themes.isNotEmpty && me.theme != theme.selected.name)) {
         await auth.savePreferences(
           locale: settings.locales.isEmpty ? null : language.language.name,

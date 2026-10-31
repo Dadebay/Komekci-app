@@ -30,8 +30,6 @@ class _MasterEntryGateState extends State<MasterEntryGate>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed &&
         !_checking &&
-        _billing != null &&
-        !_billing!.permitsMasterEntry &&
         ModalRoute.of(context)?.isCurrent == true) {
       _check();
     }
@@ -111,10 +109,7 @@ class _MasterEntryGateState extends State<MasterEntryGate>
     if (billing != null) {
       return billing.permitsMasterEntry
           ? const MasterHome()
-          : MasterSubscriptionScreen(
-              onLeave: _leavePayment,
-              onPromoActivated: _check,
-            );
+          : MasterSubscriptionScreen(onboarding: false, onLeave: _leavePayment);
     }
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;

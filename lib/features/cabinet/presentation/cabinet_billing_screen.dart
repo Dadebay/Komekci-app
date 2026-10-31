@@ -88,6 +88,7 @@ class BillingScreen extends StatelessWidget {
                           _SubscriptionStatusChip(
                             status: billing.status,
                             language: language,
+                            promo: billing.promo,
                           ),
                         ],
                       ),
@@ -143,7 +144,10 @@ class BillingScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (billing.status != SubscriptionStatus.active) ...[
+                if (billing.status != SubscriptionStatus.active &&
+                    billing.promo?.isAvailable != true &&
+                    billing.promo?.active != true &&
+                    billing.promo?.paidAccess != true) ...[
                   const SizedBox(height: 12),
                   _InfoBanner(
                     icon: Icons.info_outline,

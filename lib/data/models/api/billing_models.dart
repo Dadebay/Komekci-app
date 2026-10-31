@@ -33,12 +33,33 @@ class Billing {
   /// Free first month; null when the server did not send it.
   final PromoStatus? promo;
 
-  /// A monthly charge can leave zero balance even after a successful payment.
-  bool get permitsMasterEntry =>
-      balance > 0 ||
-      (promo?.active ?? false) ||
-      status == SubscriptionStatus.active ||
-      status == SubscriptionStatus.grace;
+  /// A new master may enter before starting the free month. Once it is used,
+  /// the server's access decision takes precedence over the local balance.
+  bool get permitsMasterEntry {
+    final offer = promo;
+    if (offer != null) {
+      if (offer.needsTopup) return false;
+      if (offer.isAvailable || offer.active || offer.paidAccess) return true;
+    }
+    // A monthly charge can leave zero balance after a successful payment.
+    return balance > 0 ||
+        status == SubscriptionStatus.active ||
+        status == SubscriptionStatus.grace;
+  }
+
+  Billing withPromo(PromoStatus value) => Billing(
+    balance: balance,
+    subscriptionPrice: subscriptionPrice,
+    status: status,
+    acceptingBookings: acceptingBookings,
+    nextChargeAt: nextChargeAt,
+    paidUntil: paidUntil,
+    paymentMethods: paymentMethods,
+    phone: phone,
+    phoneDailyLimit: phoneDailyLimit,
+    phoneMinAmount: phoneMinAmount,
+    promo: value,
+  );
 
   factory Billing.fromJson(Map<String, dynamic> json) => Billing(
     balance: parseMoney(json['balance']),
@@ -69,6 +90,7 @@ class PromoStatus {
     required this.active,
     required this.paidAccess,
     required this.topupRequired,
+    this.code,
     this.startsAt,
     this.endsAt,
     this.daysLeft = 0,
@@ -84,17 +106,18 @@ class PromoStatus {
 
   /// Promo is over and nothing is paid: ask for a top-up.
   final bool topupRequired;
+  final String? code;
   final DateTime? startsAt;
   final DateTime? endsAt;
   final int daysLeft;
   final String? reason;
 
-  /// No service yet: the free month can start once one is created.
-  bool get servicesRequired => !used && reason == 'services_required';
+  bool get isAvailable => code == 'promo_available';
 
-  /// The free month has ended and the master has not paid. `topup_required`
-  /// is also true before the promo was ever started, so it only counts after.
-  bool get needsTopup => used && !active && !paidAccess;
+  /// Some responses set `topup_required` before an available offer is used.
+  bool get needsTopup =>
+      code == 'account_restricted' ||
+      (!isAvailable && topupRequired && !active && !paidAccess);
 
   factory PromoStatus.fromJson(Map<String, dynamic> json) => PromoStatus(
     eligible: json['eligible'] as bool? ?? false,
@@ -102,6 +125,7 @@ class PromoStatus {
     active: json['active'] as bool? ?? false,
     paidAccess: json['paid_access'] as bool? ?? false,
     topupRequired: json['topup_required'] as bool? ?? false,
+    code: json['code'] as String?,
     startsAt: parseApiTime(json['starts_at']),
     endsAt: parseApiTime(json['ends_at']),
     daysLeft: parseIntOrNull(json['days_left']) ?? 0,

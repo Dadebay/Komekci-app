@@ -7,14 +7,24 @@ class BillingRepository {
   BillingRepository(this._api);
   final ApiClient _api;
 
-  Future<Billing> billing() async =>
-      Billing.fromJson(asMap(unwrapData(await _api.get('/me/billing'))));
+  Future<Billing> billing() async {
+    final summary = Billing.fromJson(
+      asMap(unwrapData(await _api.get('/me/billing'))),
+    );
+    if (summary.promo != null) return summary;
+    try {
+      return summary.withPromo(await promo());
+    } catch (_) {
+      // Older servers may omit the promo endpoint; keep billing usable.
+      return summary;
+    }
+  }
 
   Future<PromoStatus> promo() async =>
       PromoStatus.fromJson(asMap(unwrapData(await _api.get('/me/promo'))));
 
-  /// Starts the free month. 422 `SERVICES_REQUIRED` (create a service first),
-  /// 409 `PROMO_ALREADY_USED`.
+  /// Starts the free month after an explicit tap. Older servers may respond
+  /// with 422 `SERVICES_REQUIRED`; a used offer returns 409.
   Future<PromoStatus> activatePromo(String deviceId) async =>
       PromoStatus.fromJson(
         asMap(

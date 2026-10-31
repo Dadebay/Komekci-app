@@ -14,6 +14,12 @@ class LocalNotificationsService {
     description: 'Booking, reminder and waitlist notifications',
     importance: Importance.high,
   );
+  static const _masterSetupChannel = AndroidNotificationChannel(
+    'komekci_master_setup',
+    'Master setup reminders',
+    description: 'Reminders to finish setting up a master profile',
+    importance: Importance.high,
+  );
 
   Future<void> initialize() => _initializing ??= _initialize();
 
@@ -38,6 +44,11 @@ class LocalNotificationsService {
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(_channel);
+    await _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(_masterSetupChannel);
   }
 
   Future<String?> notificationLaunchPayload() async {
@@ -101,6 +112,36 @@ class LocalNotificationsService {
       title: title,
       body: body,
       when: start.subtract(const Duration(hours: 1)),
+      payload: payload,
+    );
+  }
+
+  Future<void> scheduleMasterServiceReminder({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime when,
+    required String payload,
+  }) async {
+    await initialize();
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      tz.TZDateTime.from(when.toUtc(), tz.getLocation('Asia/Ashgabat')),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'komekci_master_setup',
+          'Master setup reminders',
+          channelDescription: 'Reminders to finish setting up a master profile',
+          icon: 'komekci_notification_icon',
+          importance: Importance.high,
+          priority: Priority.high,
+          largeIcon: DrawableResourceAndroidBitmap('komekci_notification_logo'),
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: payload,
     );
   }

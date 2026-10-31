@@ -38,6 +38,15 @@ class FakeNotifications implements LocalNotificationsService {
   }
 
   @override
+  Future<void> scheduleMasterServiceReminder({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime when,
+    required String payload,
+  }) async {}
+
+  @override
   Future<void> show({String? title, String? body, String? payload}) async {}
 
   @override
