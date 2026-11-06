@@ -2,6 +2,54 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:komekci/features/booking/application/client_calendar_service.dart';
 
 void main() {
+  CalendarBookingDetails booking({
+    String locale = 'tk',
+    int day = 14,
+    int hour = 15,
+  }) => CalendarBookingDetails(
+    id: '50',
+    masterName: 'Aydogdy',
+    serviceName: 'Saç almak',
+    startsAt: DateTime(2030, 3, day, hour),
+    endsAt: DateTime(2030, 3, day, hour, 40),
+    locale: locale,
+  );
+
+  test('morning plan entry only for a later day and after 10:00', () {
+    final now = DateTime(2030, 3, 13, 9);
+    expect(booking().wantsDayPlanEntry(now), isTrue);
+    expect(booking(day: 13).wantsDayPlanEntry(now), isFalse);
+    expect(booking(hour: 9).wantsDayPlanEntry(now), isFalse);
+    expect(booking().dayPlanStart, DateTime(2030, 3, 14, 10));
+  });
+
+  test('morning plan entry text follows the app language', () {
+    expect(
+      booking().dayPlanDescription,
+      startsWith('Şu gün sagat 15:00-da Aydogdy master bilen'),
+    );
+    expect(
+      booking(locale: 'ru').dayPlanDescription,
+      startsWith('Сегодня в 15:00 у вас запись к мастеру Aydogdy'),
+    );
+    expect(
+      booking(locale: 'en').dayPlanDescription,
+      startsWith('Today at 15:00 you have a booking with Aydogdy'),
+    );
+  });
+
+  test('calendar event is placed one hour before the appointment', () {
+    final start = ashgabatTimeOnDevice(
+      DateTime(2030, 3, 14, 15),
+    ).subtract(calendarLead);
+    final end = ashgabatTimeOnDevice(
+      DateTime(2030, 3, 14, 15, 40),
+    ).subtract(calendarLead);
+
+    expect(start.toUtc(), DateTime.utc(2030, 3, 14, 9));
+    expect(end.toUtc(), DateTime.utc(2030, 3, 14, 9, 40));
+  });
+
   test('17:00–18:00 Ashgabat booking becomes 12:00–13:00 UTC', () {
     final start = ashgabatTimeOnDevice(DateTime(2030, 3, 14, 17));
     final end = ashgabatTimeOnDevice(DateTime(2030, 3, 14, 18));

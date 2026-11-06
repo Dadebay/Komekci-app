@@ -4,9 +4,17 @@ part of '../../../app/komekci_app.dart';
 class ClientNotificationSettingsScreen extends StatelessWidget {
   const ClientNotificationSettingsScreen({super.key});
 
-  Future<void> _setPref(BuildContext context, Map<String, bool> current, String key, bool value) async {
+  Future<void> _setPref(
+    BuildContext context,
+    Map<String, bool> current,
+    String key,
+    bool value,
+  ) async {
     final auth = context.read<AuthProvider>();
-    await runApi(context, () => auth.updateNotificationPrefs({...current, key: value}));
+    await runApi(
+      context,
+      () => auth.updateNotificationPrefs({...current, key: value}),
+    );
   }
 
   @override
@@ -66,7 +74,8 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                     en: 'Remind me one hour before my appointment',
                   ),
                   value: pref('reminders'),
-                  onChanged: (value) => _setPref(context, prefs, 'reminders', value),
+                  onChanged: (value) =>
+                      _setPref(context, prefs, 'reminders', value),
                 ),
                 _NotificationPrefRow(
                   icon: Icons.schedule_outlined,
@@ -81,7 +90,8 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                     en: 'Tell me when an earlier time opens up',
                   ),
                   value: pref('earlier_slot'),
-                  onChanged: (value) => _setPref(context, prefs, 'earlier_slot', value),
+                  onChanged: (value) =>
+                      _setPref(context, prefs, 'earlier_slot', value),
                 ),
                 _NotificationPrefRow(
                   icon: Icons.chat_bubble_outline,
@@ -96,7 +106,8 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                     en: 'Messages from your masters',
                   ),
                   value: pref('master_messages'),
-                  onChanged: (value) => _setPref(context, prefs, 'master_messages', value),
+                  onChanged: (value) =>
+                      _setPref(context, prefs, 'master_messages', value),
                 ),
                 const SizedBox(height: 24),
               ],
@@ -118,7 +129,10 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                   ),
                   if (notifications.unreadCount > 0)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: tokens.accent.withValues(alpha: .12),
                         borderRadius: BorderRadius.circular(20),
@@ -142,20 +156,24 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                         child: Center(child: CircularProgressIndicator()),
                       )
                     : notifications.error != null
-                        ? RetryErrorState(
-                            title: t(
-                              tk: 'Bildirişleri ýükläp bolmady',
-                              ru: 'Не удалось загрузить уведомления',
-                              en: 'Could not load notifications',
-                            ),
-                            text: t(
-                              tk: 'Baglanyşygy barlap, täzeden synanyşyň.',
-                              ru: 'Проверьте соединение и попробуйте ещё раз.',
-                              en: 'Check your connection and try again.',
-                            ),
-                            retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
-                            onRetry: notifications.load,
-                          )
+                    ? RetryErrorState(
+                        title: t(
+                          tk: 'Bildirişleri ýükläp bolmady',
+                          ru: 'Не удалось загрузить уведомления',
+                          en: 'Could not load notifications',
+                        ),
+                        text: t(
+                          tk: 'Baglanyşygy barlap, täzeden synanyşyň.',
+                          ru: 'Проверьте соединение и попробуйте ещё раз.',
+                          en: 'Check your connection and try again.',
+                        ),
+                        retryLabel: t(
+                          tk: 'Täzeden synanyş',
+                          ru: 'Повторить',
+                          en: 'Try again',
+                        ),
+                        onRetry: notifications.load,
+                      )
                     : EmptyState(
                         icon: Icons.notifications_none,
                         title: t(
@@ -175,11 +193,21 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                 ),
                 if (notifications.hasMore)
                   TextButton(
-                    onPressed: notifications.loadingMore ? null : notifications.loadMore,
+                    onPressed: notifications.loadingMore
+                        ? null
+                        : notifications.loadMore,
                     child: Text(
                       notifications.loadingMore
-                          ? t(tk: 'Ýüklenýär...', ru: 'Загрузка...', en: 'Loading...')
-                          : t(tk: 'Köpräk görkez', ru: 'Показать ещё', en: 'Show more'),
+                          ? t(
+                              tk: 'Ýüklenýär...',
+                              ru: 'Загрузка...',
+                              en: 'Loading...',
+                            )
+                          : t(
+                              tk: 'Köpräk görkez',
+                              ru: 'Показать ещё',
+                              en: 'Show more',
+                            ),
                     ),
                   ),
               ],
@@ -236,29 +264,34 @@ class _NotificationPrefRow extends StatelessWidget {
           ),
         ],
       ),
-      child: SwitchListTile(
-        contentPadding: EdgeInsets.zero,
-        activeThumbColor: tokens.accent,
-        secondary: Container(
-          width: 38,
-          height: 38,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: tokens.accent.withValues(alpha: .12),
-            borderRadius: BorderRadius.circular(11),
+      // ListTile needs a Material ancestor between it and the decorated
+      // Container, otherwise Flutter warns that splashes may be invisible.
+      child: Material(
+        type: MaterialType.transparency,
+        child: SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          activeThumbColor: tokens.accent,
+          secondary: Container(
+            width: 38,
+            height: 38,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: tokens.accent.withValues(alpha: .12),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: AppIcon(icon, color: tokens.accent, size: 17),
           ),
-          child: AppIcon(icon, color: tokens.accent, size: 17),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
+          ),
+          value: value,
+          onChanged: onChanged,
         ),
-        title: Text(
-          title,
-          style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
-        ),
-        value: value,
-        onChanged: onChanged,
       ),
     );
   }

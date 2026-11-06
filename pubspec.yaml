@@ -52,6 +52,7 @@ dependencies:
   smart_auth:
     path: third_party/smart_auth
   device_calendar_plus: ^0.12.0
+  flutter_svg: ^2.3.2
 
 dependency_overrides:
   firebase_core:
@@ -82,6 +83,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/images/flags/
     - assets/images/banks/halk.png
     - assets/images/banks/rysgal.png
     - assets/images/banks/senagat.jpeg

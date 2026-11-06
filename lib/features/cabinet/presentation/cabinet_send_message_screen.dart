@@ -1,9 +1,8 @@
 part of '../../../app/komekci_app.dart';
 
-bool _canMessageCustomer(Customer customer, {required bool forPush}) =>
-    forPush
-        ? !customer.offline && customer.accountId != null
-        : customer.phone.isNotEmpty;
+bool _canMessageCustomer(Customer customer, {required bool forPush}) => forPush
+    ? !customer.offline && customer.accountId != null
+    : customer.phone.isNotEmpty;
 
 class SendMessageScreen extends StatefulWidget {
   const SendMessageScreen({super.key});
@@ -21,7 +20,9 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
   bool _pushChannel = true;
   bool _sending = false;
 
-  List<Customer> get _eligibleClients => context.read<CustomerProvider>().customers
+  List<Customer> get _eligibleClients => context
+      .read<CustomerProvider>()
+      .customers
       .where((c) => _canMessageCustomer(c, forPush: _pushChannel))
       .toList();
 
@@ -72,10 +73,6 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
           ru: 'Отправить сообщение',
           en: 'Send message',
         ),
-        action: AppHelpButton(
-          onTap: () =>
-              Navigator.push(context, pageRoute(const SupportScreen())),
-        ),
       ),
       body: SafeArea(
         child: Column(
@@ -84,23 +81,29 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                 children: [
-                  _InfoBanner(
-                    icon: Icons.chat_bubble_outline,
-                    text: t(
-                      tk: 'Saýlanan müşderilere gysga habar iberiň. SMS ýa-da push habarnama bolar.',
-                      ru: 'Отправьте короткое сообщение выбранным клиентам. Это может быть SMS или push-уведомление.',
-                      en: 'Send a short message to selected clients. This can be an SMS or a push notification.',
-                    ),
-                  ),
-                  if (customerProvider.loading && customerProvider.customers.isEmpty) ...[
+                  if (customerProvider.loading &&
+                      customerProvider.customers.isEmpty) ...[
                     const SizedBox(height: 16),
                     const Center(child: CircularProgressIndicator()),
-                  ] else if (customerProvider.error != null && customerProvider.customers.isEmpty) ...[
+                  ] else if (customerProvider.error != null &&
+                      customerProvider.customers.isEmpty) ...[
                     const SizedBox(height: 10),
                     RetryErrorState(
-                      title: t(tk: 'Müşderileri ýükläp bolmady', ru: 'Не удалось загрузить клиентов', en: 'Could not load clients'),
-                      text: t(tk: 'Täzeden synanyşyň.', ru: 'Попробуйте ещё раз.', en: 'Please try again.'),
-                      retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                      title: t(
+                        tk: 'Müşderileri ýükläp bolmady',
+                        ru: 'Не удалось загрузить клиентов',
+                        en: 'Could not load clients',
+                      ),
+                      text: t(
+                        tk: 'Täzeden synanyşyň.',
+                        ru: 'Попробуйте ещё раз.',
+                        en: 'Please try again.',
+                      ),
+                      retryLabel: t(
+                        tk: 'Täzeden synanyş',
+                        ru: 'Повторить',
+                        en: 'Try again',
+                      ),
                       onRetry: customerProvider.load,
                     ),
                   ] else if (_eligibleClients.isEmpty) ...[
@@ -109,27 +112,27 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                       icon: Icons.info_outline,
                       text: customerProvider.customers.isEmpty
                           ? _pushChannel
-                              ? t(
-                                  tk: 'Sanawda entek müşderi ýok. Push üçin baglanan müşderi gerek.',
-                                  ru: 'Список клиентов пуст. Для push нужен подключённый клиент.',
-                                  en: 'The client list is empty. Push needs a connected client.',
-                                )
-                              : t(
-                                  tk: 'Sanawda entek müşderi ýok.',
-                                  ru: 'Список клиентов пока пуст.',
-                                  en: 'The client list is empty.',
-                                )
+                                ? t(
+                                    tk: 'Sanawda entek müşderi ýok. Push üçin baglanan müşderi gerek.',
+                                    ru: 'Список клиентов пуст. Для push нужен подключённый клиент.',
+                                    en: 'The client list is empty. Push needs a connected client.',
+                                  )
+                                : t(
+                                    tk: 'Sanawda entek müşderi ýok.',
+                                    ru: 'Список клиентов пока пуст.',
+                                    en: 'The client list is empty.',
+                                  )
                           : _pushChannel
-                              ? t(
-                                  tk: 'Müşderiler bar, ýöne push alyjynyň hasaby kesgitlenmedi. SMS saýlap bilersiňiz.',
-                                  ru: 'Клиенты есть, но аккаунт получателя для push не определён. Можно выбрать SMS.',
-                                  en: 'Clients are listed, but their push account cannot be identified. You can choose SMS.',
-                                )
-                              : t(
-                                  tk: 'Müşderileriň telefon belgisi ýok.',
-                                  ru: 'У клиентов нет номеров телефонов.',
-                                  en: 'These clients have no phone numbers.',
-                                ),
+                          ? t(
+                              tk: 'Müşderiler bar, ýöne push alyjynyň hasaby kesgitlenmedi. SMS saýlap bilersiňiz.',
+                              ru: 'Клиенты есть, но аккаунт получателя для push не определён. Можно выбрать SMS.',
+                              en: 'Clients are listed, but their push account cannot be identified. You can choose SMS.',
+                            )
+                          : t(
+                              tk: 'Müşderileriň telefon belgisi ýok.',
+                              ru: 'У клиентов нет номеров телефонов.',
+                              en: 'These clients have no phone numbers.',
+                            ),
                     ),
                   ],
                   if (_recipients.length > 50) ...[
@@ -143,7 +146,13 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                       ),
                     ),
                   ],
-                  _MessageAudienceOptions(language: language, selectedAudience: _audience, subtitle: (index) => _audienceSubtitle(language, index), onSelect: (index) => _selectAudience(index, update: setState)),
+                  _MessageAudienceOptions(
+                    language: language,
+                    selectedAudience: _audience,
+                    subtitle: (index) => _audienceSubtitle(language, index),
+                    onSelect: (index) =>
+                        _selectAudience(index, update: setState),
+                  ),
                   if (_pushChannel) ...[
                     _FieldLabel(
                       text: t(tk: 'Sözbaşy', ru: 'Заголовок', en: 'Title'),
@@ -152,7 +161,11 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                     const SizedBox(height: 8),
                     _FormField(
                       controller: _titleController,
-                      hint: t(tk: 'Habaryň sözbaşysy', ru: 'Заголовок сообщения', en: 'Message title'),
+                      hint: t(
+                        tk: 'Habaryň sözbaşysy',
+                        ru: 'Заголовок сообщения',
+                        en: 'Message title',
+                      ),
                       maxLength: 80,
                       onChanged: () => setState(() {}),
                     ),
@@ -233,24 +246,6 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                                   style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  _pushChannel
-                                      ? t(
-                                          tk: 'Müşderilere push habarnama iberiler.',
-                                          ru: 'Клиентам придёт push-уведомление.',
-                                          en: 'Clients will receive a push notification.',
-                                        )
-                                      : t(
-                                          tk: 'Müşderilere SMS iberiler.',
-                                          ru: 'Клиентам придёт SMS.',
-                                          en: 'Clients will receive an SMS.',
-                                        ),
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: tokens.textSecondary,
                                   ),
                                 ),
                               ],

@@ -12,7 +12,7 @@ class _CustomersScreenState extends State<CustomersScreen>
 
   /// Matches the rendered height of [_CustomerControls] so the collapsing
   /// sliver header knows how far it can slide away.
-  static const _controlsHeight = 138.0;
+  static const _controlsHeight = 124.0;
 
   @override
   void dispose() {

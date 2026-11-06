@@ -60,9 +60,10 @@ Future<void> _showBlockTimeSheet(
                 const SizedBox(height: 10),
                 TextButton.icon(
                   onPressed: () async {
-                    final picked = await showTimePicker(
-                      context: sheetContext,
-                      initialTime: TimeOfDay.fromDateTime(selectedEnd),
+                    final picked = await showClearTimePicker(
+                      sheetContext,
+                      initial: TimeOfDay.fromDateTime(selectedEnd),
+                      language: language,
                     );
                     if (picked == null || !sheetContext.mounted) return;
                     final candidate = DateTime(

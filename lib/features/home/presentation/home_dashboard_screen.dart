@@ -121,11 +121,25 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         break;
       }
     }
-    final workEndsAt = activeToday.isEmpty
-        ? DateTime(today.year, today.month, today.day, 19)
-        : activeToday.last.startsAt.add(
-            Duration(minutes: activeToday.last.minutes),
-          );
+    // The end of today's working window from the saved schedule (so 10:00 –
+    // 22:00 shows 22:00), or the last booking if that runs later. No schedule
+    // loaded or a day off with no bookings: nothing to show.
+    DateTime? workEndsAt;
+    if (schedule != null) {
+      for (final window in workingTimeRanges(schedule, today)) {
+        if (workEndsAt == null || window.end.isAfter(workEndsAt)) {
+          workEndsAt = window.end;
+        }
+      }
+    }
+    if (activeToday.isNotEmpty) {
+      final lastEnd = activeToday.last.startsAt.add(
+        Duration(minutes: activeToday.last.minutes),
+      );
+      if (workEndsAt == null || lastEnd.isAfter(workEndsAt)) {
+        workEndsAt = lastEnd;
+      }
+    }
 
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -231,14 +245,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                         ru: 'Работа заканчивается',
                         en: 'Work ends',
                       ),
-                      value: todayLoaded
+                      value: todayLoaded && workEndsAt != null
                           ? formatTime(TimeOfDay.fromDateTime(workEndsAt))
                           : '—',
                       hint: todayLoaded
                           ? t(
-                              tk: 'soňky müşderi',
-                              ru: 'последний клиент',
-                              en: 'last customer',
+                              tk: 'iş wagtynyň ahyry',
+                              ru: 'конец рабочего дня',
+                              en: 'end of work day',
                             )
                           : unavailableHint,
                     ),

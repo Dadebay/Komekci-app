@@ -136,8 +136,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                         decoration: InputDecoration(
-                          hintText: '65 65 65 65',
-                          hintStyle: TextStyle(color: tokens.textSecondary),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 14,

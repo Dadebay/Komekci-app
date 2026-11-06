@@ -117,7 +117,7 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _minimumDuration() {
     final completer = Completer<void>();
     _minimumTimer = Timer(
-      const Duration(milliseconds: 2500),
+      const Duration(milliseconds: 3500),
       completer.complete,
     );
     return completer.future;

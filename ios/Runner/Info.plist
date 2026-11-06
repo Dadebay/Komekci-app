@@ -26,6 +26,16 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Ýazgylaryňyzy telefon senenamasyna goşmak, wagty üýtgände täzelemek we ýatyrylanda aýyrmak üçin rugsat gerek.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Ýazgylaryňyzy telefon senenamasyna goşmak we üýtgetmek üçin rugsat gerek.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>Ýazgylaryňyzy telefon senenamasyna goşmak üçin rugsat gerek.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Profil we hyzmat suratlaryny düşürmek üçin kamera rugsady gerek.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Profil we hyzmat suratlaryny saýlamak üçin surat kitaphanaňyza rugsat gerek.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -49,16 +59,11 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Profil we hyzmat suratlaryny saýlamak üçin surat kitaphanaňyza rugsat gerek.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Profil we hyzmat suratlaryny düşürmek üçin kamera rugsady gerek.</string>
-	<key>NSCalendarsUsageDescription</key>
-	<string>Ýazgylaryňyzy telefon senenamasyna goşmak we üýtgetmek üçin rugsat gerek.</string>
-	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>Ýazgylaryňyzy telefon senenamasyna goşmak, wagty üýtgände täzelemek we ýatyrylanda aýyrmak üçin rugsat gerek.</string>
-	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
-	<string>Ýazgylaryňyzy telefon senenamasyna goşmak üçin rugsat gerek.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

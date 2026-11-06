@@ -112,7 +112,9 @@ class _CabinetScreenState extends State<CabinetScreen> {
                 pageRoute(const CabinetProfileScreen()),
               ),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 14),
+            const _SubscriptionDaysCard(),
+            const SizedBox(height: 8),
             ...List.generate(entries.length, (index) {
               final entry = entries[index];
               return _CabinetRow(

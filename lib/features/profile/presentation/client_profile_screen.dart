@@ -115,181 +115,130 @@ String _languageName(AppLanguage language) => switch (language) {
   AppLanguage.en => 'English',
 };
 
-/// "Dil" row's destination — a bottom sheet instead of a full screen push,
-/// since picking a language is a single tap with nothing else to configure.
+/// "Dil" row's destination — a floating sheet, since picking a language is a
+/// single tap with nothing else to configure.
 void _showLanguageSheet(BuildContext context) {
   final languageProvider = context.read<LanguageProvider>();
   final authProvider = context.read<AuthProvider>();
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: context.appTokens.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+  final settingsProvider = context.read<AppSettingsProvider>();
+  final language = languageProvider.language;
+  String t({required String tk, required String ru, required String en}) =>
+      pickTr(language, tk: tk, ru: ru, en: en);
+  _showFloatingSheet<void>(
+    context,
+    icon: Icons.translate_rounded,
+    title: t(tk: 'Dil saýlaň', ru: 'Выберите язык', en: 'Choose language'),
+    subtitle: t(
+      tk: 'Programmanyň dilini üýtgediň.',
+      ru: 'Измените язык приложения.',
+      en: 'Change the app language.',
     ),
     builder: (sheetContext) {
-      final language = sheetContext.watch<LanguageProvider>().language;
+      final current = sheetContext.watch<LanguageProvider>().language;
       final locales = sheetContext.watch<AppSettingsProvider>().locales;
-      String t({required String tk, required String ru, required String en}) =>
-          pickTr(language, tk: tk, ru: ru, en: en);
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                t(tk: 'Dil', ru: 'Язык', en: 'Language'),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 14),
-              for (final option in _languageOptions.where(
-                (o) => locales.contains(o.language),
-              ))
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: LanguageOptionCard(
-                    flag: option.flag,
-                    primary: option.primary,
-                    secondary: option.secondary,
-                    selected: language == option.language,
-                    onTap: () {
-                      languageProvider.select(option.language);
-                      context.read<AppSettingsProvider>().load(locale: option.language);
-                      authProvider.savePreferences(locale: option.language.name);
-                      Navigator.maybePop(sheetContext);
-                    },
-                  ),
-                ),
-            ],
-          ),
-        ),
+      return _SheetChoiceGroup(
+        children: [
+          for (final option in _languageOptions.where(
+            (o) => locales.contains(o.language),
+          ))
+            _SheetChoiceRow(
+              leading: LanguageFlag(language: option.language, size: 36),
+              title: option.primary,
+              subtitle: option.secondary,
+              selected: current == option.language,
+              onTap: () {
+                languageProvider.select(option.language);
+                settingsProvider.load(locale: option.language);
+                authProvider.savePreferences(locale: option.language.name);
+                Navigator.of(sheetContext).pop();
+              },
+            ),
+        ],
       );
     },
   );
 }
 
-/// "Görnüşi" row's destination — a bottom sheet instead of a full screen
-/// push, mirroring [_showLanguageSheet] since picking a theme is a single
-/// tap with nothing else to configure.
+/// "Görnüşi" row's destination — a floating sheet mirroring
+/// [_showLanguageSheet].
 void _showThemeSheet(BuildContext context) {
   final themeProvider = context.read<ThemeProvider>();
   final authProvider = context.read<AuthProvider>();
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: context.appTokens.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+  final language = context.read<LanguageProvider>().language;
+  String t({required String tk, required String ru, required String en}) =>
+      pickTr(language, tk: tk, ru: ru, en: en);
+  _showFloatingSheet<void>(
+    context,
+    icon: Icons.palette_outlined,
+    title: t(tk: 'Görnüşi saýlaň', ru: 'Выберите тему', en: 'Choose a theme'),
+    subtitle: t(
+      tk: 'Saýlan reňkiňiz derrew ulanylýar.',
+      ru: 'Цвет применится сразу.',
+      en: 'Your choice applies immediately.',
     ),
     builder: (sheetContext) {
-      final language = sheetContext.watch<LanguageProvider>().language;
+      final tokens = sheetContext.appTokens;
       final selected = sheetContext.watch<ThemeProvider>().selected;
       final settings = sheetContext.watch<AppSettingsProvider>();
-      final enabledThemes = settings.themes;
-      final goldCode = enabledThemeForStyle(enabledThemes, KomekciThemeStyle.gold);
-      final blueCode = enabledThemeForStyle(enabledThemes, KomekciThemeStyle.blue);
-      final redCode = enabledThemeForStyle(enabledThemes, KomekciThemeStyle.red);
-      final darkCode = enabledThemeForStyle(enabledThemes, KomekciThemeStyle.dark);
       final options = <(KomekciTheme, AppThemeTokens)>[
-        if (goldCode != null) (goldCode, settings.themeTokensFor(goldCode)),
-        if (blueCode != null) (blueCode, settings.themeTokensFor(blueCode)),
-        if (redCode != null) (redCode, settings.themeTokensFor(redCode)),
-        if (darkCode != null) (darkCode, settings.themeTokensFor(darkCode)),
+        for (final style in [
+          KomekciThemeStyle.gold,
+          KomekciThemeStyle.blue,
+          KomekciThemeStyle.red,
+          KomekciThemeStyle.dark,
+        ])
+          if (enabledThemeForStyle(settings.themes, style) case final code?)
+            (code, settings.themeTokensFor(code)),
       ];
-      String t({required String tk, required String ru, required String en}) =>
-          pickTr(language, tk: tk, ru: ru, en: en);
-      final tokens = sheetContext.appTokens;
-      return SafeArea(
-        top: false,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(sheetContext).height * .82),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 38,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: tokens.border,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 22),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            t(tk: 'Görnüşi saýlaň', ru: 'Выберите тему', en: 'Choose a theme'),
-                            style: TextStyle(color: tokens.textPrimary, fontSize: 22, fontWeight: FontWeight.w800),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            t(tk: 'Saýlan reňkiňiz derrew ulanylýar.', ru: 'Цвет применится сразу.', en: 'Your choice applies immediately.'),
-                            style: TextStyle(color: tokens.textSecondary, fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Material(
-                      color: tokens.surfaceElevated,
-                      shape: CircleBorder(side: BorderSide(color: tokens.border)),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => Navigator.pop(sheetContext),
-                        child: SizedBox(
-                          width: 38,
-                          height: 38,
-                          child: Icon(Icons.close, size: 18, color: tokens.textSecondary),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                if (options.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 28),
-                    child: Center(
-                      child: Text(
-                        t(tk: 'Häzir tema saýlawy elýeterli däl.', ru: 'Темы сейчас недоступны.', en: 'Themes are unavailable right now.'),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: tokens.textSecondary, fontSize: 14),
-                      ),
-                    ),
-                  ),
-                for (final option in options) ...[
-                  _ThemeOptionCard(
-                    title: _themeName(option.$1),
-                    description: _themeDescription(themeStyleFor(option.$1), language),
-                    palette: option.$2,
-                    selected: themeStyleFor(selected) == themeStyleFor(option.$1),
-                    onTap: () {
-                      themeProvider.select(option.$1);
-                      authProvider.savePreferences(theme: option.$1.name);
-                      Navigator.pop(sheetContext);
-                    },
-                  ),
-                  const SizedBox(height: 10),
-                ],
-              ],
+      if (options.isEmpty) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Text(
+            t(
+              tk: 'Häzir tema saýlawy elýeterli däl.',
+              ru: 'Темы сейчас недоступны.',
+              en: 'Themes are unavailable right now.',
             ),
+            textAlign: TextAlign.center,
+            style: TextStyle(color: tokens.textSecondary, fontSize: 14),
           ),
-        ),
+        );
+      }
+      return _SheetChoiceGroup(
+        children: [
+          for (final (code, palette) in options)
+            _SheetChoiceRow(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: palette.accent,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: palette.border),
+                ),
+              ),
+              title: _themeLabel(themeStyleFor(code), language),
+              subtitle: _themeDescription(themeStyleFor(code), language),
+              selected: themeStyleFor(selected) == themeStyleFor(code),
+              onTap: () {
+                themeProvider.select(code);
+                authProvider.savePreferences(theme: code.name);
+                Navigator.of(sheetContext).pop();
+              },
+            ),
+        ],
       );
     },
   );
 }
+
+String _themeLabel(KomekciThemeStyle style, AppLanguage language) =>
+    switch (style) {
+      KomekciThemeStyle.gold => pickTr(language, tk: 'Altyn', ru: 'Золотая', en: 'Gold'),
+      KomekciThemeStyle.blue => pickTr(language, tk: 'Mawy', ru: 'Синяя', en: 'Blue'),
+      KomekciThemeStyle.red => pickTr(language, tk: 'Gyzyl', ru: 'Красная', en: 'Red'),
+      KomekciThemeStyle.dark => pickTr(language, tk: 'Garaňky', ru: 'Тёмная', en: 'Dark'),
+    };
 
 String _themeDescription(KomekciThemeStyle style, AppLanguage language) =>
     switch (style) {

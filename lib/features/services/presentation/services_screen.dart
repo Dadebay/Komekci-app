@@ -15,35 +15,34 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   Future<bool> _offerFreeMonth({bool afterService = false}) async {
     final language = context.read<LanguageProvider>().language;
-    return _showConfirmDialog(
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
+    return _showFreeMonthDialog(
       context,
-      icon: Icons.auto_awesome_outlined,
-      title: pickTr(
-        language,
-        tk: '1 aý mugt',
-        ru: '1 месяц бесплатно',
-        en: '1 month free',
-      ),
+      title: t(tk: '1 aý mugt', ru: '1 месяц бесплатно', en: '1 month free'),
       message: afterService
-          ? pickTr(
-              language,
+          ? t(
               tk: 'Hyzmat goşuldy. Mugt aýy indi işjeňleşdiriň.',
               ru: 'Услуга добавлена. Теперь активируйте бесплатный месяц.',
               en: 'Your service was added. Activate your free month now.',
             )
-          : pickTr(
-              language,
-              tk: 'Ilkinji aýy tölegsiz ulanyň. Mugt aýy işjeňleşdirip, soň hyzmatyňyzy goşuň. Aý gutarandan soň töleg gerek bolar.',
-              ru: 'Пользуйтесь первым месяцем бесплатно. Активируйте его, затем добавьте услугу. После окончания месяца потребуется оплата.',
-              en: 'Use your first month for free. Activate it, then add your service. Payment is needed after the month ends.',
+          : t(
+              tk: 'Ilkinji aýy tölegsiz ulanyň.',
+              ru: 'Пользуйтесь первым месяцем бесплатно.',
+              en: 'Use your first month for free.',
             ),
-      confirmLabel: pickTr(
-        language,
-        tk: 'Mugt aýy ulan',
-        ru: 'Использовать месяц',
-        en: 'Use free month',
-      ),
-      cancelLabel: pickTr(language, tk: 'Soň', ru: 'Позже', en: 'Later'),
+      steps: afterService
+          ? [
+              t(tk: 'Mugt aýy işjeňleşdiriň', ru: 'Активируйте бесплатный месяц', en: 'Activate the free month'),
+              t(tk: 'Aý gutarandan soň töleg gerek', ru: 'После месяца потребуется оплата', en: 'Payment is needed after the month ends'),
+            ]
+          : [
+              t(tk: 'Mugt aýy işjeňleşdiriň', ru: 'Активируйте бесплатный месяц', en: 'Activate the free month'),
+              t(tk: 'Hyzmatyňyzy goşuň', ru: 'Добавьте услугу', en: 'Add your service'),
+              t(tk: 'Aý gutarandan soň töleg gerek', ru: 'После месяца потребуется оплата', en: 'Payment is needed after the month ends'),
+            ],
+      confirmLabel: t(tk: 'Mugt aýy ulan', ru: 'Использовать месяц', en: 'Use free month'),
+      cancelLabel: t(tk: 'Soň', ru: 'Позже', en: 'Later'),
     );
   }
 

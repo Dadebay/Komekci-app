@@ -31,7 +31,7 @@ class _MasterEntryGateState extends State<MasterEntryGate>
     if (state == AppLifecycleState.resumed &&
         !_checking &&
         ModalRoute.of(context)?.isCurrent == true) {
-      _check();
+      _check(silent: true);
     }
   }
 
@@ -41,8 +41,15 @@ class _MasterEntryGateState extends State<MasterEntryGate>
     super.dispose();
   }
 
-  Future<void> _check() async {
-    if (!_checking) {
+  /// [silent] is the re-check when the app comes back to the foreground: the
+  /// screen stays as it is (no spinner, so the master is not thrown back to
+  /// the first tab), and nothing changes unless the server's answer says the
+  /// master may no longer enter, or may enter again.
+  Future<void> _check({bool silent = false}) async {
+    // With nothing on screen yet (first check or the error page) there is
+    // nothing to keep: show the normal spinner.
+    silent = silent && _billing != null;
+    if (!silent && !_checking) {
       setState(() {
         _checking = true;
         _billing = null;
@@ -52,13 +59,16 @@ class _MasterEntryGateState extends State<MasterEntryGate>
     try {
       final billing = await context.read<BillingRepository>().billing();
       if (!mounted) return;
+      if (silent && _billing != null) {
+        if (billing.permitsMasterEntry == _billing!.permitsMasterEntry) return;
+      }
       setState(() {
         _billing = billing;
         _error = null;
         _checking = false;
       });
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted || silent) return;
       setState(() {
         _error = error;
         _checking = false;
@@ -203,11 +213,19 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
   StreamSubscription<List<ConnectivityResult>>? _connectivityChanges;
   bool _refreshingSavedData = false;
   late final MasterBookingAlertController _bookingAlerts;
+  late final ConnectionRequestsProvider _requestsProvider;
+  // Request ids already known; only ones that appear later pop the dialog.
+  final Set<int> _knownRequestIds = {};
+  bool _requestsBaselined = false;
+  bool _requestDialogOpen = false;
 
   @override
   void initState() {
     super.initState();
     _bookingAlerts = context.read<MasterBookingAlertController>();
+    _requestsProvider = context.read<ConnectionRequestsProvider>()
+      ..addListener(_onRequestsChanged);
+    _onRequestsChanged();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _bookingAlerts.setHomeReady(true);
     });
@@ -253,12 +271,42 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
     }
   }
 
+  /// The first successful load only records what is already pending; any
+  /// request that shows up after that opens a dialog over the master's screen.
+  void _onRequestsChanged() {
+    if (!mounted || !_requestsProvider.loaded) return;
+    final requests = _requestsProvider.requests;
+    if (!_requestsBaselined) {
+      _requestsBaselined = true;
+      _knownRequestIds.addAll(requests.map((r) => r.id));
+      return;
+    }
+    final fresh = [
+      for (final r in requests)
+        if (!_knownRequestIds.contains(r.id)) r,
+    ];
+    if (fresh.isEmpty) return;
+    // Wait while a dialog is up or another screen is on top; the next
+    // refresh (every 30 s) tries again.
+    if (_requestDialogOpen || ModalRoute.of(context)?.isCurrent != true) return;
+    _knownRequestIds.addAll(fresh.map((r) => r.id));
+    _requestDialogOpen = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
+        _requestDialogOpen = false;
+        return;
+      }
+      await showNewConnectionRequestDialog(context, fresh);
+      _requestDialogOpen = false;
+    });
+  }
+
   void _refreshConnectionRequests() {
     if (!mounted ||
         WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
       return;
     }
-    context.read<ConnectionRequestsProvider>().load();
+    context.read<ConnectionRequestsProvider>().load(silent: true);
   }
 
   @override
@@ -274,6 +322,7 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
   @override
   void dispose() {
     _bookingAlerts.setHomeReady(false);
+    _requestsProvider.removeListener(_onRequestsChanged);
     _connectionRequestsRefresh?.cancel();
     _connectivityChanges?.cancel();
     WidgetsBinding.instance.removeObserver(this);

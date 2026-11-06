@@ -3,19 +3,16 @@ part of '../../../app/komekci_app.dart';
 const _languageOptions = [
   (
     language: AppLanguage.tk,
-    flag: '🇹🇲',
     primary: 'Türkmençe',
     secondary: 'Türkmen dili',
   ),
   (
     language: AppLanguage.ru,
-    flag: '🇷🇺',
     primary: 'Русский',
     secondary: 'Русский язык',
   ),
   (
     language: AppLanguage.en,
-    flag: '🇬🇧',
     primary: 'English',
     secondary: 'English language',
   ),
@@ -101,7 +98,7 @@ class LanguageScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: LanguageOptionCard(
-                      flag: option.flag,
+                      language: option.language,
                       primary: option.primary,
                       secondary: option.secondary,
                       selected: language.language == option.language,
@@ -143,13 +140,13 @@ class LanguageScreen extends StatelessWidget {
 class LanguageOptionCard extends StatelessWidget {
   const LanguageOptionCard({
     super.key,
-    required this.flag,
+    required this.language,
     required this.primary,
     required this.secondary,
     required this.selected,
     required this.onTap,
   });
-  final String flag;
+  final AppLanguage language;
   final String primary;
   final String secondary;
   final bool selected;
@@ -186,13 +183,7 @@ class LanguageOptionCard extends StatelessWidget {
               width: 34,
               height: 34,
               child: Center(
-                child: Text(
-                  flag,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: LanguageFlag(language: language, size: 30),
               ),
             ),
             const SizedBox(width: 12),

@@ -186,13 +186,13 @@ class HeroPhoto extends StatelessWidget {
 /// "+993" shown at the start of a phone field at all times. `prefixText`
 /// only appears once the field is focused or filled, so it is drawn as an
 /// icon-slot widget instead.
-Widget phonePrefix(BuildContext context, {double fontSize = 16, FontWeight weight = FontWeight.w600}) =>
+Widget phonePrefix(BuildContext context, {double fontSize = 16, FontWeight weight = FontWeight.w800}) =>
     Padding(
       padding: const EdgeInsets.only(left: 16, right: 10),
       child: Text(
         '+993',
         style: TextStyle(
-          color: context.appTokens.textSecondary,
+          color: context.appTokens.textPrimary,
           fontSize: fontSize,
           fontWeight: weight,
         ),

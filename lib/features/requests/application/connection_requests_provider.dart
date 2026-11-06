@@ -14,8 +14,11 @@ class ConnectionRequestsProvider extends SessionScoped {
 
   List<ConnectionRequest> _requests = const [];
   bool _loading = false;
+  bool _loaded = false;
   ApiException? _error;
 
+  /// True once a load has succeeded since sign-in.
+  bool get loaded => _loaded;
   List<ConnectionRequest> get requests => List.unmodifiable(_requests);
   int get count => _requests.length;
   bool get loading => _loading;
@@ -25,6 +28,7 @@ class ConnectionRequestsProvider extends SessionScoped {
   void reset() {
     _requests = const [];
     _loading = false;
+    _loaded = false;
     _error = null;
   }
 
@@ -33,19 +37,33 @@ class ConnectionRequestsProvider extends SessionScoped {
     if (me.isMaster) await load();
   }
 
-  Future<void> load() async {
+  /// [silent] is for background refreshes: no loading flag, no error state
+  /// and listeners (so the screens) are only notified when the list changed.
+  Future<void> load({bool silent = false}) async {
     if (_loading) return;
     _loading = true;
-    _error = null;
-    notifyListeners();
+    if (!silent) {
+      _error = null;
+      notifyListeners();
+    }
+    var changed = !silent;
     try {
-      _requests = await _repository.connectionRequests();
+      final fresh = await _repository.connectionRequests();
+      if (silent) {
+        changed =
+            !_loaded ||
+            fresh.length != _requests.length ||
+            [for (final r in fresh) r.id].toString() !=
+                [for (final r in _requests) r.id].toString();
+      }
+      _requests = fresh;
+      _loaded = true;
     } on ApiException catch (e) {
-      _error = e;
+      if (!silent) _error = e;
       debugPrint('Loading connection requests failed: $e');
     }
     _loading = false;
-    notifyListeners();
+    if (changed) notifyListeners();
   }
 
   /// Accepts the request; the client joins the master's client list.

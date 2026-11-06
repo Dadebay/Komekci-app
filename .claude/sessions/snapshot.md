@@ -1,27 +1,27 @@
-# Session Snapshot — 2026-10-29 18:58
+# Session Snapshot — 2026-11-06 17:40
 
 ## Files Changed
-- .claude/completions/2026-10-27-release-cleanup.md
-- .claude/sessions/.claude-md-validated-2026-10-29
-- .claude/sessions/.ghost-checked-20261029
-- .claude/sessions/.snapshot-injected-2026-10-29
+- .claude/sessions/.notification-token-cache
 - .claude/sessions/snapshot.md
 - .claude/sessions/token-log.md
-- analysis_options.yaml
-- android/app/build.gradle.kts
-- android/key.properties.example
-- assets/fonts/NormsProBold.otf
+- android/gradle.properties
+- ios/Runner.xcodeproj/project.pbxproj
+- ios/Runner/Info.plist
+- lib/app/komekci_app.dart
+- lib/core/theme/app_theme_tokens.dart
+- lib/core/theme/theme_provider.dart
+- lib/data/models/api/billing_models.dart
 
 ## Recent Commits
+- 0c4bdc7 Map four app themes to gold blue red and dark palettes
+- bf5e741 Save current app before theme palette changes
+- 8649cc0 Oct 29
 - 31abcd5 Oct 29
 - a60d1fd Oct 27
-- c564542 Oct 26
-- c764cf1 Oct 22
-- 3334904 Oct 16
 
 ## Token Estimate
 ~669 tokens in auto-loaded files
 
 ## Last Turn
-**Dikkat:** Hizmet ekledikten sonra kart kendiliğinden yenilenmeyebilir, yenilenmesi için ekranı aşağı çekmen ya da geri
+Backend'de bunun için bir alan varsa (ör. `status: "vip"` veya `"regular"`) adını ve değerlerini söyle. Müşteri detay ek
 

@@ -291,7 +291,8 @@ enum CardPaymentStatus {
 enum CardBank {
   halk('halk', 'Halkbank'),
   senagat('senagat', 'Senagat bank'),
-  rysgal('rysgal', 'Rysgal bank');
+  rysgal('rysgal', 'Rysgal bank'),
+  vnesh('vnesh', 'Daşary ykdysady iş banky');
 
   const CardBank(this.apiValue, this.label);
   final String apiValue;

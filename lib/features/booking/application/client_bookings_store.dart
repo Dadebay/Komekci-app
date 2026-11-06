@@ -81,7 +81,10 @@ class ClientBookingsProvider extends SessionScoped {
   Future<CalendarSaveResult> saveToCalendar(ClientBooking booking) async {
     final userId = sessionUserId;
     if (userId == null) return CalendarSaveResult.unavailable;
-    return _calendar.save(userId, booking.calendarDetails);
+    return _calendar.save(
+      userId,
+      booking.calendarDetails.withLocale(_reminderLocale),
+    );
   }
 
   Future<void> openCalendarSettings() => _calendar.openSettings();
@@ -90,13 +93,17 @@ class ClientBookingsProvider extends SessionScoped {
     if (!_calendar.isSupported) return;
     final userId = sessionUserId;
     if (userId == null) return;
+    final locale = _reminderLocale;
     final upcoming = List<ClientBooking>.of(_upcoming);
     final history = List<ClientBooking>.of(_history);
     unawaited(() async {
       try {
         for (final booking in upcoming) {
           if (booking.status == ClientBookingStatus.expected) {
-            await _calendar.reconcile(userId, booking.calendarDetails);
+            await _calendar.reconcile(
+              userId,
+              booking.calendarDetails.withLocale(locale),
+            );
           }
         }
         for (final booking in history) {

@@ -1,9 +1,11 @@
 part of '../../../app/komekci_app.dart';
 
-String _bankLogoAsset(CardBank bank) => switch (bank) {
+/// Null when the bank has no bundled logo (an icon is drawn instead).
+String? _bankLogoAsset(CardBank bank) => switch (bank) {
   CardBank.halk => 'assets/images/banks/halk.png',
   CardBank.senagat => 'assets/images/banks/senagat.jpeg',
   CardBank.rysgal => 'assets/images/banks/rysgal.png',
+  CardBank.vnesh => null,
 };
 
 class _BankChoiceTile extends StatelessWidget {
@@ -50,7 +52,14 @@ class _BankChoiceTile extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(9),
-            child: Image.asset(_bankLogoAsset(bank), fit: BoxFit.contain),
+            child: switch (_bankLogoAsset(bank)) {
+              final asset? => Image.asset(asset, fit: BoxFit.contain),
+              null => Icon(
+                Icons.account_balance_outlined,
+                color: tokens.accent,
+                size: 24,
+              ),
+            },
           ),
         ),
       ),
@@ -347,6 +356,16 @@ class _CardPaymentPageState extends State<_CardPaymentPage> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
+          // After paying, the bank sends the WebView to our site's
+          // /payments/vnesh/<id>/final/<order>. That URL carries no result:
+          // close the page and let the server confirm with the bank.
+          onNavigationRequest: (request) {
+            if (_isVneshFinalUrl(request.url)) {
+              _closeAfterBankRedirect();
+              return NavigationDecision.prevent;
+            }
+            return NavigationDecision.navigate;
+          },
           onPageStarted: (_) {
             if (mounted) setState(() => _loading = true);
           },
@@ -357,6 +376,17 @@ class _CardPaymentPageState extends State<_CardPaymentPage> {
       )
       ..loadRequest(Uri.parse(widget.topup.formUrl));
     _poll = Timer.periodic(_checkEvery, (_) => _checkStatus());
+  }
+
+  static bool _isVneshFinalUrl(String url) =>
+      url.contains('/payments/vnesh/') && url.contains('/final/');
+
+  void _closeAfterBankRedirect() {
+    if (_finished || !mounted) return;
+    _finished = true;
+    _poll?.cancel();
+    // null: the dialog then asks the server for the real outcome.
+    Navigator.of(context).pop(null);
   }
 
   Future<void> _checkStatus() async {
