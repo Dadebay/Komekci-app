@@ -1,4 +1,5 @@
 import 'json_helpers.dart';
+part 'client_models_part.dart';
 
 /// A master's service (`/me/services`).
 class ApiService {
@@ -94,13 +95,16 @@ class ScheduleOverride {
   final String? startTime;
   final String? endTime;
 
-  factory ScheduleOverride.fromJson(Map<String, dynamic> json) => ScheduleOverride(
-    id: parseIntOrNull(json['id']) ?? 0,
-    date: parseApiTime(json['date']) ?? DateTime.now(),
-    type: json['type'] == 'custom_hours' ? OverrideType.customHours : OverrideType.dayOff,
-    startTime: _hhmm(json['start_time']),
-    endTime: _hhmm(json['end_time']),
-  );
+  factory ScheduleOverride.fromJson(Map<String, dynamic> json) =>
+      ScheduleOverride(
+        id: parseIntOrNull(json['id']) ?? 0,
+        date: parseApiTime(json['date']) ?? DateTime.now(),
+        type: json['type'] == 'custom_hours'
+            ? OverrideType.customHours
+            : OverrideType.dayOff,
+        startTime: _hhmm(json['start_time']),
+        endTime: _hhmm(json['end_time']),
+      );
 }
 
 class Vacation {
@@ -113,6 +117,28 @@ class Vacation {
     id: parseIntOrNull(json['id']) ?? 0,
     start: parseApiTime(json['start_date']) ?? DateTime.now(),
     end: parseApiTime(json['end_date']) ?? DateTime.now(),
+  );
+}
+
+/// A one-off interval blocked by the master; its note is private to the master.
+class ClosedTime {
+  const ClosedTime({
+    required this.id,
+    required this.startsAt,
+    required this.endsAt,
+    this.note = '',
+  });
+
+  final int id;
+  final DateTime startsAt;
+  final DateTime endsAt;
+  final String note;
+
+  factory ClosedTime.fromJson(Map<String, dynamic> json) => ClosedTime(
+    id: parseIntOrNull(json['id']) ?? 0,
+    startsAt: parseApiTime(json['starts_at']) ?? DateTime.now(),
+    endsAt: parseApiTime(json['ends_at']) ?? DateTime.now(),
+    note: json['note'] as String? ?? '',
   );
 }
 
@@ -135,8 +161,13 @@ class Schedule {
     gridStepMin: parseIntOrNull(json['grid_step_min']) ?? 15,
     minLeadMin: parseIntOrNull(json['min_lead_min']) ?? 30,
     days: [for (final d in asMapList(json['days'])) ScheduleDay.fromJson(d)],
-    overrides: [for (final o in asMapList(json['overrides'])) ScheduleOverride.fromJson(o)],
-    vacations: [for (final v in asMapList(json['vacations'])) Vacation.fromJson(v)],
+    overrides: [
+      for (final o in asMapList(json['overrides']))
+        ScheduleOverride.fromJson(o),
+    ],
+    vacations: [
+      for (final v in asMapList(json['vacations'])) Vacation.fromJson(v),
+    ],
   );
 }
 
@@ -173,12 +204,13 @@ class ServiceSnapshot {
   final double price;
   final int durationMin;
 
-  factory ServiceSnapshot.fromJson(Map<String, dynamic> json) => ServiceSnapshot(
-    id: parseIntOrNull(json['id']) ?? 0,
-    name: json['name'] as String? ?? '',
-    price: parseMoney(json['price']),
-    durationMin: parseIntOrNull(json['duration_min']) ?? 0,
-  );
+  factory ServiceSnapshot.fromJson(Map<String, dynamic> json) =>
+      ServiceSnapshot(
+        id: parseIntOrNull(json['id']) ?? 0,
+        name: json['name'] as String? ?? '',
+        price: parseMoney(json['price']),
+        durationMin: parseIntOrNull(json['duration_min']) ?? 0,
+      );
 }
 
 /// The client of a master's appointment. `id` is a string: `a15` for a
@@ -199,14 +231,15 @@ class AppointmentClient {
   final String? photoUrl;
   final bool offline;
 
-  factory AppointmentClient.fromJson(Map<String, dynamic> json) => AppointmentClient(
-    id: '${json['id']}',
-    name: json['name'] as String? ?? '',
-    nickname: json['nickname'] as String?,
-    phone: json['phone'] as String?,
-    photoUrl: json['photo_url'] as String?,
-    offline: json['offline'] as bool? ?? false,
-  );
+  factory AppointmentClient.fromJson(Map<String, dynamic> json) =>
+      AppointmentClient(
+        id: '${json['id']}',
+        name: json['name'] as String? ?? '',
+        nickname: json['nickname'] as String?,
+        phone: json['phone'] as String?,
+        photoUrl: json['photo_url'] as String?,
+        offline: json['offline'] as bool? ?? false,
+      );
 }
 
 /// An appointment as the master sees it (`/me/calendar`, `/me/appointments`).
@@ -248,156 +281,6 @@ class MasterAppointment {
       noShowSuggested: json['no_show_suggested'] as bool? ?? false,
       service: ServiceSnapshot.fromJson(asMap(json['service'])),
       client: AppointmentClient.fromJson(asMap(json['client'])),
-    );
-  }
-}
-
-class ClientAppointmentRef {
-  const ClientAppointmentRef({
-    required this.id,
-    required this.startsAt,
-    required this.serviceName,
-    required this.status,
-  });
-  final int id;
-  final DateTime startsAt;
-  final String serviceName;
-  final ApiAppointmentStatus status;
-
-  factory ClientAppointmentRef.fromJson(Map<String, dynamic> json) =>
-      ClientAppointmentRef(
-        id: parseIntOrNull(json['id']) ?? 0,
-        startsAt: parseApiTime(json['starts_at']) ?? DateTime.now(),
-        serviceName: json['service_name'] as String? ?? '',
-        status: ApiAppointmentStatus.parse(json['status']),
-      );
-}
-
-/// A row of `GET /me/clients`, also the `client` block of the client card.
-class ClientSummary {
-  const ClientSummary({
-    required this.id,
-    required this.offline,
-    required this.name,
-    this.nickname,
-    this.phone,
-    this.photoUrl,
-    this.appointment,
-    this.lastVisit,
-    this.visits = 0,
-    this.noShows = 0,
-    this.spend = 0,
-    this.status = '',
-  });
-
-  /// `c12` for a connection, `o4` for an offline client.
-  final String id;
-  final bool offline;
-  final String name;
-  final String? nickname;
-  final String? phone;
-  final String? photoUrl;
-  final ClientAppointmentRef? appointment;
-  final DateTime? lastVisit;
-  final int visits;
-  final int noShows;
-  final double spend;
-  final String status;
-
-  factory ClientSummary.fromJson(Map<String, dynamic> json) {
-    final appt = json['appointment'];
-    return ClientSummary(
-      id: '${json['id']}',
-      offline: json['offline'] as bool? ?? false,
-      name: json['name'] as String? ?? '',
-      nickname: json['nickname'] as String?,
-      phone: json['phone'] as String?,
-      photoUrl: json['photo_url'] as String?,
-      appointment: appt is Map<String, dynamic> ? ClientAppointmentRef.fromJson(appt) : null,
-      lastVisit: parseApiTime(json['last_visit']),
-      visits: parseIntOrNull(json['visits']) ?? 0,
-      noShows: parseIntOrNull(json['no_shows']) ?? 0,
-      spend: parseMoney(json['spend']),
-      status: '${json['status'] ?? ''}',
-    );
-  }
-}
-
-class ClientHistoryItem {
-  const ClientHistoryItem({
-    required this.id,
-    required this.startsAt,
-    required this.endsAt,
-    required this.status,
-    required this.serviceName,
-    required this.price,
-    required this.durationMin,
-    this.note,
-    this.lateMinutes,
-  });
-  final int id;
-  final DateTime startsAt;
-  final DateTime endsAt;
-  final ApiAppointmentStatus status;
-  final String serviceName;
-  final double price;
-  final int durationMin;
-  final String? note;
-  final int? lateMinutes;
-
-  factory ClientHistoryItem.fromJson(Map<String, dynamic> json) {
-    final start = parseApiTime(json['starts_at']) ?? DateTime.now();
-    return ClientHistoryItem(
-      id: parseIntOrNull(json['id']) ?? 0,
-      startsAt: start,
-      endsAt: parseApiTime(json['ends_at']) ?? start,
-      status: ApiAppointmentStatus.parse(json['status']),
-      serviceName: json['service_name'] as String? ?? '',
-      price: parseMoney(json['price']),
-      durationMin: parseIntOrNull(json['duration_min']) ?? 0,
-      note: json['note'] as String?,
-      lateMinutes: parseIntOrNull(json['late_minutes']),
-    );
-  }
-}
-
-/// `GET /me/clients/{id}`.
-class ClientCard {
-  const ClientCard({required this.client, this.privateNote, this.history = const []});
-  final ClientSummary client;
-  final String? privateNote;
-  final List<ClientHistoryItem> history;
-
-  factory ClientCard.fromJson(Map<String, dynamic> json) => ClientCard(
-    client: ClientSummary.fromJson(asMap(json['client'])),
-    privateNote: json['private_note'] as String?,
-    history: [for (final h in asMapList(json['history'])) ClientHistoryItem.fromJson(h)],
-  );
-}
-
-/// Incoming client → master connection request.
-class ConnectionRequest {
-  const ConnectionRequest({
-    required this.id,
-    required this.requestedAt,
-    required this.clientName,
-    this.clientNickname,
-    this.clientPhotoUrl,
-  });
-  final int id;
-  final DateTime requestedAt;
-  final String clientName;
-  final String? clientNickname;
-  final String? clientPhotoUrl;
-
-  factory ConnectionRequest.fromJson(Map<String, dynamic> json) {
-    final client = asMap(json['client']);
-    return ConnectionRequest(
-      id: parseIntOrNull(json['id']) ?? 0,
-      requestedAt: parseApiTime(json['requested_at']) ?? DateTime.now(),
-      clientName: client['name'] as String? ?? '',
-      clientNickname: client['nickname'] as String?,
-      clientPhotoUrl: client['photo_url'] as String?,
     );
   }
 }

@@ -81,7 +81,9 @@ class MasterProfile {
     bannerUrl: json['banner_url'] as String?,
     instagramUrl: json['instagram_url'] as String?,
     tiktokUrl: json['tiktok_url'] as String?,
-    otherLinks: [for (final l in (json['other_links'] as List? ?? const [])) '$l'],
+    otherLinks: [
+      for (final l in (json['other_links'] as List? ?? const [])) '$l',
+    ],
     acceptingBookings: json['accepting_bookings'] as bool? ?? false,
   );
 }
@@ -147,8 +149,12 @@ class Me {
           ? null
           : SubscriptionStatus.parse(json['subscription_status']),
       acceptingBookings: json['accepting_bookings'] as bool? ?? false,
-      profile: profile is Map<String, dynamic> ? MasterProfile.fromJson(profile) : null,
-      activeMaster: active is Map<String, dynamic> ? MasterBrief.fromJson(active) : null,
+      profile: profile is Map<String, dynamic>
+          ? MasterProfile.fromJson(profile)
+          : null,
+      activeMaster: active is Map<String, dynamic>
+          ? MasterBrief.fromJson(active)
+          : null,
       nextAppointmentRaw: next is Map<String, dynamic> ? next : null,
     );
   }

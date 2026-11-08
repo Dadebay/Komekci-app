@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/localization/language_provider.dart';
+import '../../../core/theme/app_theme_tokens.dart';
+import '../../../core/theme/theme_provider.dart';
 import '../../../data/models/app_settings.dart';
 import '../../../data/repositories/settings_repository.dart';
 
@@ -25,6 +27,35 @@ class AppSettingsProvider extends ChangeNotifier {
   String get currency => _settings.currency;
   String get supportContact => _settings.supportContact;
   List<AppLanguage> get locales => _settings.locales;
+  List<KomekciTheme> get themes => _settings.themes;
+  AppThemeTokens themeTokensFor(KomekciTheme theme) {
+    final bundled = tokensFor(theme);
+    // Keep the existing Ivory look, including its server-provided gold detail.
+    if (theme == KomekciTheme.ivory) {
+      final tokens = _settings.themeColors[theme]?.applyTo(bundled) ?? bundled;
+      return tokens.copyWith(
+        surface: goldTokens.surface,
+        surfaceElevated: goldTokens.surface,
+        border: goldTokens.border,
+      );
+    }
+    // Public settings still contain the old Onyx/Champagne/Rose palettes.
+    // These named choices have fixed app palettes until the server catches up.
+    if (theme == KomekciTheme.onyx ||
+        theme == KomekciTheme.champagne ||
+        theme == KomekciTheme.rose) {
+      return bundled;
+    }
+    final tokens = _settings.themeColors[theme]?.applyTo(bundled) ?? bundled;
+    // Legacy red-theme cards and inputs stay white.
+    return themeStyleFor(theme) == KomekciThemeStyle.red
+        ? tokens.copyWith(surfaceElevated: tokens.surface)
+        : tokens;
+  }
+
+  AppContact get contact => _settings.contact;
+  AppAbout get about => _settings.about;
+  int _loadGeneration = 0;
 
   /// Currency as written in UI copy: Turkmen manat is spelled out in Turkmen
   /// and Russian, anything else shows the ISO code the API sent.
@@ -36,13 +67,21 @@ class AppSettingsProvider extends ChangeNotifier {
   }
 
   /// Never throws: on failure the current (fallback) settings stay in place.
-  Future<void> load() async {
+  Future<void> load({AppLanguage locale = AppLanguage.tk}) async {
+    final generation = ++_loadGeneration;
     try {
-      _settings = await _repository.fetchPublic();
+      final settings = await _repository.fetchPublic(locale: locale.name);
+      if (generation != _loadGeneration) return;
+      _settings = settings;
       _loaded = true;
       notifyListeners();
     } catch (error) {
       debugPrint('Public settings request failed: $error');
+      final cached = await _repository.cached();
+      if (cached != null && generation == _loadGeneration) {
+        _settings = cached;
+        notifyListeners();
+      }
     }
   }
 }

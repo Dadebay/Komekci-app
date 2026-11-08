@@ -1,25 +1,27 @@
-# Session Snapshot — 2026-10-03 20:09
+# Session Snapshot — 2026-11-06 17:40
 
 ## Files Changed
-- .claude/launch.json
-- .metadata
-- analysis_options.yaml
-- android/app/src/main/AndroidManifest.xml
+- .claude/sessions/.notification-token-cache
+- .claude/sessions/snapshot.md
+- .claude/sessions/token-log.md
 - android/gradle.properties
-- docs/DEVAM_NOTU.md
-- docs/PROJE_EKRAN_VE_TASARIM_DENETIMI.md
-- docs/SPECIFICATION.md
-- ios/Podfile.lock
-- lib/ARCHITECTURE.md
+- ios/Runner.xcodeproj/project.pbxproj
+- ios/Runner/Info.plist
+- lib/app/komekci_app.dart
+- lib/core/theme/app_theme_tokens.dart
+- lib/core/theme/theme_provider.dart
+- lib/data/models/api/billing_models.dart
 
 ## Recent Commits
-- b03a617 Aug 27
-- 07f6fde Aug 12
-- c27c521 first commit
+- 0c4bdc7 Map four app themes to gold blue red and dark palettes
+- bf5e741 Save current app before theme palette changes
+- 8649cc0 Oct 29
+- 31abcd5 Oct 29
+- a60d1fd Oct 27
 
 ## Token Estimate
-~592 tokens in auto-loaded files
+~669 tokens in auto-loaded files
 
 ## Last Turn
-Cümlenin devamını yazar mısınız? Amacınız bu üçünden hangisiydi, yoksa başka bir şey mi?
+Backend'de bunun için bir alan varsa (ör. `status: "vip"` veya `"regular"`) adını ve değerlerini söyle. Müşteri detay ek
 

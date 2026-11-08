@@ -4,8 +4,29 @@
     {
       "name": "salon-web",
       "runtimeExecutable": "flutter",
-      "runtimeArgs": ["run", "-d", "chrome", "--web-port", "8901"],
+      "runtimeArgs": [
+        "run",
+        "-d",
+        "chrome",
+        "--web-port",
+        "8901"
+      ],
       "port": 8901
+    },
+    {
+      "name": "akbulut-monitor",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/dadebay/Developer/apps/projects/akbulut-monitor",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5178",
+        "--strictPort"
+      ],
+      "port": 5178
     }
   ]
 }

@@ -41,12 +41,19 @@ String formatApiDate(DateTime d) => '${d.year}-${_two(d.month)}-${_two(d.day)}';
 String formatApiDateTime(DateTime d) =>
     '${formatApiDate(d)} ${_two(d.hour)}:${_two(d.minute)}:00';
 
+/// ISO 8601 wall time required by `/me/closed-times` (Asia/Ashgabat).
+String formatApiAshgabatDateTime(DateTime d) =>
+    '${formatApiDate(d)}T${_two(d.hour)}:${_two(d.minute)}:00+05:00';
+
 /// `10:30` — schedule times.
-String formatApiTimeOfDay(int hour, int minute) => '${_two(hour)}:${_two(minute)}';
+String formatApiTimeOfDay(int hour, int minute) =>
+    '${_two(hour)}:${_two(minute)}';
 
 /// Many responses wrap their payload as `{ "data": ... }`; accept both.
 Object? unwrapData(Object? body) =>
-    body is Map<String, dynamic> && body.containsKey('data') ? body['data'] : body;
+    body is Map<String, dynamic> && body.containsKey('data')
+    ? body['data']
+    : body;
 
 Map<String, dynamic> asMap(Object? value) =>
     value is Map<String, dynamic> ? value : const {};

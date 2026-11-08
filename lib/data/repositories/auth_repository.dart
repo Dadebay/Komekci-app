@@ -66,14 +66,14 @@ class AuthRepository {
 
   /// Creates the account and sends the SMS code. No tokens yet — finish with
   /// [verifyOtp].
-  Future<void> register(RegistrationData data) async {
+  Future<int> register(RegistrationData data) async {
     String? clean(String? v) => v == null || v.trim().isEmpty ? null : v.trim();
     final locale = clean(data.locale);
     final address = clean(data.address);
     final description = clean(data.description);
     final instagram = clean(data.instagramUrl);
     final tiktok = clean(data.tiktokUrl);
-    await _api.request(
+    final response = await _api.request(
       'POST',
       '/auth/register',
       auth: false,
@@ -97,11 +97,17 @@ class AuthRepository {
         ],
       ),
     );
+    return parseIntOrNull(asMap(response)['retry_after']) ?? 60;
   }
 
   /// SMS code for an existing, active account.
-  Future<void> requestOtp(String phone) async {
-    await _api.post('/auth/otp/request', json: {'phone': phone}, auth: false);
+  Future<int> requestOtp(String phone) async {
+    final response = await _api.post(
+      '/auth/otp/request',
+      json: {'phone': phone},
+      auth: false,
+    );
+    return parseIntOrNull(asMap(response)['retry_after']) ?? 60;
   }
 
   /// Confirms the code (sign-up and sign-in alike) and stores the tokens.
@@ -111,7 +117,7 @@ class AuthRepository {
       json: {'phone': phone, 'code': code},
       auth: false,
     );
-    await _api.saveSession(AuthTokens.fromJson(asMap(body)));
+    await _api.saveSession(AuthTokens.fromJson(asMap(body)), newAccount: true);
   }
 
   /// Revokes the refresh token and forgets the session locally, even if the

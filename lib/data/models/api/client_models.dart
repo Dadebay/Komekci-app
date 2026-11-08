@@ -29,17 +29,21 @@ class ClientConnection {
   final bool active;
   final MasterBrief master;
 
-  factory ClientConnection.fromJson(Map<String, dynamic> json) => ClientConnection(
-    id: parseIntOrNull(json['id']) ?? 0,
-    status: ConnectionStatus.parse(json['status']),
-    active: json['active'] as bool? ?? false,
-    master: MasterBrief.fromJson(asMap(json['master'])),
-  );
+  factory ClientConnection.fromJson(Map<String, dynamic> json) =>
+      ClientConnection(
+        id: parseIntOrNull(json['id']) ?? 0,
+        status: ConnectionStatus.parse(json['status']),
+        active: json['active'] as bool? ?? false,
+        master: MasterBrief.fromJson(asMap(json['master'])),
+      );
 }
 
 /// Services of a connected master as a client sees them.
 class MasterServices {
-  const MasterServices({required this.acceptingBookings, required this.services});
+  const MasterServices({
+    required this.acceptingBookings,
+    required this.services,
+  });
   final bool acceptingBookings;
   final List<ApiService> services;
 
@@ -144,13 +148,14 @@ class ApiNotification {
   final DateTime sentAt;
   final DateTime? readAt;
 
-  factory ApiNotification.fromJson(Map<String, dynamic> json) => ApiNotification(
-    id: parseIntOrNull(json['id']) ?? 0,
-    eventCode: json['event_code'] as String? ?? '',
-    title: json['title'] as String? ?? '',
-    body: json['body'] as String? ?? '',
-    payload: asMap(json['payload']),
-    sentAt: parseApiTime(json['sent_at']) ?? DateTime.now(),
-    readAt: parseApiTime(json['read_at']),
-  );
+  factory ApiNotification.fromJson(Map<String, dynamic> json) =>
+      ApiNotification(
+        id: parseIntOrNull(json['id']) ?? 0,
+        eventCode: json['event_code'] as String? ?? '',
+        title: json['title'] as String? ?? '',
+        body: json['body'] as String? ?? '',
+        payload: asMap(json['payload']),
+        sentAt: parseApiTime(json['sent_at']) ?? DateTime.now(),
+        readAt: parseApiTime(json['read_at']),
+      );
 }

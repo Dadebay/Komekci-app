@@ -29,6 +29,7 @@ class Customer {
     required this.status,
     this.nickname = '',
     this.photoUrl,
+    this.accountId,
     this.visits = const [],
     this.note = '',
     this.nextVisit,
@@ -48,6 +49,7 @@ class Customer {
   final CustomerStatus status;
   final String nickname;
   final String? photoUrl;
+  final int? accountId;
   final bool offline;
 
   /// Aggregates from the client list; [visits] only fills in once the full
@@ -102,6 +104,7 @@ class Customer {
     status: parseStatus(c.status),
     nickname: c.nickname ?? '',
     photoUrl: c.photoUrl,
+    accountId: c.accountId,
     offline: c.offline,
     visitCount: c.visits,
     spent: c.spend.round(),
@@ -144,6 +147,7 @@ class Customer {
     status: status ?? this.status,
     nickname: nickname ?? this.nickname,
     photoUrl: photoUrl ?? this.photoUrl,
+    accountId: accountId,
     offline: offline,
     visitCount: visitCount ?? this.visitCount,
     spent: spent ?? this.spent,

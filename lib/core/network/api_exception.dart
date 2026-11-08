@@ -13,6 +13,9 @@ abstract final class ApiErrors {
   static const masterNotFound = 'MASTER_NOT_FOUND';
   static const phoneNotFound = 'PHONE_NOT_FOUND';
   static const paymentUnavailable = 'PAYMENT_UNAVAILABLE';
+  static const servicesRequired = 'SERVICES_REQUIRED';
+  static const promoAlreadyUsed = 'PROMO_ALREADY_USED';
+  static const subscriptionRequired = 'SUBSCRIPTION_REQUIRED';
   static const slotTaken = 'SLOT_TAKEN';
   static const validation = 'VALIDATION';
   static const nicknameTaken = 'NICKNAME_TAKEN';

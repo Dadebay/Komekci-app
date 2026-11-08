@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/localization/language_provider.dart';
 import '../../core/network/api_exception.dart';
+import '../widgets/app_toast.dart';
 
 /// Text to show for a failed call: the server's own message in the user's
 /// language, or a friendly line when the request never got through.
@@ -67,12 +68,12 @@ String? socialUrl(String input, {required String host, bool atPrefix = false}) {
 /// in the user's language. Resolves true when the action succeeded.
 Future<bool> runApi(BuildContext context, Future<void> Function() action) async {
   final language = context.read<LanguageProvider>().language;
-  final messenger = ScaffoldMessenger.of(context);
+  final toast = AppToast.of(context);
   try {
     await action();
     return true;
   } catch (error) {
-    messenger.showSnackBar(SnackBar(content: Text(apiErrorMessage(error, language))));
+    toast.error(apiErrorMessage(error, language));
     return false;
   }
 }

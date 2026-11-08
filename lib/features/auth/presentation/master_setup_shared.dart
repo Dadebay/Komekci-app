@@ -1,0 +1,132 @@
+part of '../../../app/komekci_app.dart';
+
+/// Master onboarding runs in four steps: 1. phone number, 2. SMS code,
+/// 3. profile details, 4. subscription payment.
+const _masterSetupSteps = 4;
+
+/// Phone top-ups are a mobile-balance transfer: the app opens an SMS to this
+/// operator short code with `"<receiver number> <amount>"`, where the receiver
+/// number is the one the server hands out (`POST /me/billing/topup`).
+const _topUpShortCode = '0804';
+
+/// Sits under the confirm button in payment dialogs, replacing a back arrow.
+class _DialogCancelButton extends StatelessWidget {
+  const _DialogCancelButton({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: TextButton(
+        onPressed: () => Navigator.pop(context),
+        style: TextButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: tokens.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MasterSetupHeader extends StatelessWidget
+    implements PreferredSizeWidget {
+  const _MasterSetupHeader({required this.title, this.onBack});
+  final String title;
+  final VoidCallback? onBack;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(44);
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return AppBar(
+      toolbarHeight: 44,
+      backgroundColor: tokens.surface,
+      surfaceTintColor: tokens.surface,
+      elevation: 0,
+      centerTitle: true,
+      leading: IconButton(
+        onPressed: onBack ?? () => Navigator.maybePop(context),
+        icon: AppIcon(Icons.arrow_back, color: tokens.textPrimary),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+}
+
+class _MasterProgressIndicator extends StatelessWidget {
+  const _MasterProgressIndicator({required this.step});
+  final int step;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return SizedBox(
+      height: 24,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            left: 12,
+            right: 12,
+            child: Row(
+              children: List.generate(
+                _masterSetupSteps - 1,
+                (index) => Expanded(
+                  child: Container(
+                    height: 1.5,
+                    color: index < step - 1
+                        ? tokens.textPrimary
+                        : tokens.border,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(_masterSetupSteps, (index) {
+              final current = index + 1 == step;
+              final completed = index + 1 < step;
+              return Container(
+                width: 24,
+                height: 24,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: current || completed
+                      ? tokens.textPrimary
+                      : tokens.surface,
+                  border: Border.all(
+                    color: current || completed
+                        ? tokens.textPrimary
+                        : tokens.border,
+                  ),
+                ),
+                child: completed
+                    ? AppIcon(Icons.check, color: tokens.surface, size: 13)
+                    : null,
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+}

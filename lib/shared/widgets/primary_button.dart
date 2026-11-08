@@ -18,12 +18,13 @@ class PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.appTokens;
+    final textColouredButton = t.button == t.textPrimary;
     return SizedBox(
       width: double.infinity,
       height: 56,
       child: FilledButton(
         style: FilledButton.styleFrom(
-          backgroundColor: t.textPrimary,
+          backgroundColor: t.button,
           shape: const StadiumBorder(),
           padding: const EdgeInsets.only(left: 22, right: 10),
         ),
@@ -38,21 +39,23 @@ class PrimaryButton extends StatelessWidget {
                 fontFamily: 'Gilroy',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: t.surface,
+                color: t.buttonText,
               ),
             ),
             CircleAvatar(
-              backgroundColor: t.accent,
+              backgroundColor: textColouredButton
+                  ? t.accent
+                  : t.buttonText.withValues(alpha: .18),
               child: loading
                   ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2.2,
-                        color: t.accentOn,
+                        color: t.buttonText,
                       ),
                     )
-                  : AppIcon(Icons.arrow_forward, color: t.accentOn, size: 20),
+                  : AppIcon(Icons.arrow_forward, color: t.buttonText, size: 20),
             ),
           ],
         ),

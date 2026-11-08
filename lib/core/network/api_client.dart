@@ -4,8 +4,11 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
+import '../../shared/utils/image_compress.dart';
+import '../offline/master_offline_cache.dart';
 import 'api_config.dart';
 import 'api_exception.dart';
+import 'api_logger.dart';
 import 'token_store.dart';
 
 /// One file in a multipart request.
@@ -31,17 +34,11 @@ class MultipartBody {
 ///   cleared and [onSessionExpired] fires
 /// - every failure surfaces as an [ApiException]
 class ApiClient {
-  ApiClient({
-    http.Client? client,
-    TokenStore? tokenStore,
-    String baseUrl = apiBaseUrl,
-    this.languageCode,
-  }) : _client = client ?? http.Client(),
-       _store = tokenStore ?? const SecureTokenStore(),
-       _baseUrl = baseUrl;
+  ApiClient({http.Client? client, TokenStore? tokenStore, this._offlineCache, this._baseUrl = apiBaseUrl, this.languageCode}) : _client = client ?? http.Client(), _store = tokenStore ?? const SecureTokenStore();
 
   final http.Client _client;
   final TokenStore _store;
+  final MasterOfflineCache? _offlineCache;
   final String _baseUrl;
 
   /// Sent as `Accept-Language` so errors before sign-in use the UI language.
@@ -52,6 +49,7 @@ class ApiClient {
 
   AuthTokens? _tokens;
   Future<bool>? _refreshing;
+  int _sessionEpoch = 0;
 
   bool get hasSession => _tokens != null;
 
@@ -61,90 +59,84 @@ class ApiClient {
     return _tokens != null;
   }
 
-  Future<void> saveSession(AuthTokens tokens) async {
+  Future<void> saveSession(AuthTokens tokens, {bool newAccount = false}) async {
+    if (newAccount) {
+      _sessionEpoch++;
+      await _offlineCache?.clear();
+    }
     _tokens = tokens;
     await _store.write(tokens);
   }
 
   Future<void> clearSession() async {
+    _sessionEpoch++;
     _tokens = null;
     await _store.clear();
+    await _offlineCache?.clear();
   }
 
   String? get refreshToken => _tokens?.refresh;
 
-  Future<dynamic> get(String path, {Map<String, Object?>? query, bool auth = true}) =>
-      request('GET', path, query: query, auth: auth);
+  Future<dynamic> get(String path, {Map<String, Object?>? query, bool auth = true, bool offlineFallback = true}) => request('GET', path, query: query, auth: auth, offlineFallback: offlineFallback);
 
-  Future<dynamic> post(String path, {Object? json, bool auth = true, Map<String, String>? headers}) =>
-      request('POST', path, json: json, auth: auth, headers: headers);
+  Future<dynamic> post(String path, {Object? json, bool auth = true, Map<String, String>? headers}) => request('POST', path, json: json, auth: auth, headers: headers);
 
-  Future<dynamic> put(String path, {Object? json}) =>
-      request('PUT', path, json: json);
+  Future<dynamic> put(String path, {Object? json}) => request('PUT', path, json: json);
 
-  Future<dynamic> patch(String path, {Object? json}) =>
-      request('PATCH', path, json: json);
+  Future<dynamic> patch(String path, {Object? json}) => request('PATCH', path, json: json);
 
-  Future<dynamic> delete(String path, {Object? json}) =>
-      request('DELETE', path, json: json);
+  Future<dynamic> delete(String path, {Object? json}) => request('DELETE', path, json: json);
 
-  Future<dynamic> request(
-    String method,
-    String path, {
-    Map<String, Object?>? query,
-    Object? json,
-    MultipartBody? multipart,
-    bool auth = true,
-    Map<String, String>? headers,
-  }) async {
-    Future<http.Response> send() => _send(
-      method,
-      path,
-      query: query,
-      json: json,
-      multipart: multipart,
-      auth: auth,
-      extraHeaders: headers,
-    );
+  Future<dynamic> request(String method, String path, {Map<String, Object?>? query, Object? json, MultipartBody? multipart, bool auth = true, bool offlineFallback = true, Map<String, String>? headers}) async {
+    Future<http.Response> send() => _send(method, path, query: query, json: json, multipart: multipart, auth: auth, extraHeaders: headers);
 
-    final usedAccess = _tokens?.access;
-    var response = await send();
-    if (response.statusCode == 401 && auth && usedAccess != null) {
-      // Another call may have refreshed while this one was in flight.
-      final alreadyRefreshed = _tokens != null && _tokens!.access != usedAccess;
-      if (alreadyRefreshed || await _refresh()) {
-        response = await send();
+    final requestEpoch = _sessionEpoch;
+    try {
+      final usedAccess = _tokens?.access;
+      var response = await send();
+      if (response.statusCode == 401 && auth && usedAccess != null) {
+        // Another call may have refreshed while this one was in flight.
+        final alreadyRefreshed = _tokens != null && _tokens!.access != usedAccess;
+        if (alreadyRefreshed || await _refresh()) {
+          response = await send();
+        }
       }
+      final body = _decode(response);
+      if (method == 'GET' && auth && _tokens != null && requestEpoch == _sessionEpoch) {
+        await _offlineCache?.write(path, query, body);
+      }
+      return body;
+    } on ApiException catch (error) {
+      if (offlineFallback && error.isNetwork && method == 'GET' && auth && _tokens != null && requestEpoch == _sessionEpoch) {
+        final cached = await _offlineCache?.read(path, query);
+        if (cached != null) return cached;
+      }
+      rethrow;
     }
-    return _decode(response);
   }
 
-  Future<http.Response> _send(
-    String method,
-    String path, {
-    Map<String, Object?>? query,
-    Object? json,
-    MultipartBody? multipart,
-    required bool auth,
-    Map<String, String>? extraHeaders,
-  }) async {
+  Future<http.Response> _send(String method, String path, {Map<String, Object?>? query, Object? json, MultipartBody? multipart, required bool auth, Map<String, String>? extraHeaders}) async {
     final queryParameters = {
       for (final e in (query ?? const <String, Object?>{}).entries)
         if (e.value != null) e.key: '${e.value}',
     };
-    final uri = Uri.parse('$_baseUrl$path').replace(
-      queryParameters: queryParameters.isEmpty ? null : queryParameters,
-    );
+    final uri = Uri.parse('$_baseUrl$path').replace(queryParameters: queryParameters.isEmpty ? null : queryParameters);
     final headers = <String, String>{
       'Accept': 'application/json',
       if (languageCode != null) 'Accept-Language': languageCode!(),
       if (auth && _tokens != null) 'Authorization': 'Bearer ${_tokens!.access}',
       ...?extraHeaders,
     };
+    final watch = Stopwatch()..start();
     try {
       if (multipart != null) {
-        final request = http.MultipartRequest(method, uri)
-          ..headers.addAll(headers);
+        // PHP only fills the request body for a multipart *POST*; a real
+        // PATCH/PUT arrives with every field and file missing, so Laravel
+        // would answer 200 and silently save nothing. `_method` is Laravel's
+        // own override, so the route still sees the verb it declared.
+        final spoofed = method == 'PATCH' || method == 'PUT' || method == 'DELETE';
+        final request = http.MultipartRequest(spoofed ? 'POST' : method, uri)..headers.addAll(headers);
+        if (spoofed) request.fields['_method'] = method;
         // `fields` is a Map, so a key that repeats (`other_links[]`) goes in
         // as its own text parts instead.
         final counts = <String, int>{};
@@ -159,10 +151,13 @@ class ApiClient {
           }
         }
         for (final f in multipart.files) {
-          request.files.add(await http.MultipartFile.fromPath(f.field, f.path));
+          // Safety net behind the picker: whatever file reaches an upload is
+          // brought under the size limit here (a no-op when it already is).
+          final file = await compressImageUnder(File(f.path));
+          request.files.add(await http.MultipartFile.fromPath(f.field, file.path));
         }
         final streamed = await _client.send(request).timeout(apiUploadTimeout);
-        return http.Response.fromStream(streamed);
+        return _logged(method, uri, watch, await http.Response.fromStream(streamed));
       }
       final request = http.Request(method, uri)..headers.addAll(headers);
       if (json != null) {
@@ -170,18 +165,28 @@ class ApiClient {
         request.body = jsonEncode(json);
       }
       final streamed = await _client.send(request).timeout(apiTimeout);
-      return http.Response.fromStream(streamed);
+      return _logged(method, uri, watch, await http.Response.fromStream(streamed));
     } on ApiException {
       rethrow;
     } on TimeoutException catch (e) {
-      throw ApiException.network(e);
+      throw _failed(method, uri, watch, 'timeout', e);
     } on SocketException catch (e) {
-      throw ApiException.network(e);
+      throw _failed(method, uri, watch, 'network', e);
     } on HandshakeException catch (e) {
-      throw ApiException.network(e);
+      throw _failed(method, uri, watch, 'tls', e);
     } on http.ClientException catch (e) {
-      throw ApiException.network(e);
+      throw _failed(method, uri, watch, 'network', e);
     }
+  }
+
+  http.Response _logged(String method, Uri uri, Stopwatch watch, http.Response response) {
+    ApiLogger.log(method: method, uri: uri, elapsed: watch.elapsed, status: response.statusCode, body: response.bodyBytes);
+    return response;
+  }
+
+  ApiException _failed(String method, Uri uri, Stopwatch watch, String reason, Object cause) {
+    ApiLogger.log(method: method, uri: uri, elapsed: watch.elapsed, failure: reason);
+    return ApiException.network(cause);
   }
 
   dynamic _decode(http.Response response) {
@@ -207,12 +212,7 @@ class ApiClient {
     final refresh = _tokens?.refresh;
     if (refresh == null) return false;
     try {
-      final response = await _send(
-        'POST',
-        '/auth/refresh',
-        json: {'refresh_token': refresh},
-        auth: false,
-      );
+      final response = await _send('POST', '/auth/refresh', json: {'refresh_token': refresh}, auth: false);
       final body = _decode(response);
       await saveSession(AuthTokens.fromJson(body as Map<String, dynamic>));
       return true;

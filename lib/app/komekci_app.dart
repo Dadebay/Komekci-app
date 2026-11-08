@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui' show ImageFilter;
 
 import 'package:background_sms/background_sms.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -21,9 +23,10 @@ import '../core/theme/app_theme_tokens.dart';
 import '../core/theme/theme_provider.dart';
 import '../core/localization/language_provider.dart';
 import '../core/network/api_client.dart';
-import '../core/network/api_config.dart';
 import '../core/network/api_exception.dart';
+import '../core/offline/master_offline_cache.dart';
 import '../core/services/device_registrar.dart';
+import '../core/services/sms_code_listener.dart';
 import '../core/services/analytics_service.dart';
 import '../core/services/firebase_messaging_service.dart';
 import '../data/models/api/billing_models.dart';
@@ -40,19 +43,26 @@ import '../features/app/application/app_settings_provider.dart';
 import '../features/auth/application/auth_provider.dart';
 import '../features/billing/application/billing_provider.dart';
 import '../features/booking/application/booking_provider.dart';
+import '../features/booking/application/client_calendar_service.dart';
 import '../features/booking/application/client_bookings_provider.dart';
 import '../features/booking/application/client_masters_provider.dart';
 import '../features/cabinet/application/master_profile_provider.dart';
 import '../features/customers/application/customer_provider.dart';
 import '../features/notifications/application/notification_provider.dart';
+import '../features/notifications/application/master_booking_alert_controller.dart';
+import '../features/notifications/presentation/master_booking_alert_overlay.dart';
+import '../features/permissions/presentation/permission_reminder_host.dart';
 import '../features/profile/application/client_profile_provider.dart';
 import '../features/requests/application/connection_requests_provider.dart';
 import '../features/schedule/application/schedule_provider.dart';
+import '../features/schedule/domain/working_time.dart';
 import '../features/services/application/service_provider.dart';
+import '../features/services/application/master_service_reminder_scheduler.dart';
 import '../data/models/salon_service.dart';
 import '../data/models/customer.dart';
 import '../data/models/appointment.dart';
 import '../data/models/app_notification.dart';
+import '../data/models/app_settings.dart';
 import '../firebase_options.dart';
 import '../shared/widgets/app_icon.dart';
 import '../shared/widgets/glass_nav_bar.dart';
@@ -65,217 +75,165 @@ import '../shared/utils/weekday_labels.dart';
 import '../shared/utils/salon_colors.dart';
 import '../shared/utils/app_today.dart';
 import '../shared/widgets/primary_button.dart';
+import '../shared/widgets/master_action_button.dart';
+import '../shared/widgets/app_help_button.dart';
 import '../shared/widgets/form_widgets.dart';
 import '../shared/widgets/cabinet_app_bar.dart';
+import '../shared/widgets/app_toast.dart';
 
-part '../features/splash/presentation/splash_screen.part.dart';
-part '../features/onboarding/presentation/onboarding_screen.part.dart';
-part '../features/onboarding/presentation/role_onboarding_screen.part.dart';
-part '../features/home/presentation/home_shells.part.dart';
-part '../features/home/presentation/home_dashboard_screen.part.dart';
-part '../features/home/presentation/home_dashboard_widgets.part.dart';
-part '../features/home/presentation/day_timeline_screen.part.dart';
-part '../features/home/presentation/client_home_dashboard.part.dart';
-part '../features/home/presentation/client_booking_widgets.part.dart';
-part '../features/home/presentation/client_master_widgets.part.dart';
-part '../features/home/presentation/client_bookings_screen.part.dart';
-part '../features/home/presentation/master_profile_screen.part.dart';
-part '../features/notifications/presentation/notification_screens.part.dart';
-part '../features/profile/presentation/client_profile_screen.part.dart';
-part '../features/profile/presentation/client_profile_widgets.part.dart';
-part '../features/profile/presentation/client_profile_edit_screen.part.dart';
-part '../features/profile/presentation/change_phone_dialog.part.dart';
-part '../features/profile/presentation/client_notification_settings_screen.part.dart';
-part '../features/profile/presentation/client_support_screen.part.dart';
-part '../features/appointments/presentation/appointment_detail_screen.part.dart';
-part '../features/appointments/presentation/reschedule_screen.part.dart';
-part '../features/appointments/presentation/my_masters_screen.part.dart';
-part '../features/appointments/presentation/settings_screen.part.dart';
-part '../features/booking/presentation/booking_shared.part.dart';
-part '../features/booking/presentation/booking_service_screen.part.dart';
-part '../features/booking/presentation/booking_datetime_screen.part.dart';
-part '../features/booking/presentation/booking_confirm_screen.part.dart';
-part '../features/booking/presentation/booking_success_screen.part.dart';
-part '../features/auth/presentation/language_screen.part.dart';
-part '../features/auth/presentation/client_registration_screen.part.dart';
-part '../features/auth/presentation/otp_screen.part.dart';
-part '../features/auth/presentation/connect_master_flow.part.dart';
-part '../features/auth/presentation/login_screen.part.dart';
-part '../features/auth/presentation/master_setup_shared.part.dart';
-part '../features/auth/presentation/master_phone_screen.part.dart';
-part '../features/auth/presentation/master_otp_screen.part.dart';
-part '../features/auth/presentation/master_registration_screen.part.dart';
-part '../features/auth/presentation/master_subscription_screen.part.dart';
-part '../features/auth/presentation/master_subscription_payment_widgets.part.dart';
-part '../features/auth/presentation/master_phone_payment_dialog.part.dart';
-part '../features/auth/presentation/master_card_payment_dialog.part.dart';
-part '../features/auth/presentation/role_screen.part.dart';
-part '../features/auth/presentation/role_screen_widgets.part.dart';
-part '../features/cabinet/presentation/cabinet_shared.part.dart';
-part '../features/cabinet/presentation/cabinet_home_screen.part.dart';
-part '../features/cabinet/presentation/cabinet_widgets.part.dart';
-part '../features/cabinet/presentation/cabinet_profile_screen.part.dart';
-part '../features/cabinet/presentation/cabinet_working_hours_screen.part.dart';
-part '../features/cabinet/presentation/cabinet_vacation_screen.part.dart';
-part '../features/cabinet/presentation/cabinet_special_days_screen.part.dart';
-part '../features/cabinet/presentation/cabinet_client_notify_screen.part.dart';
-part '../features/cabinet/presentation/cabinet_send_message_screen.part.dart';
-part '../features/cabinet/presentation/cabinet_selected_clients_screen.part.dart';
-part '../features/cabinet/presentation/cabinet_recent_clients_screen.part.dart';
-part '../features/cabinet/presentation/cabinet_billing_screen.part.dart';
-part '../features/cabinet/presentation/cabinet_support_screen.part.dart';
-part '../features/billing/presentation/billing_history_screen.part.dart';
-part '../features/requests/presentation/connection_requests_screen.part.dart';
-part '../features/services/presentation/services_screen.part.dart';
-part '../features/services/presentation/service_form_screen.part.dart';
-part '../features/customers/presentation/customer_shared.part.dart';
-part '../features/customers/presentation/customers_screen.part.dart';
-part '../features/customers/presentation/customer_list_widgets.part.dart';
-part '../features/customers/presentation/customer_detail_screen.part.dart';
-part '../features/customers/presentation/customer_form_screen.part.dart';
-part '../features/customers/presentation/new_appointment_screen.part.dart';
-part '../features/schedule/presentation/schedule_shared.part.dart';
-part '../features/schedule/presentation/schedule_screen.part.dart';
-part '../features/schedule/presentation/schedule_week_overview_screen.part.dart';
-part '../features/schedule/presentation/schedule_appointment_row.part.dart';
-part '../features/schedule/presentation/schedule_customer_picker_sheet.part.dart';
-part '../features/schedule/presentation/schedule_new_slot_sheet.part.dart';
+part '../features/splash/presentation/splash_screen.dart';
+part '../features/splash/presentation/splash_firebase_setup.dart';
+part '../features/onboarding/presentation/onboarding_screen.dart';
+part '../features/onboarding/presentation/role_onboarding_screen.dart';
+part '../features/home/presentation/home_shells.dart';
+part '../features/home/presentation/home_shells_page_view_data.dart';
+part '../features/home/presentation/home_dashboard_screen.dart';
+part '../features/home/presentation/home_dashboard_refresh.dart';
+part '../features/home/presentation/home_dashboard_widgets.dart';
+part '../features/home/presentation/home_dashboard_stats.dart';
+part '../features/home/presentation/home_dashboard_timeline.dart';
+part '../features/home/presentation/home_dashboard_table_header.dart';
+part '../features/home/presentation/home_dashboard_appointment_row.dart';
+part '../features/home/presentation/home_dashboard_free_row.dart';
+part '../features/home/presentation/day_timeline_screen.dart';
+part '../features/home/presentation/client_home_dashboard.dart';
+part '../features/home/presentation/client_booking_widgets.dart';
+part '../features/home/presentation/client_master_widgets.dart';
+part '../features/home/presentation/client_bookings_screen.dart';
+part '../features/home/presentation/client_bookings_filter_sheet.dart';
+part '../features/home/presentation/master_profile_screen.dart';
+part '../features/home/presentation/master_profile_profile_pill.dart';
+part '../features/notifications/presentation/notification_screens.dart';
+part '../features/profile/presentation/client_profile_screen.dart';
+part '../features/profile/presentation/settings_floating_sheet.dart';
+part '../features/services/presentation/free_month_dialog.dart';
+part '../features/profile/presentation/client_profile_widgets.dart';
+part '../features/profile/presentation/client_profile_edit_screen.dart';
+part '../features/profile/presentation/change_phone_dialog.dart';
+part '../features/profile/presentation/client_notification_settings_screen.dart';
+part '../features/profile/presentation/client_notification_settings_master_notification_toggle.dart';
+part '../features/profile/presentation/client_support_screen.dart';
+part '../features/profile/presentation/client_support_contact_row.dart';
+part '../features/profile/presentation/about_screen.dart';
+part '../features/appointments/presentation/appointment_detail_screen.dart';
+part '../features/appointments/presentation/appointment_detail_time_card.dart';
+part '../features/appointments/presentation/appointment_detail_actions.dart';
+part '../features/appointments/presentation/reschedule_screen.dart';
+part '../features/appointments/presentation/my_masters_screen.dart';
+part '../features/appointments/presentation/my_masters_masters_empty.dart';
+part '../features/appointments/presentation/my_masters_main_master_card.dart';
+part '../features/appointments/presentation/settings_screen.dart';
+part '../features/booking/presentation/booking_shared.dart';
+part '../features/booking/presentation/booking_service_screen.dart';
+part '../features/booking/presentation/booking_datetime_screen.dart';
+part '../features/booking/presentation/booking_datetime_date_chip.dart';
+part '../features/booking/presentation/booking_confirm_screen.dart';
+part '../features/booking/presentation/booking_confirm_booking_info_tile.dart';
+part '../features/booking/presentation/booking_success_screen.dart';
+part '../features/auth/presentation/language_screen.dart';
+part '../features/auth/presentation/client_registration_screen.dart';
+part '../features/auth/presentation/client_registration_submit.dart';
+part '../features/auth/presentation/client_registration_widgets.dart';
+part '../features/auth/presentation/otp_code_field.dart';
+part '../features/auth/presentation/otp_screen.dart';
+part '../features/auth/presentation/connect_master_flow.dart';
+part '../features/auth/presentation/connect_master_connect_hero.dart';
+part '../features/auth/presentation/connect_master_not_found_note.dart';
+part '../features/auth/presentation/login_screen.dart';
+part '../features/auth/presentation/master_setup_shared.dart';
+part '../features/auth/presentation/master_phone_screen.dart';
+part '../features/auth/presentation/master_otp_screen.dart';
+part '../features/auth/presentation/master_otp_privacy_note.dart';
+part '../features/auth/presentation/master_registration_screen.dart';
+part '../features/auth/presentation/master_registration_submit.dart';
+part '../features/auth/presentation/master_registration_form_widgets.dart';
+part '../features/auth/presentation/master_subscription_screen.dart';
+part '../features/auth/presentation/master_subscription_top_up_balance_summary.dart';
+part '../features/auth/presentation/master_subscription_amount_option.dart';
+part '../features/auth/presentation/master_subscription_payment_widgets.dart';
+part '../features/auth/presentation/master_phone_payment_dialog.dart';
+part '../features/auth/presentation/master_phone_payment_dialog_notes_list.dart';
+part '../features/auth/presentation/master_card_payment_dialog.dart';
+part '../features/auth/presentation/role_screen.dart';
+part '../features/auth/presentation/role_screen_widgets.dart';
+part '../features/cabinet/presentation/cabinet_shared.dart';
+part '../features/cabinet/presentation/cabinet_home_screen.dart';
+part '../features/cabinet/presentation/cabinet_home_master_card.dart';
+part '../features/cabinet/presentation/cabinet_home_subscription_card.dart';
+part '../features/cabinet/presentation/cabinet_home_subscription_notice.dart';
+part '../features/cabinet/presentation/cabinet_settings_screen.dart';
+part '../features/cabinet/presentation/cabinet_widgets.dart';
+part '../features/cabinet/presentation/cabinet_checkbox_dot.dart';
+part '../features/cabinet/presentation/cabinet_profile_screen.dart';
+part '../features/cabinet/presentation/cabinet_profile_hero.dart';
+part '../features/cabinet/presentation/cabinet_profile_fields.dart';
+part '../features/cabinet/presentation/cabinet_profile_preview.dart';
+part '../features/cabinet/presentation/cabinet_profile_actions.dart';
+part '../features/cabinet/presentation/cabinet_working_hours_screen.dart';
+part '../features/cabinet/presentation/cabinet_working_load_card.dart';
+part '../features/cabinet/presentation/cabinet_working_break_settings.dart';
+part '../features/cabinet/presentation/cabinet_working_week_overview.dart';
+part '../features/cabinet/presentation/cabinet_working_day_rows.dart';
+part '../features/cabinet/presentation/cabinet_vacation_screen.dart';
+part '../features/cabinet/presentation/cabinet_vacation_state.dart';
+part '../features/cabinet/presentation/cabinet_vacation_months.dart';
+part '../features/cabinet/presentation/cabinet_vacation_date_picker.dart';
+part '../features/cabinet/presentation/cabinet_special_days_screen.dart';
+part '../features/cabinet/presentation/cabinet_client_notify_screen.dart';
+part '../features/cabinet/presentation/cabinet_send_message_screen.dart';
+part '../features/cabinet/presentation/cabinet_send_message_audience_options.dart';
+part '../features/cabinet/presentation/cabinet_send_message_audience_actions.dart';
+part '../features/cabinet/presentation/cabinet_send_message_channels.dart';
+part '../features/cabinet/presentation/cabinet_selected_clients_screen.dart';
+part '../features/cabinet/presentation/cabinet_recent_clients_screen.dart';
+part '../features/cabinet/presentation/cabinet_billing_screen.dart';
+part '../features/cabinet/presentation/cabinet_billing_subscription_status_chip.dart';
+part '../features/cabinet/presentation/cabinet_support_screen.dart';
+part '../features/billing/presentation/billing_history_screen.dart';
+part '../features/requests/presentation/connection_requests_screen.dart';
+part '../features/requests/presentation/new_connection_request_dialog.dart';
+part '../features/services/presentation/services_screen.dart';
+part '../features/services/presentation/services_service_card.dart';
+part '../features/services/presentation/service_form_screen.dart';
+part '../features/services/presentation/service_form_service_photo_box.dart';
+part '../features/services/presentation/service_form_field_label.dart';
+part '../features/customers/presentation/customer_shared.dart';
+part '../features/customers/presentation/customers_screen.dart';
+part '../features/customers/presentation/customers_customer_controls.dart';
+part '../features/customers/presentation/customer_list_widgets.dart';
+part '../features/customers/presentation/customer_list_status_badge.dart';
+part '../features/customers/presentation/customer_detail_screen.dart';
+part '../features/customers/presentation/customer_detail_hero.dart';
+part '../features/customers/presentation/customer_detail_widgets.dart';
+part '../features/customers/presentation/customer_form_screen.dart';
+part '../features/customers/presentation/customer_form_form_banner.dart';
+part '../features/customers/presentation/new_appointment_screen.dart';
+part '../features/schedule/presentation/schedule_shared.dart';
+part '../features/schedule/presentation/schedule_date_helpers.dart';
+part '../features/schedule/presentation/schedule_appointment_changes.dart';
+part '../features/schedule/presentation/schedule_appointment_actions.dart';
+part '../features/schedule/presentation/schedule_timeline_entries.dart';
+part '../features/schedule/presentation/schedule_screen.dart';
+part '../features/schedule/presentation/schedule_header_actions.dart';
+part '../features/schedule/presentation/schedule_timeline_rows.dart';
+part '../features/schedule/presentation/schedule_working_hours_action.dart';
+part '../features/schedule/presentation/schedule_week_overview_screen.dart';
+part '../features/schedule/presentation/schedule_week_overview_month_calendar.dart';
+part '../features/schedule/presentation/schedule_appointment_row.dart';
+part '../features/schedule/presentation/schedule_appointment_row_closed_time_row.dart';
+part '../features/schedule/presentation/schedule_customer_picker_sheet.dart';
+part '../features/schedule/presentation/schedule_customer_picker_choices.dart';
+part '../features/schedule/presentation/schedule_customer_picker_view.dart';
+part '../features/schedule/presentation/schedule_customer_picker_results.dart';
+part '../features/schedule/presentation/schedule_new_slot_sheet.dart';
+part '../features/schedule/presentation/schedule_new_slot_section_title.dart';
+part '../features/schedule/presentation/schedule_new_slot_header.dart';
+part '../features/schedule/presentation/schedule_new_slot_service_picker.dart';
+part '../features/schedule/presentation/schedule_new_slot_time_card.dart';
+part '../features/schedule/presentation/schedule_new_slot_service_fields.dart';
+part '../features/schedule/presentation/schedule_new_slot_customer_fields.dart';
+part '../features/schedule/presentation/schedule_free_time_actions_sheet.dart';
+part '../features/schedule/presentation/schedule_block_time_sheet.dart';
+part '../features/schedule/presentation/schedule_reopen_closed_time.dart';
 
-class KomekciApp extends StatelessWidget {
-  const KomekciApp({super.key});
-  @override
-  Widget build(BuildContext context) => MultiProvider(
-    providers: [
-      ChangeNotifierProvider(create: (_) => ThemeProvider()),
-      ChangeNotifierProvider(create: (_) => LanguageProvider()),
-      ChangeNotifierProvider(create: (_) => AppSettingsProvider()),
-      Provider<ApiClient>(
-        create: (context) => ApiClient(
-          languageCode: () => context.read<LanguageProvider>().language.name,
-        ),
-        dispose: (_, client) => client.close(),
-      ),
-      Provider<AuthRepository>(
-        create: (context) => AuthRepository(context.read<ApiClient>()),
-      ),
-      Provider<MeRepository>(
-        create: (context) => MeRepository(context.read<ApiClient>()),
-      ),
-      Provider<MasterRepository>(
-        create: (context) => MasterRepository(context.read<ApiClient>()),
-      ),
-      Provider<BillingRepository>(
-        create: (context) => BillingRepository(context.read<ApiClient>()),
-      ),
-      Provider<ClientRepository>(
-        create: (context) => ClientRepository(context.read<ApiClient>()),
-      ),
-      Provider<DeviceRegistrar>(
-        create: (context) => DeviceRegistrar(context.read<MeRepository>()),
-      ),
-      ChangeNotifierProvider(
-        create: (context) => AuthProvider(
-          api: context.read<ApiClient>(),
-          auth: context.read<AuthRepository>(),
-          meRepository: context.read<MeRepository>(),
-          devices: context.read<DeviceRegistrar>(),
-        ),
-      ),
-      ChangeNotifierProxyProvider<AuthProvider, BillingProvider>(
-        create: (context) =>
-            BillingProvider(context.read<BillingRepository>()),
-        update: (_, auth, billing) => billing!..onSession(auth.me),
-      ),
-      ChangeNotifierProxyProvider<AuthProvider, CustomerProvider>(
-        create: (context) =>
-            CustomerProvider(context.read<MasterRepository>()),
-        update: (_, auth, customers) => customers!..onSession(auth.me),
-      ),
-      ChangeNotifierProxyProvider<AuthProvider, ConnectionRequestsProvider>(
-        create: (context) =>
-            ConnectionRequestsProvider(context.read<MasterRepository>()),
-        update: (_, auth, requests) => requests!..onSession(auth.me),
-      ),
-      ChangeNotifierProxyProvider<AuthProvider, ScheduleProvider>(
-        create: (context) =>
-            ScheduleProvider(context.read<MasterRepository>()),
-        update: (_, auth, schedule) => schedule!..onSession(auth.me),
-      ),
-      ChangeNotifierProxyProvider<AuthProvider, ServiceProvider>(
-        create: (context) => ServiceProvider(context.read<MasterRepository>()),
-        update: (_, auth, services) => services!..onSession(auth.me),
-      ),
-      ChangeNotifierProxyProvider<AuthProvider, ClientBookingsProvider>(
-        create: (context) =>
-            ClientBookingsProvider(context.read<ClientRepository>()),
-        update: (_, auth, bookings) => bookings!..onSession(auth.me),
-      ),
-      ChangeNotifierProxyProvider<AuthProvider, NotificationProvider>(
-        create: (context) =>
-            NotificationProvider(context.read<MeRepository>()),
-        update: (_, auth, notifications) =>
-            notifications!..onSession(auth.me),
-      ),
-      ChangeNotifierProxyProvider<AuthProvider, MasterProfileProvider>(
-        create: (context) => MasterProfileProvider(
-          me: context.read<MeRepository>(),
-          master: context.read<MasterRepository>(),
-          onMeChanged: context.read<AuthProvider>().applyMe,
-        ),
-        update: (_, auth, profile) => profile!..sync(auth.me),
-      ),
-      ChangeNotifierProxyProvider<AuthProvider, ClientProfileProvider>(
-        create: (context) => ClientProfileProvider(
-          me: context.read<MeRepository>(),
-          onMeChanged: context.read<AuthProvider>().applyMe,
-        ),
-        update: (_, auth, profile) => profile!..sync(auth.me),
-      ),
-      ChangeNotifierProxyProvider<AuthProvider, ClientMastersProvider>(
-        create: (context) =>
-            ClientMastersProvider(context.read<ClientRepository>()),
-        update: (_, auth, masters) => masters!..onSession(auth.me),
-      ),
-      ChangeNotifierProxyProvider<AuthProvider, BookingProvider>(
-        create: (context) =>
-            BookingProvider(context.read<MasterRepository>()),
-        update: (_, auth, booking) => booking!..onSession(auth.me),
-      ),
-    ],
-    child: const _KomekciView(),
-  );
-}
-
-final _navigatorKey = GlobalKey<NavigatorState>();
-
-class _KomekciView extends StatefulWidget {
-  const _KomekciView();
-  @override
-  State<_KomekciView> createState() => _KomekciViewState();
-}
-
-class _KomekciViewState extends State<_KomekciView> {
-  @override
-  void initState() {
-    super.initState();
-    // The refresh token was rejected: the session is gone, so leave whatever
-    // signed-in screen is open and ask for the phone number again.
-    context.read<AuthProvider>().onSessionLost = () {
-      _navigatorKey.currentState?.pushAndRemoveUntil(
-        pageRoute(const LoginScreen()),
-        (_) => false,
-      );
-    };
-  }
-
-  @override
-  Widget build(BuildContext context) => MaterialApp(
-    navigatorKey: _navigatorKey,
-    debugShowCheckedModeBanner: false,
-    theme: buildThemeData(tokensFor(context.watch<ThemeProvider>().selected)),
-    builder: (context, child) {
-      return GlobalSafeAreaWrapper(child: child ?? const SizedBox.shrink());
-    },
-    home: const SplashScreen(),
-  );
-}
+part 'komekci_app_widget.dart';

@@ -8,6 +8,7 @@ import '../../../core/services/device_registrar.dart';
 import '../../../data/models/api/user_models.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/me_repository.dart';
+import '../../services/application/master_service_reminder_scheduler.dart';
 
 enum UserRole { client, master }
 
@@ -23,15 +24,7 @@ enum SessionRestore { signedIn, none, offline }
 /// always the account's own role — the API has no way for one account to act
 /// as both.
 class AuthProvider extends ChangeNotifier {
-  AuthProvider({
-    required ApiClient api,
-    required AuthRepository auth,
-    required MeRepository meRepository,
-    required DeviceRegistrar devices,
-  }) : _api = api,
-       _auth = auth,
-       _meRepository = meRepository,
-       _devices = devices {
+  AuthProvider({required this._api, required this._auth, required this._meRepository, required this._devices, this.serviceReminder}) {
     _api.onSessionExpired = _handleSessionExpired;
   }
 
@@ -39,6 +32,7 @@ class AuthProvider extends ChangeNotifier {
   final AuthRepository _auth;
   final MeRepository _meRepository;
   final DeviceRegistrar _devices;
+  final MasterServiceReminderScheduler? serviceReminder;
 
   UserRole _role = UserRole.client;
   AuthStep _step = AuthStep.signedOut;
@@ -76,15 +70,17 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Creates the account and sends the first SMS code.
+  int lastOtpRetryAfter = 60;
+
   Future<void> register(RegistrationData data) async {
-    await _auth.register(data);
+    lastOtpRetryAfter = await _auth.register(data);
     _step = AuthStep.otpSent;
     notifyListeners();
   }
 
   /// Sign-in code for an existing account.
   Future<void> requestOtp(String phone) async {
-    await _auth.requestOtp(phone);
+    lastOtpRetryAfter = await _auth.requestOtp(phone);
     _step = AuthStep.otpSent;
     notifyListeners();
   }
@@ -127,8 +123,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Step 1 of changing the phone number: SMS to the new number.
-  Future<void> requestPhoneChange(String phone) =>
-      _meRepository.requestPhoneChange(phone);
+  Future<int> requestPhoneChange(String phone) => _meRepository.requestPhoneChange(phone);
 
   /// Step 2: confirms the SMS code; the account now carries the new number.
   Future<void> confirmPhoneChange(String phone, String code) async {
@@ -139,8 +134,7 @@ class AuthProvider extends ChangeNotifier {
   /// them up. Best effort — the local choice already took effect.
   Future<void> savePreferences({String? locale, String? theme}) async {
     if (!isSignedIn) return;
-    if ((locale == null || locale == _me!.locale) &&
-        (theme == null || theme == _me!.theme)) {
+    if ((locale == null || locale == _me!.locale) && (theme == null || theme == _me!.theme)) {
       return;
     }
     try {
@@ -170,6 +164,14 @@ class AuthProvider extends ChangeNotifier {
   }
 
   void _clear() {
+    final reminder = serviceReminder;
+    if (reminder != null) {
+      unawaited(
+        reminder.sync(masterId: null, hasServices: false, locale: 'tk').catchError((Object error) {
+          debugPrint('Could not cancel master service reminder: $error');
+        }),
+      );
+    }
     _me = null;
     _step = AuthStep.signedOut;
     _role = UserRole.client;

@@ -14,13 +14,20 @@ class ClientRepository {
   /// Exact nickname or phone match. Null for a query under 3 characters.
   /// 404 `MASTER_NOT_FOUND` is thrown when nothing matches.
   Future<MasterBrief?> lookupMaster(String query) async {
-    final data = unwrapData(await _api.get('/masters/lookup', query: {'q': query}));
+    final data = unwrapData(
+      await _api.get('/masters/lookup', query: {'q': query}),
+    );
     return data is Map<String, dynamic> ? MasterBrief.fromJson(data) : null;
   }
 
-  Future<ClientConnection> connect(int masterId) async => ClientConnection.fromJson(
-    asMap(unwrapData(await _api.post('/connections', json: {'master_id': masterId}))),
-  );
+  Future<ClientConnection> connect(int masterId) async =>
+      ClientConnection.fromJson(
+        asMap(
+          unwrapData(
+            await _api.post('/connections', json: {'master_id': masterId}),
+          ),
+        ),
+      );
 
   Future<List<ClientConnection>> connections() async => [
     for (final c in asMapList(unwrapData(await _api.get('/connections'))))
@@ -74,7 +81,12 @@ class ClientRepository {
   }) async => ApiPage.fromJson(
     await _api.get(
       '/appointments',
-      query: {'scope': scope, 'master_id': masterId, 'status': status, 'cursor': cursor},
+      query: {
+        'scope': scope,
+        'master_id': masterId,
+        'status': status,
+        'cursor': cursor,
+      },
     ),
     ClientAppointment.fromJson,
   );
@@ -95,7 +107,9 @@ class ClientRepository {
         if (note != null && note.isNotEmpty) 'note': note,
         'waitlist_earlier': waitlistEarlier,
       },
-      headers: idempotencyKey == null ? null : {'Idempotency-Key': idempotencyKey},
+      headers: idempotencyKey == null
+          ? null
+          : {'Idempotency-Key': idempotencyKey},
     );
     return ClientAppointment.fromJson(asMap(unwrapData(body)));
   }
@@ -121,7 +135,9 @@ class ClientRepository {
   Future<ClientAppointment> rebook(int id, {DateTime? startsAt}) async {
     final body = await _api.post(
       '/appointments/$id/rebook',
-      json: startsAt == null ? null : {'starts_at': formatApiDateTime(startsAt)},
+      json: startsAt == null
+          ? null
+          : {'starts_at': formatApiDateTime(startsAt)},
     );
     return ClientAppointment.fromJson(asMap(unwrapData(body)));
   }

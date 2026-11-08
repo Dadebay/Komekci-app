@@ -3,17 +3,21 @@ import 'package:flutter/foundation.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/session/session_scoped.dart';
 import '../../../data/models/api/master_models.dart';
+import '../../../data/models/api/json_helpers.dart';
 import '../../../data/models/api/user_models.dart';
 import '../../../data/repositories/master_repository.dart';
 
-/// The master's availability rules (`/me/schedule`, `/me/vacations`):
-/// weekly hours, one-off day-offs/custom hours and vacations.
+/// The master's availability rules, vacations, and one-off blocked times.
 class ScheduleProvider extends SessionScoped {
   ScheduleProvider(this._repository);
 
   final MasterRepository _repository;
 
   Schedule? _schedule;
+  final Map<String, List<ClosedTime>> _closedByDay = {};
+  final Set<String> _closedDaysLoaded = {};
+  final Set<String> _closedDaysLoading = {};
+  final Map<String, ApiException> _closedErrors = {};
   bool _loading = false;
   ApiException? _error;
 
@@ -21,6 +25,19 @@ class ScheduleProvider extends SessionScoped {
   bool get loaded => _schedule != null;
   bool get loading => _loading;
   ApiException? get error => _error;
+
+  List<ClosedTime> closedTimesOn(DateTime day) =>
+      List.unmodifiable(_closedByDay[formatApiDate(day)] ?? const <ClosedTime>[]);
+
+  bool closedTimesLoaded(DateTime day) => _closedDaysLoaded.contains(formatApiDate(day));
+  ApiException? closedTimesError(DateTime day) => _closedErrors[formatApiDate(day)];
+
+  bool hasClosedConflict(DateTime start, int minutes) {
+    final end = start.add(Duration(minutes: minutes));
+    return closedTimesOn(start).any(
+      (closed) => start.isBefore(closed.endsAt) && closed.startsAt.isBefore(end),
+    );
+  }
 
   /// Seven entries, Monday (0) to Sunday (6).
   List<ScheduleDay> get days {
@@ -53,13 +70,72 @@ class ScheduleProvider extends SessionScoped {
   @override
   void reset() {
     _schedule = null;
+    _closedByDay.clear();
+    _closedDaysLoaded.clear();
+    _closedDaysLoading.clear();
+    _closedErrors.clear();
     _loading = false;
     _error = null;
   }
 
   @override
   Future<void> onSignedIn(Me me) async {
-    if (me.isMaster) await load();
+    if (me.isMaster) {
+      await Future.wait([load(), loadClosedTimes(DateTime.now())]);
+    }
+  }
+
+  void prefetchClosedTimes(DateTime day) {
+    final key = formatApiDate(day);
+    if (_closedDaysLoaded.contains(key) ||
+        _closedDaysLoading.contains(key) ||
+        _closedErrors.containsKey(key)) {
+      return;
+    }
+    Future.microtask(() => loadClosedTimes(day));
+  }
+
+  Future<void> loadClosedTimes(DateTime day, {bool force = false}) async {
+    final key = formatApiDate(day);
+    if (_closedDaysLoading.contains(key) || (!force && _closedDaysLoaded.contains(key))) return;
+    final userId = sessionUserId;
+    _closedDaysLoading.add(key);
+    _closedErrors.remove(key);
+    notifyListeners();
+    try {
+      final closed = await _repository.closedTimes(day);
+      if (sessionUserId != userId) return;
+      _closedByDay[key] = closed;
+      _closedDaysLoaded.add(key);
+    } on ApiException catch (error) {
+      if (sessionUserId == userId) {
+        _closedErrors[key] = error;
+        debugPrint('Loading blocked time for $key failed: $error');
+      }
+    } finally {
+      if (sessionUserId == userId) {
+        _closedDaysLoading.remove(key);
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<ClosedTime> blockTime(DateTime start, DateTime end, {String? note}) async {
+    final closed = await _repository.createClosedTime(start: start, end: end, note: note);
+    final key = formatApiDate(start);
+    _closedByDay[key] = [...?_closedByDay[key], closed];
+    notifyListeners();
+    return closed;
+  }
+
+  Future<void> reopenTime(ClosedTime closed) async {
+    await _repository.deleteClosedTime(closed.id);
+    final key = formatApiDate(closed.startsAt);
+    _closedByDay[key] = [
+      for (final item in _closedByDay[key] ?? const <ClosedTime>[])
+        if (item.id != closed.id) item,
+    ];
+    notifyListeners();
   }
 
   Future<void> load() async {

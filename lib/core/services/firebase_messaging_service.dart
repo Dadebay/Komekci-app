@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io' show Platform;
 
@@ -8,11 +9,25 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'local_notifications_service.dart';
 
 typedef FcmTokenHandler = Future<void> Function(String token);
-typedef FcmMessageHandler = void Function(RemoteMessage message);
+typedef FcmMessageHandler =
+    void Function(RemoteMessage message, {required bool openedFromTap});
 
 class FirebaseMessagingService {
   FirebaseMessagingService({required this.onToken, this.onMessage});
+  static FirebaseMessagingService? _active;
+  static bool _listenersRegistered = false;
   final FcmTokenHandler onToken;
+
+  /// Re-requests alerts after a user accepts the in-app permission reminder.
+  /// The normal permission flow also registers the device token when granted.
+  static Future<void> requestNotificationPermission() async {
+    final active = _active;
+    if (active != null) {
+      await active._requestPermission();
+    } else if (Platform.isAndroid || Platform.isIOS) {
+      await FirebaseMessaging.instance.requestPermission();
+    }
+  }
 
   /// Fired for every message that carries a [RemoteMessage.notification] —
   /// while the app is foregrounded, when a background notification is
@@ -26,22 +41,59 @@ class FirebaseMessagingService {
   static const _apnsWait = Duration(seconds: 6);
 
   Future<void> initialize() async {
+    _active = this;
+    LocalNotificationsService.instance.onNotificationTap = (payload) =>
+        _active?._handleLocalNotificationTap(payload);
     await LocalNotificationsService.instance.initialize();
-    await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-    // The OS already showed these in the notification tray — just record them.
-    FirebaseMessaging.onMessageOpenedApp.listen(_recordMessage);
+    // Keep the existing startup permission request, but never let an OS
+    // prompt or a refusal hold up sign-in or topic subscription.
+    unawaited(_requestPermission());
+    if (!_listenersRegistered) {
+      _listenersRegistered = true;
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+      FirebaseMessaging.onMessage.listen(
+        (message) => _active?._handleForegroundMessage(message),
+      );
+      // The OS already showed these in the notification tray — just record them.
+      FirebaseMessaging.onMessageOpenedApp.listen(
+        (message) => _active?._recordMessage(message, openedFromTap: true),
+      );
+      FirebaseMessaging.instance.onTokenRefresh.listen(
+        (token) => _active?.onToken(token),
+      );
+    }
     final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-    if (initialMessage != null) _recordMessage(initialMessage);
-    FirebaseMessaging.instance.onTokenRefresh.listen(onToken);
+    if (initialMessage != null) {
+      _recordMessage(initialMessage, openedFromTap: true);
+    }
+    final localLaunchPayload = await LocalNotificationsService.instance
+        .notificationLaunchPayload();
+    if (localLaunchPayload != null) {
+      _handleLocalNotificationTap(localLaunchPayload);
+    }
     // Not awaited: waiting for APNs can take seconds (and never ends on a
     // simulator), which must not hold up the splash screen.
     unawaited(_registerDevice());
+  }
+
+  Future<void> _requestPermission() async {
+    if (!Platform.isAndroid && !Platform.isIOS) return;
+    try {
+      final settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        await _registerDevice();
+      }
+    } on Object catch (e) {
+      developer.log(
+        'Notification permission request failed: $e',
+        name: 'Komekci FCM',
+      );
+    }
   }
 
   /// Joins the broadcast [topic] and reports the device token.
@@ -60,19 +112,7 @@ class FirebaseMessagingService {
       }
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
-        developer.log('FCM TOKEN: $token', name: 'Komekci FCM');
-        _printToken(label: 'FCM TOKEN', token: token, ansiColor: '32');
         await onToken(token);
-      } else {
-        _printToken(label: 'FCM TOKEN', token: 'not available yet', ansiColor: '33');
-      }
-      if (Platform.isIOS) {
-        final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-        _printToken(
-          label: 'APNS TOKEN',
-          token: apnsToken ?? 'not available yet (physical iPhone + APNs setup required)',
-          ansiColor: apnsToken == null ? '33' : '35',
-        );
       }
     } on Object catch (e) {
       developer.log('Push device registration failed: $e', name: 'Komekci FCM');
@@ -88,21 +128,10 @@ class FirebaseMessagingService {
       if (await FirebaseMessaging.instance.getAPNSToken() != null) return;
       await Future<void>.delayed(const Duration(milliseconds: 400));
     }
-    developer.log('APNs did not answer in ${_apnsWait.inSeconds}s', name: 'Komekci FCM');
-  }
-
-  void _printToken({
-    required String label,
-    required String token,
-    required String ansiColor,
-  }) {
-    // ANSI escapes render as coloured output in `flutter run` terminals.
-    // ignore: avoid_print
-    print('\x1B[1;${ansiColor}m╔══ KÖMEKÇI $label ══╗\x1B[0m');
-    // ignore: avoid_print
-    print('\x1B[${ansiColor}m$token\x1B[0m');
-    // ignore: avoid_print
-    print('\x1B[1;${ansiColor}m╚══════════════════════════════╝\x1B[0m');
+    developer.log(
+      'APNs did not answer in ${_apnsWait.inSeconds}s',
+      name: 'Komekci FCM',
+    );
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
@@ -111,14 +140,29 @@ class FirebaseMessagingService {
       LocalNotificationsService.instance.show(
         title: notification.title,
         body: notification.body,
-        payload: message.data.toString(),
+        payload: jsonEncode(message.toMap()),
       );
     }
-    _recordMessage(message);
+    _recordMessage(message, openedFromTap: false);
   }
 
-  void _recordMessage(RemoteMessage message) {
-    if (message.notification != null) onMessage?.call(message);
+  void _handleLocalNotificationTap(String payload) {
+    try {
+      final raw = jsonDecode(payload);
+      if (raw is! Map) return;
+      _recordMessage(
+        RemoteMessage.fromMap(Map<String, dynamic>.from(raw)),
+        openedFromTap: true,
+      );
+    } on FormatException {
+      // Reminder notifications use a different payload and have no booking card.
+    }
+  }
+
+  void _recordMessage(RemoteMessage message, {required bool openedFromTap}) {
+    if (message.notification != null) {
+      onMessage?.call(message, openedFromTap: openedFromTap);
+    }
   }
 }
 

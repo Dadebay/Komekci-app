@@ -7,11 +7,12 @@ import 'app_icon.dart';
 /// an optional action. Used for empty search results, empty lists, and (via
 /// [RetryErrorState] / [OfflineState]) for retryable and offline states too.
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.icon, required this.title, required this.text, this.action});
+  const EmptyState({super.key, required this.icon, required this.title, required this.text, this.action, this.backgroundColor});
   final IconData icon;
   final String title;
   final String text;
   final Widget? action;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class EmptyState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
       decoration: BoxDecoration(
-        color: t.surfaceElevated,
+        color: backgroundColor ?? t.surfaceElevated,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: t.border),
       ),
@@ -45,6 +46,72 @@ class EmptyState extends StatelessWidget {
             style: TextStyle(fontSize: 12.5, color: t.textSecondary, height: 1.4),
           ),
           if (action != null) ...[const SizedBox(height: 16), action!],
+        ],
+      ),
+    );
+  }
+}
+
+/// Empty appointment day, with the calendar illustration used on the master's
+/// home dashboard and schedule.
+class BookingsEmptyState extends StatelessWidget {
+  const BookingsEmptyState({
+    super.key,
+    required this.title,
+    required this.text,
+    this.framed = true,
+    this.compact = false,
+  });
+
+  final String title;
+  final String text;
+  final bool framed;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.appTokens;
+    return Container(
+      width: double.infinity,
+      padding: compact
+          ? const EdgeInsets.fromLTRB(16, 8, 16, 14)
+          : const EdgeInsets.fromLTRB(20, 20, 20, 26),
+      decoration: framed
+          ? BoxDecoration(
+              color: tokens.surfaceElevated,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: tokens.border),
+            )
+          : null,
+      child: Column(
+        children: [
+          Image.asset(
+            'assets/images/empty_bookings_3d.png',
+            width: compact ? 92 : 168,
+            height: compact ? 92 : 168,
+            fit: BoxFit.contain,
+            excludeFromSemantics: true,
+          ),
+          SizedBox(height: compact ? 4 : 8),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: tokens.textPrimary,
+            ),
+          ),
+          SizedBox(height: compact ? 4 : 8),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.4,
+              color: tokens.textSecondary,
+            ),
+          ),
         ],
       ),
     );

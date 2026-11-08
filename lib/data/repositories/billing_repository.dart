@@ -7,8 +7,32 @@ class BillingRepository {
   BillingRepository(this._api);
   final ApiClient _api;
 
-  Future<Billing> billing() async =>
-      Billing.fromJson(asMap(unwrapData(await _api.get('/me/billing'))));
+  Future<Billing> billing() async {
+    final summary = Billing.fromJson(
+      asMap(unwrapData(await _api.get('/me/billing'))),
+    );
+    if (summary.promo != null) return summary;
+    try {
+      return summary.withPromo(await promo());
+    } catch (_) {
+      // Older servers may omit the promo endpoint; keep billing usable.
+      return summary;
+    }
+  }
+
+  Future<PromoStatus> promo() async =>
+      PromoStatus.fromJson(asMap(unwrapData(await _api.get('/me/promo'))));
+
+  /// Starts the free month after an explicit tap. Older servers may respond
+  /// with 422 `SERVICES_REQUIRED`; a used offer returns 409.
+  Future<PromoStatus> activatePromo(String deviceId) async =>
+      PromoStatus.fromJson(
+        asMap(
+          unwrapData(
+            await _api.post('/me/promo', json: {'device_id': deviceId}),
+          ),
+        ),
+      );
 
   Future<ApiPage<LedgerTransaction>> transactions({String? cursor}) async =>
       ApiPage.fromJson(
@@ -19,13 +43,24 @@ class BillingRepository {
   /// Starts a phone payment: the server hands back the number to pay.
   /// 404 `PAYMENT_UNAVAILABLE` when no number is free.
   Future<MobileTopup> topUpMobile(num amount) async => MobileTopup.fromJson(
-    asMap(await _api.post('/me/billing/topup', json: {'amount': amount, 'method': 'mobile'})),
+    asMap(
+      await _api.post(
+        '/me/billing/topup',
+        json: {'amount': amount, 'method': 'mobile'},
+      ),
+    ),
   );
 
   /// Starts a card payment: open [CardTopup.formUrl] in a WebView.
-  Future<CardTopup> topUpCard(num amount) async => CardTopup.fromJson(
-    asMap(await _api.post('/me/billing/topup', json: {'amount': amount, 'method': 'card'})),
-  );
+  Future<CardTopup> topUpCard(num amount, CardBank bank) async =>
+      CardTopup.fromJson(
+        asMap(
+          await _api.post(
+            '/me/billing/topup',
+            json: {'amount': amount, 'method': 'card', 'bank': bank.apiValue},
+          ),
+        ),
+      );
 
   Future<PhonePayments> phonePayments() async =>
       PhonePayments.fromJson(asMap(await _api.get('/me/billing/phone')));
@@ -40,7 +75,11 @@ class BillingRepository {
   Future<CardPaymentResult> paymentResult(String orderId) async =>
       CardPaymentResult.fromJson(
         asMap(
-          await _api.get('/payments/result', query: {'orderId': orderId}, auth: false),
+          await _api.get(
+            '/payments/result',
+            query: {'orderId': orderId},
+            auth: false,
+          ),
         ),
       );
 }
