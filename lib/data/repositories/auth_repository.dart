@@ -62,13 +62,27 @@ class SmsOtpChallenge {
   /// Seconds the code stays valid (180).
   final int expiresIn;
 
-  factory SmsOtpChallenge.fromJson(Map<String, dynamic> json) => SmsOtpChallenge(
-    verificationId: '${json['verification_id']}',
-    pollSecret: '${json['poll_secret']}',
-    otp: '${json['otp']}',
-    smsDestination: '${json['sms_destination']}',
-    expiresIn: parseIntOrNull(json['expires_in']) ?? 180,
-  );
+  factory SmsOtpChallenge.fromJson(Map<String, dynamic> json) {
+    String requiredString(String key) {
+      final value = json[key];
+      if (value is! String || value.trim().isEmpty) {
+        throw FormatException('Missing SMS verification field: $key');
+      }
+      return value;
+    }
+
+    final expiresIn = parseIntOrNull(json['expires_in']) ?? 180;
+    if (expiresIn <= 0) {
+      throw const FormatException('Invalid SMS verification expiry');
+    }
+    return SmsOtpChallenge(
+      verificationId: requiredString('verification_id'),
+      pollSecret: requiredString('poll_secret'),
+      otp: requiredString('otp'),
+      smsDestination: requiredString('sms_destination'),
+      expiresIn: expiresIn,
+    );
+  }
 }
 
 enum SmsOtpState { pending, verified, failed, expired }
@@ -137,8 +151,13 @@ class AuthRepository {
     final body = asMap(
       await _api.post('/auth/otp/request', json: {'phone': phone}, auth: false),
     );
-    if (await _storeTokensIfPresent(body)) return (retryAfter: 60, signedIn: true);
-    return (retryAfter: parseIntOrNull(body['retry_after']) ?? 60, signedIn: false);
+    if (await _storeTokensIfPresent(body)) {
+      return (retryAfter: 60, signedIn: true);
+    }
+    return (
+      retryAfter: parseIntOrNull(body['retry_after']) ?? 60,
+      signedIn: false,
+    );
   }
 
   Future<bool> _storeTokensIfPresent(Map<String, dynamic> body) async {
@@ -165,7 +184,10 @@ class AuthRepository {
   /// Returns null when the server signed the user in straight away (its test
   /// number answers `authenticated: true` with tokens): they are stored and
   /// there is nothing to send or poll.
-  Future<SmsOtpChallenge?> requestSmsOtp(String phone, {String purpose = 'login'}) async {
+  Future<SmsOtpChallenge?> requestSmsOtp(
+    String phone, {
+    String purpose = 'login',
+  }) async {
     final body = asMap(
       await _api.post(
         '/v1/auth/otp/request',

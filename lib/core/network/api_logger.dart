@@ -12,24 +12,16 @@ import 'package:flutter/foundation.dart';
 /// Colour follows the status class: 2xx green, 3xx cyan, 4xx yellow,
 /// 5xx red, no response magenta.
 ///
-/// With [showResponseBodies] the server's JSON answer is printed under the
-/// line (truncated), with token-like values masked. Request headers and
-/// request bodies are never printed.
+/// Response bodies, request bodies, headers and query values are never printed.
 class ApiLogger {
   const ApiLogger._();
 
   /// Off in release builds and under `flutter test`.
-  static bool enabled = kDebugMode && !Platform.environment.containsKey('FLUTTER_TEST');
-
-  /// Print what the server answered (debug builds only).
-  static bool showResponseBodies = true;
-
-  /// Longest response body printed, in characters.
-  static const _maxBody = 1800;
+  static bool enabled =
+      kDebugMode && !Platform.environment.containsKey('FLUTTER_TEST');
 
   static const _reset = '\x1B[0m';
-  static const _dim = '\x1B[2m';
-  static final _secretKey = RegExp(r'token|secret|password', caseSensitive: false);
+  static final _safeCode = RegExp(r'^[A-Za-z0-9_:-]{1,64}$');
 
   static String _color(int? status) => switch (status) {
     null => '\x1B[35m', // magenta: never got a response
@@ -52,7 +44,7 @@ class ApiLogger {
     if (!enabled) return;
     final color = _color(status);
     final badge = (status?.toString() ?? 'ERR').padRight(3);
-    final target = uri.hasQuery ? '${uri.path}?${uri.query}' : uri.path;
+    final target = uri.path;
     final code = failure ?? _errorCode(status, body);
     // ignore: avoid_print
     print(
@@ -60,45 +52,16 @@ class ApiLogger {
       '${target.replaceFirst('/api', '').padRight(34)} ${elapsed.inMilliseconds} ms'
       '${code == null ? '' : '  $code'}$_reset',
     );
-    if (showResponseBodies && body != null && body.isNotEmpty) {
-      // ignore: avoid_print
-      print('$_dim${_pretty(body)}$_reset');
-    }
   }
-
-  /// Indented JSON with secrets masked, or the raw text if it is not JSON.
-  static String _pretty(List<int> body) {
-    final text = utf8.decode(body, allowMalformed: true);
-    String out;
-    try {
-      out = const JsonEncoder.withIndent('  ').convert(_mask(jsonDecode(text)));
-    } catch (_) {
-      out = text.trim();
-    }
-    return out.length > _maxBody ? '${out.substring(0, _maxBody)}\n… (${out.length - _maxBody} more characters)' : out;
-  }
-
-  static Object? _mask(Object? value) {
-    if (value is Map) {
-      return {
-        for (final e in value.entries)
-          e.key: _secretKey.hasMatch('${e.key}') && e.key != 'token_type' && e.value is String
-              ? _hide(e.value as String)
-              : _mask(e.value),
-      };
-    }
-    if (value is List) return [for (final v in value) _mask(v)];
-    return value;
-  }
-
-  static String _hide(String secret) =>
-      secret.length <= 10 ? '••••' : '${secret.substring(0, 6)}…(${secret.length} chars)';
 
   static String? _errorCode(int? status, List<int>? body) {
-    if (status == null || status < 400 || body == null || body.isEmpty) return null;
+    if (status == null || status < 400 || body == null || body.isEmpty) {
+      return null;
+    }
     try {
       final decoded = jsonDecode(utf8.decode(body));
-      return decoded is Map<String, dynamic> ? decoded['error'] as String? : null;
+      final code = decoded is Map<String, dynamic> ? decoded['error'] : null;
+      return code is String && _safeCode.hasMatch(code) ? code : null;
     } catch (_) {
       return null;
     }
