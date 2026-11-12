@@ -31,7 +31,7 @@ dart format --output=none --set-exit-if-changed lib test
 flutter build apk --debug
 ```
 
-The GitHub Actions workflow runs analysis, tests, and a debug build on pull requests and on `main`. The format check is not part of CI yet because parts of the codebase are not formatted with `dart format`. The test suite covers appointment rules, API contracts, offline data, reminders, and key screen layouts.
+The GitHub Actions workflow runs formatting, analysis, tests, and a debug Android build on pull requests and on `main`. The test suite covers appointment rules, API contracts, offline data, reminders, and key screen layouts.
 
 ## Android release
 
