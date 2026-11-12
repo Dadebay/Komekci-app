@@ -10,8 +10,6 @@ class _NewSlotTimeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
@@ -70,7 +68,7 @@ class _NewSlotTimeCard extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
-                                    t(tk: 'Boş', ru: 'Свободно', en: 'Free'),
+                                    AppStrings.scheduleFree.select(language),
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,

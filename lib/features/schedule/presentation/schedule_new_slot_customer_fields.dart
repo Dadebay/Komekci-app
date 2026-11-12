@@ -3,16 +3,10 @@ part of '../../../app/komekci_app.dart';
 extension _NewSlotCustomerFields on _NewSlotAppointmentSheetState {
   List<Widget> _customerFields({required AppLanguage language, required StateSetter update}) {
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return [
                           _NewBookingSectionTitle(
                             number: 1,
-                            title: t(
-                              tk: 'Müşderi saýlaň',
-                              ru: 'Выберите клиента',
-                              en: 'Choose a customer',
-                            ),
+                            title: AppStrings.scheduleChooseACustomer.select(language),
                           ),
                           const SizedBox(height: 10),
                           if (_mode == _NewSlotCustomerMode.existing &&
@@ -70,11 +64,7 @@ extension _NewSlotCustomerFields on _NewSlotAppointmentSheetState {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        t(
-                                          tk: 'Üýtget',
-                                          ru: 'Изменить',
-                                          en: 'Change',
-                                        ),
+                                        AppStrings.profileChange.select(language),
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w700,
@@ -89,32 +79,16 @@ extension _NewSlotCustomerFields on _NewSlotAppointmentSheetState {
                           else ...[
                             _ChoiceCard(
                               icon: Icons.people_outline,
-                              title: t(
-                                tk: 'Müşderilerden saýlaň',
-                                ru: 'Выбрать из клиентов',
-                                en: 'Choose from customers',
-                              ),
-                              subtitle: t(
-                                tk: 'Bar bolan müşderini saýlaň',
-                                ru: 'Выберите существующего клиента',
-                                en: 'Pick an existing customer',
-                              ),
+                              title: AppStrings.scheduleChooseFromCustomers.select(language),
+                              subtitle: AppStrings.schedulePickAnExistingCustomer.select(language),
                               selected: false,
                               onTap: _pickExistingCustomer,
                             ),
                             const SizedBox(height: 8),
                             _ChoiceCard(
                               icon: Icons.person_add_alt_1,
-                              title: t(
-                                tk: 'Täze müşderi goşuň',
-                                ru: 'Добавить нового клиента',
-                                en: 'Add a new customer',
-                              ),
-                              subtitle: t(
-                                tk: 'Täze müşderini el bilen goşuň',
-                                ru: 'Добавьте нового клиента вручную',
-                                en: 'Add a new customer manually',
-                              ),
+                              title: AppStrings.scheduleAddANewCustomer.select(language),
+                              subtitle: AppStrings.scheduleAddANewCustomerManually.select(language),
                               selected: _mode == _NewSlotCustomerMode.brandNew,
                               onTap: () => update(
                                 () => _mode = _NewSlotCustomerMode.brandNew,
@@ -125,11 +99,7 @@ extension _NewSlotCustomerFields on _NewSlotAppointmentSheetState {
                             const SizedBox(height: 12),
                             _FormField(
                               controller: _newNameController,
-                              hint: t(
-                                tk: 'Ady we familiýasy',
-                                ru: 'Имя и фамилия',
-                                en: 'First and last name',
-                              ),
+                              hint: AppStrings.scheduleFirstAndLastName.select(language),
                               invalid:
                                   _showErrors &&
                                   _newNameController.text.trim().isEmpty,

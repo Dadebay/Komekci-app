@@ -36,8 +36,6 @@ class _SubscriptionDaysCard extends StatelessWidget {
     final language = context.watch<LanguageProvider>().language;
     final settings = context.watch<AppSettingsProvider>();
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
 
     // Share of the period that is still ahead, when both ends are known.
     double? remaining;
@@ -53,11 +51,7 @@ class _SubscriptionDaysCard extends StatelessWidget {
     final dateRange = start != null && end != null
         ? '${formatDate(start)} — ${formatDate(end)}'
         : end != null
-        ? t(
-            tk: '${formatDate(end)} çenli',
-            ru: 'до ${formatDate(end)}',
-            en: 'until ${formatDate(end)}',
-          )
+        ? AppStrings.authUntil(formatDate(end)).select(language)
         : null;
 
     return Padding(
@@ -100,7 +94,7 @@ class _SubscriptionDaysCard extends StatelessWidget {
                   const SizedBox(width: 9),
                   Expanded(
                     child: Text(
-                      t(tk: 'Abuna', ru: 'Подписка', en: 'Subscription'),
+                      AppStrings.cabinetSubscription.select(language),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -118,18 +112,14 @@ class _SubscriptionDaysCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   isPromo
-                      ? '${t(tk: 'Mugt döwür', ru: 'Бесплатный период', en: 'Free period')} $dateRange'
+                      ? '${AppStrings.cabinetFreePeriod.select(language)} $dateRange'
                       : dateRange,
                   style: TextStyle(fontSize: 12, color: tokens.textSecondary),
                 ),
               ],
               const SizedBox(height: 4),
               Text(
-                t(
-                  tk: '$days gün galdy',
-                  ru: 'Осталось $days дн.',
-                  en: '$days days left',
-                ),
+                AppStrings.cabinetDaysLeft(days).select(language),
                 style: const TextStyle(
                   fontSize: 20,
                   height: 1.1,
@@ -151,17 +141,13 @@ class _SubscriptionDaysCard extends StatelessWidget {
               if (isPromo && price > 0) ...[
                 const SizedBox(height: 8),
                 Text(
-                  t(
-                    tk: 'Soňra ${formatMoney(price)} $currency / aý',
-                    ru: 'Затем ${formatMoney(price)} $currency / мес.',
-                    en: 'Then ${formatMoney(price)} $currency / month',
-                  ),
+                  AppStrings.cabinetThenMonth(formatMoney(price), currency).select(language),
                   style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
                 ),
               ],
               const SizedBox(height: 6),
               Text(
-                '${t(tk: 'Abuna maglumatlary üçin basyň', ru: 'Нажмите для сведений о подписке', en: 'Tap for subscription details')} →',
+                '${AppStrings.cabinetTapForSubscriptionDetails.select(language)} →',
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,

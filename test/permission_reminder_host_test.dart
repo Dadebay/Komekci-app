@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:komekci/core/localization/language_provider.dart';
 import 'package:komekci/features/permissions/application/required_permissions.dart';
@@ -6,10 +6,7 @@ import 'package:komekci/features/permissions/presentation/permission_reminder_ho
 import 'package:provider/provider.dart';
 
 class _FakePermissions implements RequiredPermissions {
-  MissingAppPermissions current = const MissingAppPermissions(
-    notifications: true,
-    calendar: true,
-  );
+  MissingAppPermissions current = const MissingAppPermissions(notifications: true, calendar: true);
   int checks = 0;
   int requests = 0;
   int settingsOpens = 0;
@@ -19,19 +16,13 @@ class _FakePermissions implements RequiredPermissions {
   Future<MissingAppPermissions> missing({required bool needsCalendar}) async {
     checks++;
     lastNeedsCalendar = needsCalendar;
-    return MissingAppPermissions(
-      notifications: current.notifications,
-      calendar: needsCalendar && current.calendar,
-    );
+    return MissingAppPermissions(notifications: current.notifications, calendar: needsCalendar && current.calendar);
   }
 
   @override
   Future<void> request(MissingAppPermissions permissions) async {
     requests++;
-    current = const MissingAppPermissions(
-      notifications: false,
-      calendar: false,
-    );
+    current = const MissingAppPermissions(notifications: false, calendar: false);
   }
 
   @override
@@ -40,11 +31,7 @@ class _FakePermissions implements RequiredPermissions {
   }
 }
 
-Future<void> _showHome(
-  WidgetTester tester,
-  _FakePermissions permissions, {
-  required bool needsCalendar,
-}) => tester.pumpWidget(
+Future<void> _showHome(WidgetTester tester, _FakePermissions permissions, {required bool needsCalendar}) => tester.pumpWidget(
   ChangeNotifierProvider(
     create: (_) => LanguageProvider(),
     child: MaterialApp(
@@ -58,38 +45,33 @@ Future<void> _showHome(
 );
 
 void main() {
-  testWidgets(
-    'client gets one reminder after 30 seconds, then stops when granted',
-    (tester) async {
-      final permissions = _FakePermissions();
-      await _showHome(tester, permissions, needsCalendar: true);
+  testWidgets('client gets one reminder after 30 seconds, then stops when granted', (tester) async {
+    final permissions = _FakePermissions();
+    await _showHome(tester, permissions, needsCalendar: true);
 
-      await tester.pump(const Duration(seconds: 29));
-      expect(find.text('Rugsatlar gerek'), findsNothing);
-      await tester.pump(const Duration(seconds: 1));
-      await tester.pump();
-      expect(find.text('Rugsatlar gerek'), findsOneWidget);
-      expect(permissions.lastNeedsCalendar, true);
-      expect(find.textContaining('Senenama rugsat beriň'), findsOneWidget);
-      await tester.pump(const Duration(seconds: 60));
-      expect(find.text('Rugsatlar gerek'), findsOneWidget);
-      expect(permissions.checks, 1);
+    await tester.pump(const Duration(seconds: 29));
+    expect(find.text('Rugsatlar gerek'), findsNothing);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump();
+    expect(find.text('Rugsatlar gerek'), findsOneWidget);
+    expect(permissions.lastNeedsCalendar, true);
+    expect(find.textContaining('Senenama rugsat beriň'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 60));
+    expect(find.text('Rugsatlar gerek'), findsOneWidget);
+    expect(permissions.checks, 1);
 
-      await tester.tap(find.text('Rugsat ber'));
-      await tester.pumpAndSettle();
-      expect(permissions.requests, 1);
-      expect(permissions.settingsOpens, 0);
+    await tester.tap(find.text('Rugsat ber'));
+    await tester.pumpAndSettle();
+    expect(permissions.requests, 1);
+    expect(permissions.settingsOpens, 0);
 
-      await tester.pump(const Duration(seconds: 30));
-      await tester.pump();
-      expect(permissions.checks, 2);
-      expect(find.text('Rugsatlar gerek'), findsNothing);
-    },
-  );
+    await tester.pump(const Duration(seconds: 30));
+    await tester.pump();
+    expect(permissions.checks, 2);
+    expect(find.text('Rugsatlar gerek'), findsNothing);
+  });
 
-  testWidgets('master is asked only for notifications and can open settings', (
-    tester,
-  ) async {
+  testWidgets('master is asked only for notifications and can open settings', (tester) async {
     final permissions = _FakePermissions();
     await _showHome(tester, permissions, needsCalendar: false);
 
@@ -109,16 +91,10 @@ void main() {
     expect(permissions.settingsOpens, 1);
   });
 
-  testWidgets('reminder reaches a signed-in user on a pushed page', (
-    tester,
-  ) async {
+  testWidgets('reminder reaches a signed-in user on a pushed page', (tester) async {
     final permissions = _FakePermissions();
     await _showHome(tester, permissions, needsCalendar: true);
-    Navigator.of(tester.element(find.text('Home'))).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const Scaffold(body: Text('Booking page')),
-      ),
-    );
+    Navigator.of(tester.element(find.text('Home'))).push(MaterialPageRoute<void>(builder: (_) => const Scaffold(body: Text('Booking page'))));
     await tester.pumpAndSettle();
 
     await tester.pump(const Duration(seconds: 30));
@@ -127,9 +103,7 @@ void main() {
     expect(find.text('Booking page'), findsOneWidget);
   });
 
-  testWidgets('permission actions stay visible on a compact phone', (
-    tester,
-  ) async {
+  testWidgets('permission actions stay visible on a compact phone', (tester) async {
     tester.view.physicalSize = const Size(320, 480);
     tester.view.devicePixelRatio = 1;
     addTearDown(() {

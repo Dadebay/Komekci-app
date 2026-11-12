@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -21,12 +21,7 @@ import 'package:provider/provider.dart';
 
 void main() {
   test('master entry accepts positive balance or a paid subscription', () {
-    Billing billing(double balance, SubscriptionStatus status) => Billing(
-      balance: balance,
-      subscriptionPrice: 20,
-      status: status,
-      acceptingBookings: status == SubscriptionStatus.active,
-    );
+    Billing billing(double balance, SubscriptionStatus status) => Billing(balance: balance, subscriptionPrice: 20, status: status, acceptingBookings: status == SubscriptionStatus.active);
 
     expect(billing(0, SubscriptionStatus.suspended).permitsMasterEntry, false);
     expect(billing(1, SubscriptionStatus.suspended).permitsMasterEntry, true);
@@ -34,55 +29,29 @@ void main() {
     expect(billing(0, SubscriptionStatus.active).permitsMasterEntry, true);
     expect(billing(0, SubscriptionStatus.grace).permitsMasterEntry, true);
     expect(
-      billing(0, SubscriptionStatus.suspended)
-          .withPromo(
-            const PromoStatus(
-              eligible: true,
-              used: false,
-              active: false,
-              paidAccess: false,
-              topupRequired: true,
-              code: 'promo_available',
-            ),
-          )
-          .permitsMasterEntry,
+      billing(
+        0,
+        SubscriptionStatus.suspended,
+      ).withPromo(const PromoStatus(eligible: true, used: false, active: false, paidAccess: false, topupRequired: true, code: 'promo_available')).permitsMasterEntry,
       true,
     );
     expect(
-      billing(0, SubscriptionStatus.suspended)
-          .withPromo(
-            const PromoStatus(
-              eligible: false,
-              used: true,
-              active: true,
-              paidAccess: false,
-              topupRequired: false,
-              code: 'promo_active',
-            ),
-          )
-          .permitsMasterEntry,
+      billing(
+        0,
+        SubscriptionStatus.suspended,
+      ).withPromo(const PromoStatus(eligible: false, used: true, active: true, paidAccess: false, topupRequired: false, code: 'promo_active')).permitsMasterEntry,
       true,
     );
     expect(
-      billing(40, SubscriptionStatus.suspended)
-          .withPromo(
-            const PromoStatus(
-              eligible: false,
-              used: true,
-              active: false,
-              paidAccess: false,
-              topupRequired: true,
-              code: 'account_restricted',
-            ),
-          )
-          .permitsMasterEntry,
+      billing(
+        40,
+        SubscriptionStatus.suspended,
+      ).withPromo(const PromoStatus(eligible: false, used: true, active: false, paidAccess: false, topupRequired: true, code: 'account_restricted')).permitsMasterEntry,
       false,
     );
   });
 
-  testWidgets('restored unpaid master returns to the payment screen', (
-    tester,
-  ) async {
+  testWidgets('restored unpaid master returns to the payment screen', (tester) async {
     var billingCalls = 0;
     final api = ApiClient(
       baseUrl: 'https://example.test/api',
@@ -111,19 +80,9 @@ void main() {
         return http.Response('{}', 404);
       }),
     );
-    await api.saveSession(
-      const AuthTokens(access: 'access', refresh: 'refresh'),
-    );
+    await api.saveSession(const AuthTokens(access: 'access', refresh: 'refresh'));
     final repository = BillingRepository(api);
-    const master = Me(
-      id: 15,
-      role: ApiRole.master,
-      name: 'Master',
-      nickname: 'master',
-      phone: '+99365000000',
-      locale: 'tk',
-      theme: 'ivory',
-    );
+    const master = Me(id: 15, role: ApiRole.master, name: 'Master', nickname: 'master', phone: '+99365000000', locale: 'tk', theme: 'ivory');
     final meRepository = MeRepository(api);
     final auth = AuthProvider(
       api: api,
@@ -168,9 +127,7 @@ void main() {
     expect(find.text('Başga hasaba geçmelimi?'), findsOneWidget);
     await tester.tap(find.text('Çyk'));
     await tester.pumpAndSettle();
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 100)),
-    );
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.byType(RoleScreen), findsOneWidget);

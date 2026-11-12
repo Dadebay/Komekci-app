@@ -60,14 +60,12 @@ class _VacationScreenState extends State<VacationScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final vacations = context.watch<ScheduleProvider>().vacations;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Dynç alyş ', ru: 'Отпуск', en: 'Vacation'),
+        title: AppStrings.cabinetVacation2.select(language),
         action: AppHelpButton(
           onTap: () =>
               Navigator.push(context, pageRoute(const SupportScreen())),
@@ -82,16 +80,12 @@ class _VacationScreenState extends State<VacationScreen> {
                 children: [
                   _InfoBanner(
                     icon: Icons.event_busy_outlined,
-                    text: t(
-                      tk: 'Bu wagtda siz hyzmatlary kabul etmersiňiz. Müşderiler bu günler üçin sargyt edip bilmezler.',
-                      ru: 'В это время вы не принимаете заявки. Клиенты не смогут записаться на эти дни.',
-                      en: 'During this time you will not accept bookings. Clients will not be able to book these days.',
-                    ),
+                    text: AppStrings.cabinetDuringThisTimeYouWill.select(language),
                   ),
                   if (vacations.isNotEmpty) ...[
                     const SizedBox(height: 22),
                     Text(
-                      t(tk: 'Goşulan döwürler', ru: 'Добавленные периоды', en: 'Added periods'),
+                      AppStrings.cabinetAddedPeriods.select(language),
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 12),
@@ -127,11 +121,7 @@ class _VacationScreenState extends State<VacationScreen> {
                   ],
                   const SizedBox(height: 22),
                   Text(
-                    t(
-                      tk: 'Täze dynç alyş döwri',
-                      ru: 'Новый период отпуска',
-                      en: 'New vacation period',
-                    ),
+                    AppStrings.cabinetNewVacationPeriod.select(language),
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -139,22 +129,14 @@ class _VacationScreenState extends State<VacationScreen> {
                   ),
                   const SizedBox(height: 14),
                   _PickerField(
-                    label: t(
-                      tk: 'Başlangyç senesi',
-                      ru: 'Дата начала',
-                      en: 'Start date',
-                    ),
+                    label: AppStrings.cabinetStartDate.select(language),
                     value: formatDate(_start),
                     icon: Icons.calendar_today_outlined,
                     onTap: () => _pickDate(isStart: true),
                   ),
                   const SizedBox(height: 14),
                   _PickerField(
-                    label: t(
-                      tk: 'Tamamlanýan senesi',
-                      ru: 'Дата окончания',
-                      en: 'End date',
-                    ),
+                    label: AppStrings.cabinetEndDate.select(language),
                     value: formatDate(_end),
                     icon: Icons.calendar_today_outlined,
                     onTap: () => _pickDate(isStart: false),
@@ -166,8 +148,8 @@ class _VacationScreenState extends State<VacationScreen> {
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: MasterActionButton(
                 label: _saving
-                    ? t(tk: 'Saklanýar...', ru: 'Сохранение...', en: 'Saving...')
-                    : t(tk: 'Dynç alyş goş', ru: 'Добавить отпуск', en: 'Add vacation'),
+                    ? AppStrings.servicesSaving.select(language)
+                    : AppStrings.cabinetAddVacation.select(language),
                 enabled: !_saving,
                 leading: Icons.add,
                 onTap: _add,
@@ -189,8 +171,6 @@ Future<bool?> _showAffectedAppointmentsDialog(
   required int count,
 }) {
   final language = context.read<LanguageProvider>().language;
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   final tokens = context.appTokens;
   return showDialog<bool>(
     context: context,
@@ -223,21 +203,13 @@ Future<bool?> _showAffectedAppointmentsDialog(
             ),
             const SizedBox(height: 16),
             Text(
-              t(
-                tk: 'Bu wagtda ýazgylar bar',
-                ru: 'На этот период уже есть записи',
-                en: 'There are bookings in this period',
-              ),
+              AppStrings.cabinetThereAreBookingsInThis.select(language),
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
-              t(
-                tk: '$dateLabel üçin $count ýazgy bar. Dowam etseňiz, ol ýazgylar awtomatik ýatyrylmaýar — özüňiz dolandyrmaly bolarsyňyz.',
-                ru: 'На $dateLabel уже есть $count запис(ей). Продолжив, вы не отменяете их автоматически — вам нужно будет управлять ими вручную.',
-                en: 'There are $count booking(s) for $dateLabel. Continuing will not cancel them automatically — you will need to manage them yourself.',
-              ),
+              AppStrings.cabinetThereAreBookingSFor(dateLabel, count).select(language),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13.5,
@@ -255,11 +227,7 @@ Future<bool?> _showAffectedAppointmentsDialog(
                 ),
                 onPressed: () => Navigator.pop(dialogContext, false),
                 child: Text(
-                  t(
-                    tk: 'Ýazgylara seret',
-                    ru: 'Посмотреть записи',
-                    en: 'View bookings',
-                  ),
+                  AppStrings.cabinetViewBookings.select(language),
                 ),
               ),
             ),
@@ -273,18 +241,14 @@ Future<bool?> _showAffectedAppointmentsDialog(
                 ),
                 onPressed: () => Navigator.pop(dialogContext, true),
                 child: Text(
-                  t(
-                    tk: 'Ýene-de ýap',
-                    ru: 'Всё равно закрыть',
-                    en: 'Close anyway',
-                  ),
+                  AppStrings.cabinetCloseAnyway.select(language),
                 ),
               ),
             ),
             const SizedBox(height: 6),
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, null),
-              child: Text(t(tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel')),
+              child: Text(AppStrings.servicesCancel.select(language)),
             ),
           ],
         ),

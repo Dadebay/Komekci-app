@@ -1,7 +1,7 @@
 import 'dart:collection';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path_parsing/path_parsing.dart';
 
 /// A HugeIcons glyph whose strokes can draw themselves. HugeIcons ships its

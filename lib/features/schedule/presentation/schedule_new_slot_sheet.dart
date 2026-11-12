@@ -110,24 +110,14 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
     )) {
       final language = context.read<LanguageProvider>().language;
       AppToast.of(sheetContext).error(
-        pickTr(
-          language,
-          tk: 'Bu wagt indi elýeterli däl. Başga wagt saýlaň.',
-          ru: 'Это время уже недоступно. Выберите другое.',
-          en: 'This time is no longer available. Choose another.',
-        ),
+        AppStrings.scheduleThisTimeIsNoLonger.select(language),
       );
       return;
     }
     if (!_serviceFits(_selectedService!)) {
       final language = context.read<LanguageProvider>().language;
       AppToast.of(sheetContext).error(
-        pickTr(
-          language,
-          tk: 'Bu hyzmat saýlanan wagta sygmaýar. Başga wagt ýa-da hyzmat saýlaň.',
-          ru: 'Услуга не помещается в выбранное время. Выберите другое время или услугу.',
-          en: 'This service does not fit the selected time. Choose another time or service.',
-        ),
+        AppStrings.scheduleThisServiceDoesNotFit.select(language),
       );
       return;
     }
@@ -168,8 +158,6 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final services = context.watch<ServiceProvider>().services;
     final selectedEnd = _selectedService == null
@@ -203,20 +191,12 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
                           ..._serviceFields(language: language, services: services),
                           _NewBookingSectionTitle(
                             number: 3,
-                            title: t(
-                              tk: 'Bellik (islege görä)',
-                              ru: 'Заметка (необязательно)',
-                              en: 'Note (optional)',
-                            ),
+                            title: AppStrings.scheduleNoteOptional.select(language),
                           ),
                           const SizedBox(height: 10),
                           _FormField(
                             controller: _noteController,
-                            hint: t(
-                              tk: 'Bellik goşuň...',
-                              ru: 'Добавьте заметку...',
-                              en: 'Add a note...',
-                            ),
+                            hint: AppStrings.scheduleAddANote.select(language),
                             maxLines: 3,
                             maxLength: 200,
                             keyboardType: TextInputType.text,
@@ -232,11 +212,7 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
                         child: MasterActionButton(
-                          label: t(
-                            tk: 'Ýazgyny sakla',
-                            ru: 'Сохранить запись',
-                            en: 'Save booking',
-                          ),
+                          label: AppStrings.scheduleSaveBooking.select(language),
                           enabled:
                               _complete &&
                               !_saving &&

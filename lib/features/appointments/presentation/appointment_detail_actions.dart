@@ -6,10 +6,10 @@ extension _AppointmentDetailActions on AppointmentDetailScreen {
       context,
       icon: Icons.event_busy_outlined,
       danger: true,
-      title: t(tk: 'Ýazgyny ýatyrmaly?', ru: 'Отменить запись?', en: 'Cancel this booking?'),
-      message: t(tk: 'Bu hereketi yzyna gaýtaryp bolmaz.', ru: 'Это действие нельзя отменить.', en: 'This action cannot be undone.'),
-      confirmLabel: t(tk: 'Ýatyr', ru: 'Отменить', en: 'Cancel'),
-      cancelLabel: t(tk: 'Ýapmak', ru: 'Закрыть', en: 'Close'),
+      title: AppStrings.appointmentsCancelThisBooking.select(context.read<LanguageProvider>().language),
+      message: AppStrings.appointmentsThisActionCannotBeUndone.select(context.read<LanguageProvider>().language),
+      confirmLabel: AppStrings.appointmentsCancel.select(context.read<LanguageProvider>().language),
+      cancelLabel: AppStrings.authClose.select(context.read<LanguageProvider>().language),
     );
     if (confirmed && context.mounted) {
       final navigator = Navigator.of(context);
@@ -44,7 +44,7 @@ extension _AppointmentDetailActions on AppointmentDetailScreen {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        t(tk: 'Şol wagt eýýäm alnan. Ýakyn boş wagtlar:', ru: 'Это время занято. Ближайшее свободное:', en: 'That time is taken. Nearest free times:'),
+                        AppStrings.appointmentsThatTimeIsTakenNearest.select(context.read<LanguageProvider>().language),
                         style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 12),
@@ -95,7 +95,7 @@ extension _AppointmentDetailActions on AppointmentDetailScreen {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                t(tk: 'Näçe minut gijä galýarsyňyz?', ru: 'На сколько минут вы опаздываете?', en: 'How many minutes late?'),
+                AppStrings.appointmentsHowManyMinutesLate.select(context.read<LanguageProvider>().language),
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 16),
@@ -113,7 +113,7 @@ extension _AppointmentDetailActions on AppointmentDetailScreen {
                           runApi(context, () => context.read<ClientBookingsProvider>().setLate(current.id, minutes));
                           Navigator.pop(sheetContext);
                         },
-                        child: Text('$minutes ${t(tk: "min", ru: "мин", en: "min")}'),
+                        child: Text('$minutes ${AppStrings.bookingMin.select(context.read<LanguageProvider>().language)}'),
                       ),
                     ),
                   );

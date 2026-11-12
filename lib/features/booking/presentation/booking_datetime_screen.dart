@@ -81,8 +81,6 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final weekdayLabels = switch (language) {
       AppLanguage.tk => _weekdaysTk,
@@ -101,9 +99,9 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
 
     // Free times split into parts of the day, so a long list stays scannable.
     final groups = <(String, List<DateTime>)>[
-      (t(tk: 'Irden', ru: 'Утро', en: 'Morning'), [for (final x in slots) if (x.hour < 12) x]),
-      (t(tk: 'Günorta', ru: 'День', en: 'Afternoon'), [for (final x in slots) if (x.hour >= 12 && x.hour < 17) x]),
-      (t(tk: 'Agşam', ru: 'Вечер', en: 'Evening'), [for (final x in slots) if (x.hour >= 17) x]),
+      (AppStrings.bookingMorning.select(language), [for (final x in slots) if (x.hour < 12) x]),
+      (AppStrings.bookingAfternoon.select(language), [for (final x in slots) if (x.hour >= 12 && x.hour < 17) x]),
+      (AppStrings.bookingEvening.select(language), [for (final x in slots) if (x.hour >= 17) x]),
     ];
     final slotWidth = (MediaQuery.sizeOf(context).width - 40 - 30) / 4;
     final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
@@ -118,9 +116,9 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
               master: widget.master,
               current: 2,
               labels: [
-                t(tk: 'Hyzmat', ru: 'Услуга', en: 'Service'),
-                t(tk: 'Wagt', ru: 'Время', en: 'Time'),
-                t(tk: 'Tassykla', ru: 'Подтв.', en: 'Confirm'),
+                AppStrings.bookingService.select(language),
+                AppStrings.bookingTime2.select(language),
+                AppStrings.bookingConfirm.select(language),
               ],
             ),
             Expanded(
@@ -130,8 +128,8 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _BookingTitle(
-                      title: t(tk: 'Sene we wagt saýlaň', ru: 'Выберите дату и время', en: 'Pick a date & time'),
-                      subtitle: '${widget.service.name} · ${widget.service.durationMin} ${t(tk: 'min', ru: 'мин', en: 'min')} · ${formatMoney(widget.service.price)} $currency',
+                      title: AppStrings.bookingPickADateTime.select(language),
+                      subtitle: '${widget.service.name} · ${widget.service.durationMin} ${AppStrings.bookingMin2.select(language)} · ${formatMoney(widget.service.price)} $currency',
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -184,9 +182,9 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _error != null
                         ? RetryErrorState(
-                            title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
+                            title: AppStrings.requestsSomethingWentWrong.select(language),
                             text: apiErrorMessage(_error!, language),
-                            retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                            retryLabel: AppStrings.profileTryAgain.select(language),
                             onRetry: _load,
                           )
                         : availability == null
@@ -197,23 +195,15 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                         : paused
                         ? EmptyState(
                             icon: Icons.event_busy_outlined,
-                            title: t(tk: 'Ýazgy wagtlaýyn ýapyk', ru: 'Запись временно закрыта', en: 'Bookings are paused'),
+                            title: AppStrings.bookingBookingsArePaused.select(language),
                             text: availability.message ??
-                                t(
-                                  tk: 'Master häzirlikçe täze ýazgylary kabul etmeýär.',
-                                  ru: 'Мастер временно не принимает новые записи.',
-                                  en: 'This master is not accepting new bookings right now.',
-                                ),
+                                AppStrings.bookingThisMasterIsNotAccepting.select(language),
                           )
                         : slots.isEmpty
                         ? EmptyState(
                             icon: Icons.schedule_outlined,
-                            title: t(tk: 'Boş wagt ýok', ru: 'Свободного времени нет', en: 'No free slots'),
-                            text: t(
-                              tk: 'Bu gün üçin boş wagt ýok. Başga gün synanyşyň.',
-                              ru: 'На этот день свободного времени нет. Попробуйте другой день.',
-                              en: 'There is no free time on this day. Try another day.',
-                            ),
+                            title: AppStrings.bookingNoFreeSlots.select(language),
+                            text: AppStrings.bookingThereIsNoFreeTime.select(language),
                           )
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,9 +269,9 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
         ),
       ),
       bottomNavigationBar: _BookingBottomBar(
-        caption: t(tk: 'Saýlanan wagt', ru: 'Выбранное время', en: 'Selected time'),
+        caption: AppStrings.bookingSelectedTime.select(language),
         value: _selectedSlot == null ? '—' : '${formatDate(_selectedSlot!)} · ${clock(_selectedSlot!)}',
-        label: t(tk: 'Dowam et', ru: 'Далее', en: 'Continue'),
+        label: AppStrings.bookingContinue.select(language),
         onPressed: _selectedSlot == null
             ? null
             : () => Navigator.push(

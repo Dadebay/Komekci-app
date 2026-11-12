@@ -7,8 +7,6 @@ Iterable<Widget> _scheduleTimelineRows({
   required AppLanguage language,
   required VoidCallback onExpired,
 }) {
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   return entries.map((entry) {
               if (entry is _ApptEntry) {
                 final customer = entry.appointment.customerId == null
@@ -45,11 +43,7 @@ Iterable<Widget> _scheduleTimelineRows({
                   if (!free.start.isAfter(DateTime.now())) {
                     onExpired();
                     AppToast.of(context).error(
-                      t(
-                        tk: 'Bu wagt indi elýeterli däl. Başga wagt saýlaň.',
-                        ru: 'Это время уже недоступно. Выберите другое.',
-                        en: 'This time is no longer available. Choose another.',
-                      ),
+                      AppStrings.scheduleThisTimeIsNoLonger.select(language),
                     );
                     return;
                   }

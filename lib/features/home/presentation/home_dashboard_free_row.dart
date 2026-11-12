@@ -125,18 +125,8 @@ class _HomeFreeRow extends StatelessWidget {
                     Flexible(
                       child: Text(
                         closed == null
-                            ? pickTr(
-                                language,
-                                tk: 'Boş aralyk',
-                                ru: 'Свободно',
-                                en: 'Free slot',
-                              )
-                            : pickTr(
-                                language,
-                                tk: 'Ýapyk wagt',
-                                ru: 'Закрытое время',
-                                en: 'Blocked time',
-                              ),
+                            ? AppStrings.homeFreeSlot.select(language)
+                            : AppStrings.scheduleBlockedTime.select(language),
                         style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,
@@ -150,7 +140,7 @@ class _HomeFreeRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${formatTime(TimeOfDay.fromDateTime(start))} – ${formatTime(TimeOfDay.fromDateTime(end))} · $minutes ${pickTr(language, tk: 'min', ru: 'мин', en: 'min')}',
+                  '${formatTime(TimeOfDay.fromDateTime(start))} – ${formatTime(TimeOfDay.fromDateTime(end))} · $minutes ${AppStrings.bookingMin2.select(language)}',
                   style: TextStyle(
                     fontSize: 11,
                     color: freeColor.withValues(alpha: .8),
@@ -185,13 +175,8 @@ class _HomeFreeRow extends StatelessWidget {
             ),
             label: Text(
               closed == null
-                  ? pickTr(
-                      language,
-                      tk: 'Üýtgetmek',
-                      ru: 'Изменить',
-                      en: 'Edit',
-                    )
-                  : pickTr(language, tk: 'Açmak', ru: 'Открыть', en: 'Reopen'),
+                  ? AppStrings.homeEdit.select(language)
+                  : AppStrings.scheduleReopen.select(language),
               style: const TextStyle(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w600,

@@ -67,8 +67,6 @@ class _NewConnectionRequestDialogState
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final r = widget.request;
     final nickname = (r.clientNickname ?? '').trim();
@@ -110,7 +108,7 @@ class _NewConnectionRequestDialogState
             ),
             const SizedBox(height: 16),
             Text(
-              t(tk: 'Täze baglanyşyk haýyşy', ru: 'Новый запрос на связь', en: 'New connection request'),
+              AppStrings.requestsNewConnectionRequest.select(language),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.accent),
             ),
@@ -126,19 +124,15 @@ class _NewConnectionRequestDialogState
             ],
             const SizedBox(height: 10),
             Text(
-              t(
-                tk: 'Sizi tapdy we baglanyşmak isleýär. Kabul etseňiz müşderiler sanawyňyza goşular we onlaýn ýazylyp biler.',
-                ru: 'Нашёл вас и хочет связаться. После принятия клиент попадёт в ваш список и сможет записываться онлайн.',
-                en: 'Found you and wants to connect. If you accept, they join your clients and can book online.',
-              ),
+              AppStrings.requestsFoundYouAndWantsTo.select(language),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 12.5, height: 1.45, color: tokens.textSecondary),
             ),
             const SizedBox(height: 20),
             MasterActionButton(
               label: _busy
-                  ? t(tk: 'Garaşyň...', ru: 'Подождите...', en: 'Please wait...')
-                  : t(tk: 'Kabul et', ru: 'Принять', en: 'Accept'),
+                  ? AppStrings.requestsPleaseWait.select(language)
+                  : AppStrings.notificationsAccept.select(language),
               enabled: !_busy,
               leading: Icons.check_rounded,
               onTap: () => _answer(accept: true),
@@ -155,7 +149,7 @@ class _NewConnectionRequestDialogState
                   shape: const StadiumBorder(),
                 ),
                 child: Text(
-                  t(tk: 'Ret et', ru: 'Отклонить', en: 'Decline'),
+                  AppStrings.requestsDecline.select(language),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -173,12 +167,8 @@ class _NewConnectionRequestDialogState
                     },
               child: Text(
                 widget.others > 0
-                    ? t(
-                        tk: 'Ähli haýyşlara seret (+${widget.others})',
-                        ru: 'Все запросы (+${widget.others})',
-                        en: 'See all requests (+${widget.others})',
-                      )
-                    : t(tk: 'Soňra', ru: 'Позже', en: 'Later'),
+                    ? AppStrings.requestsSeeAllRequests(widget.others).select(language)
+                    : AppStrings.requestsLater.select(language),
                 style: TextStyle(color: tokens.textSecondary, fontWeight: FontWeight.w600),
               ),
             ),

@@ -95,7 +95,9 @@ void main() {
       }),
     );
 
-    expect(await AuthRepository(api).requestOtp('+99361234567'), 75);
+    final result = await AuthRepository(api).requestOtp('+99361234567');
+    expect(result.retryAfter, 75);
+    expect(result.signedIn, false);
     expect(calls, 1);
   });
 

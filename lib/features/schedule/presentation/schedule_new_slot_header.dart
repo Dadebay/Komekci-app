@@ -8,8 +8,6 @@ class _NewSlotHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -30,11 +28,7 @@ class _NewSlotHeader extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  t(
-                                    tk: 'Täze ýazgy goşmak',
-                                    ru: 'Добавить запись',
-                                    en: 'New booking',
-                                  ),
+                                  AppStrings.scheduleNewBooking.select(language),
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w700,
@@ -43,11 +37,7 @@ class _NewSlotHeader extends StatelessWidget {
                                 ),
                               ),
                               IconButton(
-                                tooltip: t(
-                                  tk: 'Ýap',
-                                  ru: 'Закрыть',
-                                  en: 'Close',
-                                ),
+                                tooltip: AppStrings.notificationsClose.select(language),
                                 onPressed: () => Navigator.pop(context),
                                 icon: AppIcon(
                                   Icons.close,

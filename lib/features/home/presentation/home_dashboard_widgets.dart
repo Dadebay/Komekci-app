@@ -25,8 +25,6 @@ class _DashboardHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final balance = context.watch<BillingProvider>().balance;
     final profile = context.watch<MasterProfileProvider>();
     final masterName = profile.name;
@@ -91,11 +89,7 @@ class _DashboardHero extends StatelessWidget {
                       children: [
                         _HeroChip(
                           icon: Icons.chat_bubble_outline,
-                          label: t(
-                            tk: 'Habarlaşmak',
-                            ru: 'Связаться',
-                            en: 'Contact us',
-                          ),
+                          label: AppStrings.homeContactUs.select(language),
                           onTap: () => Navigator.push(
                             context,
                             pageRoute(const SupportScreen()),

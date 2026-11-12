@@ -20,13 +20,12 @@ class ClientHomeDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final tk = language == AppLanguage.tk;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final canPop = Navigator.of(context).canPop();
     final upcoming = context
         .watch<ClientBookingsProvider>()
         .upcoming
+        .where((b) => b.isUpcoming)
         .take(3)
         .toList();
     return Scaffold(
@@ -65,11 +64,7 @@ class ClientHomeDashboard extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          t(
-                            tk: 'Masteri lakamy ýa-da telefony boýunça tap',
-                            ru: 'Найти мастера по никнейму или телефону',
-                            en: 'Find a master by nickname or phone',
-                          ),
+                          AppStrings.homeFindAMasterByNickname.select(language),
                           style: TextStyle(
                             color: tokens.textSecondary,
                             fontSize: 14,
@@ -83,51 +78,22 @@ class ClientHomeDashboard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 26),
-              _SectionHeader(
-                title: t(
-                  tk: 'Meniň ýazgylarym',
-                  ru: 'Мои записи',
-                  en: 'My bookings',
-                ),
-                actionLabel: t(
-                  tk: 'Ähli ýazgylar',
-                  ru: 'Все записи',
-                  en: 'All bookings',
-                ),
-                onAction: () => Navigator.push(
-                  context,
-                  pageRoute(const ClientBookingsScreen()),
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (upcoming.isEmpty)
-                EmptyState(
-                  icon: Icons.event_busy_outlined,
-                  title: t(
-                    tk: 'Ýazgy ýok',
-                    ru: 'Записей нет',
-                    en: 'No bookings',
+              if (upcoming.isNotEmpty) ...[
+                _SectionHeader(
+                  title: AppStrings.homeMyBookings2.select(language),
+                  actionLabel: AppStrings.homeAllBookings.select(language),
+                  onAction: () => Navigator.push(
+                    context,
+                    pageRoute(const ClientBookingsScreen()),
                   ),
-                  text: t(
-                    tk: 'Master saýlap ýazylyň.',
-                    ru: 'Выберите мастера и запишитесь.',
-                    en: 'Choose a master and book an appointment.',
-                  ),
-                )
-              else
+                ),
+                const SizedBox(height: 12),
                 _ClientBookingsListCard(bookings: upcoming, tk: tk),
-              const SizedBox(height: 22),
+                const SizedBox(height: 22),
+              ],
               _SectionHeader(
-                title: t(
-                  tk: 'Meniň masterlarym',
-                  ru: 'Мои мастера',
-                  en: 'My masters',
-                ),
-                actionLabel: t(
-                  tk: 'Ähli masterlar',
-                  ru: 'Все мастера',
-                  en: 'All masters',
-                ),
+                title: AppStrings.homeMyMasters.select(language),
+                actionLabel: AppStrings.homeAllMasters.select(language),
                 onAction: () => Navigator.push(
                   context,
                   pageRoute(const ClientMastersScreen()),
@@ -153,7 +119,7 @@ class _ClientHomeHeader extends StatelessWidget {
     final profile = context.watch<ClientProfileProvider>();
     final language = context.watch<LanguageProvider>().language;
     final tokens = context.appTokens;
-    final greeting = pickTr(language, tk: 'Salam', ru: 'Привет', en: 'Hello');
+    final greeting = AppStrings.homeHello.select(language);
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 12, 14, 12),
       decoration: _flatTintDecoration(tokens, tokens.accent),

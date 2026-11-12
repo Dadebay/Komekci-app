@@ -42,8 +42,6 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final settings = context.watch<AppSettingsProvider>();
     final billing = context.watch<BillingProvider>();
@@ -65,19 +63,11 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
         backgroundColor: tokens.surface,
         appBar: widget.onboarding
             ? _MasterSetupHeader(
-                title: t(
-                  tk: 'ABUNA WE TÖLEG',
-                  ru: 'ПОДПИСКА И ОПЛАТА',
-                  en: 'SUBSCRIPTION & PAYMENT',
-                ),
+                title: AppStrings.authSubscriptionPayment.select(language),
                 onBack: widget.onLeave,
               )
             : CabinetAppBar(
-                title: t(
-                  tk: 'Balans doldur',
-                  ru: 'Пополнить баланс',
-                  en: 'Top up balance',
-                ),
+                title: AppStrings.cabinetTopUpBalance.select(language),
                 onBack: widget.onLeave,
               ),
         body: SafeArea(
@@ -110,16 +100,8 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                 ],
                 Text(
                   widget.onboarding
-                      ? t(
-                          tk: 'Näçe aýa tölemeli?',
-                          ru: 'На сколько месяцев оплатить?',
-                          en: 'How many months?',
-                        )
-                      : t(
-                          tk: 'Möçberi saýlaň',
-                          ru: 'Выберите сумму',
-                          en: 'Choose an amount',
-                        ),
+                      ? AppStrings.authHowManyMonths.select(language)
+                      : AppStrings.authChooseAnAmount.select(language),
                   style: const TextStyle(
                     fontSize: 16.5,
                     fontWeight: FontWeight.w800,
@@ -128,16 +110,8 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                 const SizedBox(height: 6),
                 Text(
                   widget.onboarding
-                      ? t(
-                          tk: 'Töleg balansyňyza goşulýar, abuna aýlyk awtomatik tutulýar.',
-                          ru: 'Сумма зачисляется на баланс, подписка списывается ежемесячно.',
-                          en: 'The amount goes to your balance; the subscription is charged monthly.',
-                        )
-                      : t(
-                          tk: 'Pul balansyňyza goşulýar. Abuna üçin her aý $fee $cur tutulýar.',
-                          ru: 'Деньги поступят на баланс. Подписка списывает $fee $cur каждый месяц.',
-                          en: 'Money goes to your balance. The subscription charges $fee $cur monthly.',
-                        ),
+                      ? AppStrings.authTheAmountGoesToYour.select(language)
+                      : AppStrings.authMoneyGoesToYourBalance(fee, cur).select(language),
                   style: TextStyle(
                     color: tokens.textSecondary,
                     fontSize: 12.5,
@@ -166,11 +140,7 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                 ),
                 SizedBox(height: widget.onboarding ? 28 : 22),
                 Text(
-                  t(
-                    tk: 'Töleg usuly',
-                    ru: 'Способ оплаты',
-                    en: 'Payment method',
-                  ),
+                  AppStrings.authPaymentMethod.select(language),
                   style: const TextStyle(
                     fontSize: 16.5,
                     fontWeight: FontWeight.w800,
@@ -179,22 +149,10 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                 const SizedBox(height: 12),
                 _PaymentMethodTile(
                   icon: Icons.smartphone_outlined,
-                  title: t(
-                    tk: 'Telefon balansy',
-                    ru: 'Баланс телефона',
-                    en: 'Phone balance',
-                  ),
+                  title: AppStrings.authPhoneBalance.select(language),
                   subtitle: phoneAvailable
-                      ? t(
-                          tk: 'SIM kartyňyzyň balansyndan geçiriň',
-                          ru: 'Перевод с баланса SIM-карты',
-                          en: 'Transfer from your SIM card balance',
-                        )
-                      : t(
-                          tk: 'Töleg üçin telefon belgisi elýeterli däl',
-                          ru: 'Нет доступного номера для оплаты',
-                          en: 'No payment phone number is available',
-                        ),
+                      ? AppStrings.authTransferFromYourSimCard.select(language)
+                      : AppStrings.authNoPaymentPhoneNumberIs.select(language),
                   enabled: phoneAvailable,
                   selected: byPhone,
                   compact: !widget.onboarding,
@@ -203,11 +161,7 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                 const SizedBox(height: 8),
                 _PaymentMethodTile(
                   icon: Icons.credit_card_outlined,
-                  title: t(
-                    tk: 'Bank kartasy',
-                    ru: 'Банковская карта',
-                    en: 'Bank card',
-                  ),
+                  title: AppStrings.authBankCard.select(language),
                   subtitle: 'Halkbank, Rysgal, Senagat',
                   selected: !byPhone,
                   compact: !widget.onboarding,
@@ -237,7 +191,7 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        t(tk: 'Tölenmeli', ru: 'К оплате', en: 'To pay'),
+                        AppStrings.authToPay.select(language),
                         style: TextStyle(
                           fontSize: 11.5,
                           color: tokens.textSecondary,
@@ -252,11 +206,7 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                         ),
                       ),
                       Text(
-                        t(
-                          tk: '$months aý üçin',
-                          ru: 'за $months мес.',
-                          en: 'for $months month${months == 1 ? '' : 's'}',
-                        ),
+                        AppStrings.authForMonth(months, months == 1 ? '' : 's').select(language),
                         style: TextStyle(
                           fontSize: 11.5,
                           color: tokens.textSecondary,
@@ -268,12 +218,8 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                   Expanded(
                     child: MasterActionButton(
                       label: widget.onboarding
-                          ? t(tk: 'Tölegi töle', ru: 'Оплатить', en: 'Pay')
-                          : t(
-                              tk: 'Tölege geç',
-                              ru: 'Перейти к оплате',
-                              en: 'Continue to pay',
-                            ),
+                          ? AppStrings.authPay.select(language)
+                          : AppStrings.authContinueToPay.select(language),
                       enabled: true,
                       trailingArrow: true,
                       onTap: () => _pay(amount, byPhone),

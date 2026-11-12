@@ -113,9 +113,9 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
               master: widget.master,
               current: 3,
               labels: [
-                t(tk: 'Hyzmat', ru: 'Услуга', en: 'Service'),
-                t(tk: 'Wagt', ru: 'Время', en: 'Time'),
-                t(tk: 'Tassykla', ru: 'Подтв.', en: 'Confirm'),
+                AppStrings.bookingService.select(language),
+                AppStrings.bookingTime2.select(language),
+                AppStrings.bookingConfirm.select(language),
               ],
             ),
             Expanded(
@@ -123,8 +123,8 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                 padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + MediaQuery.of(context).viewInsets.bottom),
                 children: [
                   _BookingTitle(
-                    title: t(tk: 'Tassyklaň', ru: 'Подтвердите запись', en: 'Confirm booking'),
-                    subtitle: t(tk: 'Maglumatlary barlaň', ru: 'Проверьте детали записи', en: 'Check the details below'),
+                    title: AppStrings.bookingConfirmBooking.select(language),
+                    subtitle: AppStrings.bookingCheckTheDetailsBelow.select(language),
                   ),
                   const SizedBox(height: 18),
                   Container(
@@ -157,7 +157,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                               Expanded(
                                 child: _BookingInfoTile(
                                   icon: Icons.calendar_today_outlined,
-                                  caption: t(tk: 'Senesi', ru: 'Дата', en: 'Date'),
+                                  caption: AppStrings.bookingDate2.select(language),
                                   value: dateLabel,
                                 ),
                               ),
@@ -165,8 +165,8 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                               Expanded(
                                 child: _BookingInfoTile(
                                   icon: Icons.schedule_outlined,
-                                  caption: t(tk: 'Barmaly wagtyňyz', ru: 'Время', en: 'Time'),
-                                  value: '$timeLabel · ${widget.service.durationMin} ${t(tk: "min", ru: "мин", en: "min")}',
+                                  caption: AppStrings.bookingTime3.select(language),
+                                  value: '$timeLabel · ${widget.service.durationMin} ${AppStrings.bookingMin.select(language)}',
                                 ),
                               ),
                             ],
@@ -183,7 +183,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          t(tk: 'Bellik', ru: 'Заметка', en: 'Note'),
+                          AppStrings.bookingNote.select(language),
                           style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 10),
@@ -194,11 +194,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: tokens.surfaceElevated,
-                            hintText: t(
-                              tk: 'Master üçin bellik (hökmany däl)',
-                              ru: 'Заметка для мастера (необязательно)',
-                              en: 'Note for the master (optional)',
-                            ),
+                            hintText: AppStrings.bookingNoteForTheMasterOptional.select(language),
                           ),
                         ),
                         Material(
@@ -211,11 +207,7 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                             dense: true,
                             activeColor: tokens.textPrimary,
                             title: Text(
-                              t(
-                                tk: 'Has irki wagt açylsa, maňa habar ber',
-                                ru: 'Сообщить, если освободится более раннее время',
-                                en: 'Notify me if an earlier slot opens up',
-                              ),
+                              AppStrings.bookingNotifyMeIfAnEarlier.select(language),
                               style: const TextStyle(fontSize: 13, height: 1.35),
                             ),
                           ),
@@ -226,15 +218,15 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                   if (_error != null) ...[
                     const SizedBox(height: 8),
                     RetryErrorState(
-                      title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
+                      title: AppStrings.requestsSomethingWentWrong.select(language),
                       text: _error!,
-                      retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                      retryLabel: AppStrings.profileTryAgain.select(language),
                       onRetry: () => _confirm(t),
                     ),
                     if (_suggestions.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
-                        t(tk: 'Ýakyn boş wagtlar:', ru: 'Ближайшее свободное время:', en: 'Nearest free times:'),
+                        AppStrings.bookingNearestFreeTimes.select(language),
                         style: TextStyle(fontSize: 12.5, color: tokens.textSecondary),
                       ),
                       const SizedBox(height: 8),
@@ -264,9 +256,9 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
         ),
       ),
       bottomNavigationBar: _BookingBottomBar(
-        caption: t(tk: 'Jemi', ru: 'Итого', en: 'Total'),
+        caption: AppStrings.bookingTotal.select(language),
         value: '${formatMoney(widget.service.price)} $currency',
-        label: t(tk: 'Ýazgyny tassykla', ru: 'Подтвердить запись', en: 'Confirm booking'),
+        label: AppStrings.bookingConfirmBooking2.select(language),
         loading: _submitting,
         onPressed: () => _confirm(t),
       ),

@@ -8,15 +8,13 @@ class RequestsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final provider = context.watch<ConnectionRequestsProvider>();
     final requests = provider.requests;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Baglanyşyk haýyşlary', ru: 'Запросы на связь', en: 'Connection requests'),
+        title: AppStrings.requestsConnectionRequests.select(language),
       ),
       body: SafeArea(
         child: RefreshIndicator(
@@ -27,9 +25,9 @@ class RequestsScreen extends StatelessWidget {
             children: [
               if (provider.error != null && requests.isEmpty)
                 RetryErrorState(
-                  title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
+                  title: AppStrings.requestsSomethingWentWrong.select(language),
                   text: apiErrorMessage(provider.error!, language),
-                  retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                  retryLabel: AppStrings.profileTryAgain.select(language),
                   onRetry: provider.load,
                 )
               else if (requests.isEmpty)
@@ -39,12 +37,8 @@ class RequestsScreen extends StatelessWidget {
                         child: Center(child: CircularProgressIndicator()),
                       )
                     : _ConnectionRequestsEmptyState(
-                        title: t(tk: 'Haýyş ýok', ru: 'Запросов нет', en: 'No requests'),
-                        text: t(
-                          tk: 'Müşderiler lakamyňyz bilen sizi tapyp baglanyşyk haýyşyny iberip bilerler.',
-                          ru: 'Клиенты находят вас по никнейму и отправляют запрос на связь.',
-                          en: 'Clients can find you by nickname and send a connection request.',
-                        ),
+                        title: AppStrings.requestsNoRequests.select(language),
+                        text: AppStrings.requestsClientsCanFindYouBy.select(language),
                       )
               else
                 for (final r in requests)
@@ -76,7 +70,7 @@ class RequestsScreen extends StatelessWidget {
                           ),
                         ),
                         IconButton(
-                          tooltip: t(tk: 'Ret et', ru: 'Отклонить', en: 'Decline'),
+                          tooltip: AppStrings.requestsDecline.select(language),
                           icon: AppIcon(Icons.close, color: tokens.danger),
                           onPressed: () => runApi(context, () => provider.decline(r.id)),
                         ),
@@ -90,7 +84,7 @@ class RequestsScreen extends StatelessWidget {
                             final ok = await runApi(context, () => provider.accept(r.id));
                             if (ok && context.mounted) context.read<CustomerProvider>().load();
                           },
-                          child: Text(t(tk: 'Kabul et', ru: 'Принять', en: 'Accept')),
+                          child: Text(AppStrings.notificationsAccept.select(language)),
                         ),
                       ],
                     ),
@@ -161,19 +155,13 @@ class _ConnectionRequestsEmptyState extends StatelessWidget {
 /// Signs out and returns to the start of the app.
 Future<void> _confirmSignOut(BuildContext context) async {
   final language = context.read<LanguageProvider>().language;
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   final confirmed = await _showConfirmDialog(
     context,
     icon: Icons.logout,
-    title: t(tk: 'Ulgamdan çykmaly?', ru: 'Выйти из аккаунта?', en: 'Sign out?'),
-    message: t(
-      tk: 'Ýene-de girmek üçin telefon belgiňizi tassyklamaly bolarsyňyz.',
-      ru: 'Чтобы войти снова, потребуется подтвердить номер телефона.',
-      en: "You'll need to verify your phone number again to sign back in.",
-    ),
-    confirmLabel: t(tk: 'Çyk', ru: 'Выйти', en: 'Sign out'),
-    cancelLabel: t(tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
+    title: AppStrings.profileSignOut.select(language),
+    message: AppStrings.profileYouLlNeedToVerify.select(language),
+    confirmLabel: AppStrings.profileSignOut2.select(language),
+    cancelLabel: AppStrings.servicesCancel.select(language),
     danger: true,
   );
   if (!confirmed || !context.mounted) return;
@@ -185,19 +173,13 @@ Future<void> _confirmSignOut(BuildContext context) async {
 /// Permanently deletes the account (`DELETE /me`) after a second confirmation.
 Future<void> _confirmDeleteAccount(BuildContext context) async {
   final language = context.read<LanguageProvider>().language;
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   final confirmed = await _showConfirmDialog(
     context,
     icon: Icons.delete_forever_outlined,
-    title: t(tk: 'Hasaby pozmaly?', ru: 'Удалить аккаунт?', en: 'Delete your account?'),
-    message: t(
-      tk: 'Hasabyňyz we ähli maglumatlaryňyz pozular. Bu hereketi yzyna gaýtaryp bolmaýar.',
-      ru: 'Аккаунт и все данные будут удалены. Это действие нельзя отменить.',
-      en: 'Your account and its data will be deleted. This cannot be undone.',
-    ),
-    confirmLabel: t(tk: 'Poz', ru: 'Удалить', en: 'Delete'),
-    cancelLabel: t(tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
+    title: AppStrings.requestsDeleteYourAccount.select(language),
+    message: AppStrings.requestsYourAccountAndItsData.select(language),
+    confirmLabel: AppStrings.servicesDelete.select(language),
+    cancelLabel: AppStrings.servicesCancel.select(language),
     danger: true,
   );
   if (!confirmed || !context.mounted) return;

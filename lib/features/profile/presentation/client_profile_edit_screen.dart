@@ -27,12 +27,7 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
   Future<void> _save() async {
     final name = _nameController.text.trim();
     if (name.length < 2 || name.length > 50) {
-      setState(() => _error = pickTr(
-        context.read<LanguageProvider>().language,
-        tk: 'Ady 2-50 harp aralygynda giriziň',
-        ru: 'Имя должно быть от 2 до 50 символов',
-        en: 'Name must be 2-50 characters',
-      ));
+      setState(() => _error = AppStrings.profileNameMustBe250.select(context.read<LanguageProvider>().language));
       return;
     }
     final language = context.read<LanguageProvider>().language;
@@ -53,12 +48,7 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
       });
       return;
     }
-    toast.success(pickTr(
-            language,
-            tk: 'Profil ýatda saklandy.',
-            ru: 'Профиль сохранён.',
-            en: 'Profile saved.',
-          ),);
+    toast.success(AppStrings.profileProfileSaved.select(language),);
     navigator.pop();
   }
 
@@ -76,27 +66,20 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
     final language = context.read<LanguageProvider>().language;
     final toast = AppToast.of(context);
     if (await showChangePhoneDialog(context)) {
-      toast.success(pickTr(
-              language,
-              tk: 'Telefon belgisi üýtgedildi.',
-              ru: 'Номер телефона изменён.',
-              en: 'Phone number updated.',
-            ),);
+      toast.success(AppStrings.profilePhoneNumberUpdated.select(language),);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final profile = context.watch<ClientProfileProvider>();
 
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Profili redaktle', ru: 'Редактировать профиль', en: 'Edit profile'),
+        title: AppStrings.profileEditProfile.select(language),
       ),
       body: SafeArea(
         child: Column(
@@ -129,13 +112,13 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
                   ),
                   const SizedBox(height: 26),
                   _EditField(
-                    label: t(tk: 'Adyňyz', ru: 'Имя', en: 'Name'),
+                    label: AppStrings.profileName.select(language),
                     icon: Icons.person_outline,
                     controller: _nameController,
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    t(tk: 'Telefon belgiňiz', ru: 'Номер телефона', en: 'Phone number'),
+                    AppStrings.profilePhoneNumber.select(language),
                     style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 7),
@@ -161,7 +144,7 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
                             ),
                           ),
                           Text(
-                            t(tk: 'Üýtget', ru: 'Изменить', en: 'Change'),
+                            AppStrings.profileChange.select(language),
                             style: TextStyle(color: tokens.accent, fontWeight: FontWeight.w600, fontSize: 13),
                           ),
                         ],
@@ -175,7 +158,7 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: PrimaryButton(
-                label: t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save'),
+                label: AppStrings.servicesSave.select(language),
                 loading: _saving,
                 onTap: _save,
               ),

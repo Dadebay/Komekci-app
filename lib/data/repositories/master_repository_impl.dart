@@ -301,6 +301,16 @@ class MasterRepository {
     await _api.patch('/me/clients/$id', json: {'private_note': note});
   }
 
+  /// Sets the master's label for this client: `new`, `regular` or `vip`.
+  /// Stored on the master–client link, not on the person's profile. Returns
+  /// the client in the same shape as a `GET /me/clients` row.
+  Future<ClientSummary> setClientStatus(String id, String status) async =>
+      ClientSummary.fromJson(
+        asMap(
+          unwrapData(await _api.patch('/me/clients/$id', json: {'status': status})),
+        ),
+      );
+
   Future<void> removeClient(String id) async {
     await _api.delete('/me/clients/$id');
   }

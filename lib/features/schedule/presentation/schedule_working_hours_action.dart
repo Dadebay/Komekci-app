@@ -15,12 +15,7 @@ extension _ScheduleWorkingHoursAction on _ScheduleScreenState {
     final range = await _pickTimeRange(
       context,
       language: language,
-      title: pickTr(
-        language,
-        tk: 'Şu gün üçin iş wagty',
-        ru: 'Рабочие часы на этот день',
-        en: 'Working hours for this day',
-      ),
+      title: AppStrings.scheduleWorkingHoursForThisDay.select(language),
       start: windows.isEmpty ? '10:00' : formatTime(TimeOfDay.fromDateTime(windows.first.start)),
       end: windows.isEmpty ? '16:00' : formatTime(TimeOfDay.fromDateTime(windows.last.end)),
     );

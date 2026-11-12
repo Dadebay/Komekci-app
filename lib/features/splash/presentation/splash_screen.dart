@@ -17,7 +17,7 @@ class _SplashScreenState extends State<SplashScreen>
     duration: const Duration(milliseconds: 2200),
   )..repeat();
   bool _isOnline = true;
-  String _status = 'Baglanyşyk barlanýar...';
+  String _status = AppStrings.splashChecking.tk;
   Timer? _minimumTimer;
 
   @override
@@ -103,7 +103,9 @@ class _SplashScreenState extends State<SplashScreen>
     }
     if (mounted) {
       setState(
-        () => _status = _isOnline ? 'Taýýar' : 'Internet ýok - offline režim',
+        () => _status = _isOnline
+            ? AppStrings.splashReady.select(language.language)
+            : AppStrings.splashOffline.select(language.language),
       );
     }
     await Future<void>.delayed(const Duration(milliseconds: 450));

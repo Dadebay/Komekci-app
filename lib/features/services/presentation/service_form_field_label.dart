@@ -34,7 +34,7 @@ class _ErrorText extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: 7, left: 4),
-    child: Text(pickTr(language, tk: 'Bu meýdan hökmany', ru: 'Обязательное поле', en: 'Required field'), style: const TextStyle(fontSize: 11.5, color: Color(0xffC0392B))),
+    child: Text(AppStrings.servicesRequiredField.select(language), style: const TextStyle(fontSize: 11.5, color: Color(0xffC0392B))),
   );
 }
 
@@ -75,7 +75,7 @@ class _FormField extends StatelessWidget {
         prefixIcon: prefixIcon,
         prefixIconConstraints: prefixIcon == null ? null : phonePrefixConstraints,
         hintStyle: TextStyle(color: tokens.textSecondary, fontSize: 14, fontWeight: FontWeight.w400),
-        errorText: invalid ? pickTr(language, tk: 'Bu meýdan hökmany', ru: 'Обязательное поле', en: 'This field is required') : null,
+        errorText: invalid ? AppStrings.servicesThisFieldIsRequired.select(language) : null,
         errorStyle: const TextStyle(fontSize: 11.5),
         counterStyle: TextStyle(fontSize: 11, color: tokens.textSecondary),
         filled: true,

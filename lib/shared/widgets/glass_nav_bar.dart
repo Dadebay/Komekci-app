@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
@@ -138,15 +138,7 @@ class GlassNavBar extends StatelessWidget {
 }
 
 class _NavSlot extends StatefulWidget {
-  const _NavSlot({
-    required this.icon,
-    required this.selected,
-    required this.animated,
-    required this.progress,
-    required this.onTap,
-    required this.tokens,
-    this.label,
-  });
+  const _NavSlot({required this.icon, required this.selected, required this.animated, required this.progress, required this.onTap, required this.tokens, this.label});
 
   final HugeIconData icon;
   final String? label;
@@ -255,11 +247,7 @@ class _NavSlotState extends State<_NavSlot> with SingleTickerProviderStateMixin 
                     const SizedBox(height: 1),
                     Text(
                       widget.label!,
-                      style: TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w600,
-                        color: Color.lerp(widget.tokens.textSecondary, widget.tokens.accent, widget.progress),
-                      ),
+                      style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w600, color: Color.lerp(widget.tokens.textSecondary, widget.tokens.accent, widget.progress)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

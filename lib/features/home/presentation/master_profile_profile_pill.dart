@@ -290,7 +290,7 @@ class _MasterServiceRow extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '$minutes ${pickTr(language, tk: 'min', ru: 'мин', en: 'min')}',
+                          '$minutes ${AppStrings.bookingMin2.select(language)}',
                           style: TextStyle(
                             fontSize: 12,
                             color: tokens.textSecondary,

@@ -68,7 +68,6 @@ class _MastersEmpty extends StatelessWidget {
 /// Make-main / remove sheet for one connection, shared by every card.
 Future<void> _showMasterMenu(BuildContext context, ClientConnection connection) async {
   final language = context.read<LanguageProvider>().language;
-  String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
   final tokens = context.appTokens;
   final masters = context.read<ClientMastersProvider>();
   final connected = connection.status == ConnectionStatus.accepted;
@@ -113,13 +112,13 @@ Future<void> _showMasterMenu(BuildContext context, ClientConnection connection) 
               _MasterMenuTile(
                 icon: Icons.star_border,
                 color: tokens.accent,
-                title: t(tk: 'Esasy master et', ru: 'Сделать основным', en: 'Make main master'),
+                title: AppStrings.appointmentsMakeMainMaster.select(language),
                 onTap: () => Navigator.pop(sheetContext, 'active'),
               ),
             _MasterMenuTile(
               icon: Icons.link_off,
               color: tokens.danger,
-              title: connected ? t(tk: 'Baglanyşygy aýyr', ru: 'Удалить связь', en: 'Remove connection') : t(tk: 'Haýyşy yzyna al', ru: 'Отозвать запрос', en: 'Cancel request'),
+              title: connected ? AppStrings.appointmentsRemoveConnection.select(language) : AppStrings.appointmentsCancelRequest.select(language),
               onTap: () => Navigator.pop(sheetContext, 'remove'),
             ),
           ],
@@ -137,14 +136,10 @@ Future<void> _showMasterMenu(BuildContext context, ClientConnection connection) 
       context,
       icon: Icons.link_off,
       danger: true,
-      title: t(tk: 'Baglanyşygy aýyrmalymy?', ru: 'Удалить связь?', en: 'Remove this connection?'),
-      message: t(
-        tk: '${connection.master.name} bilen ýazyp bilmersiňiz, täzeden haýyş ibermeli bolarsyňyz.',
-        ru: 'Вы больше не сможете записываться к ${connection.master.name} — потребуется новый запрос.',
-        en: 'You won’t be able to book ${connection.master.name} until you send a new request.',
-      ),
-      confirmLabel: t(tk: 'Aýyr', ru: 'Удалить', en: 'Remove'),
-      cancelLabel: t(tk: 'Ýapmak', ru: 'Закрыть', en: 'Close'),
+      title: AppStrings.appointmentsRemoveThisConnection.select(language),
+      message: AppStrings.appointmentsYouWonTBeAble(connection.master.name).select(language),
+      confirmLabel: AppStrings.appointmentsRemove.select(language),
+      cancelLabel: AppStrings.authClose.select(language),
     );
     if (!ok || !context.mounted) return;
   }

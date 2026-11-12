@@ -13,8 +13,6 @@ class _AppointmentTimeCard extends StatelessWidget {
     final statusColor = _bookingStatusColor(tokens, current.status);
     final countdown = _bookingCountdown(current, language);
     String clock(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return Container(
                     padding: const EdgeInsets.all(20),
                     decoration: _flatTintDecoration(tokens, statusColor),
@@ -28,11 +26,7 @@ class _AppointmentTimeCard extends StatelessWidget {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                t(
-                                  tk: 'Barmaly wagtyňyz',
-                                  ru: 'Время прихода',
-                                  en: 'Time to arrive',
-                                ),
+                                AppStrings.appointmentsTimeToArrive.select(language),
                                 textAlign: TextAlign.end,
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: tokens.textPrimary),
                               ),
@@ -65,7 +59,7 @@ class _AppointmentTimeCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '${t(tk: 'Hyzmat wagty', ru: 'Время услуги', en: 'Service time')}: ${clock(current.startsAt)} – ${clock(current.endsAt)}',
+                          '${AppStrings.appointmentsServiceTime.select(language)}: ${clock(current.startsAt)} – ${clock(current.endsAt)}',
                           style: TextStyle(fontSize: 12, color: tokens.textSecondary),
                         ),
                       ],

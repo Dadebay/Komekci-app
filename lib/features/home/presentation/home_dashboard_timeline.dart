@@ -38,13 +38,7 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
       color: context.appTokens.surface,
       borderRadius: BorderRadius.circular(18),
       border: Border.all(color: context.appTokens.border),
-      boxShadow: [
-        BoxShadow(
-          color: context.appTokens.textPrimary.withValues(alpha: .03),
-          blurRadius: 14,
-          offset: const Offset(0, 4),
-        ),
-      ],
+      boxShadow: [BoxShadow(color: context.appTokens.textPrimary.withValues(alpha: .03), blurRadius: 14, offset: const Offset(0, 4))],
     ),
     child: Column(
       children: [
@@ -55,56 +49,27 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: context.appTokens.brightness == Brightness.dark
-                    ? Color.alphaBlend(
-                        widget.accent.withValues(alpha: .14),
-                        context.appTokens.surfaceElevated,
-                      )
-                    : widget.accentBg,
+                color: context.appTokens.brightness == Brightness.dark ? Color.alphaBlend(widget.accent.withValues(alpha: .14), context.appTokens.surfaceElevated) : widget.accentBg,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
                 children: [
-                  AppIcon(
-                    Icons.calendar_month_outlined,
-                    size: 15,
-                    color: context.appTokens.brightness == Brightness.dark
-                        ? context.appTokens.success
-                        : widget.accent,
-                  ),
+                  AppIcon(Icons.calendar_month_outlined, size: 15, color: context.appTokens.brightness == Brightness.dark ? context.appTokens.success : widget.accent),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '${widget.title} · ${widget.dateLabel}',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                        color: context.appTokens.brightness == Brightness.dark
-                            ? context.appTokens.success
-                            : widget.accent,
-                      ),
+                      style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: context.appTokens.brightness == Brightness.dark ? context.appTokens.success : widget.accent),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Text(
-                    '${widget.count} ${pickTr(context.watch<LanguageProvider>().language, tk: "adam", ru: "человек", en: "people")}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: context.appTokens.brightness == Brightness.dark
-                          ? context.appTokens.success
-                          : widget.accent,
-                    ),
+                    '${widget.count} ${AppStrings.homePeople2.select(context.watch<LanguageProvider>().language)}',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: context.appTokens.brightness == Brightness.dark ? context.appTokens.success : widget.accent),
                   ),
                   const SizedBox(width: 6),
-                  AppIcon(
-                    _expanded ? Icons.expand_less : Icons.expand_more,
-                    size: 16,
-                    color: context.appTokens.brightness == Brightness.dark
-                        ? context.appTokens.success
-                        : widget.accent,
-                  ),
+                  AppIcon(_expanded ? Icons.expand_less : Icons.expand_more, size: 16, color: context.appTokens.brightness == Brightness.dark ? context.appTokens.success : widget.accent),
                 ],
               ),
             ),
@@ -117,12 +82,11 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
   );
 }
 
-String _weekdayFullName(int weekday, AppLanguage language) =>
-    switch (language) {
-      AppLanguage.tk => _weekdaysFullTk[weekday - 1],
-      AppLanguage.ru => _weekdaysFullRu[weekday - 1],
-      AppLanguage.en => _weekdaysFullEn[weekday - 1],
-    };
+String _weekdayFullName(int weekday, AppLanguage language) => switch (language) {
+  AppLanguage.tk => _weekdaysFullTk[weekday - 1],
+  AppLanguage.ru => _weekdaysFullRu[weekday - 1],
+  AppLanguage.en => _weekdaysFullEn[weekday - 1],
+};
 
 /// Today's queue as a plain vertical list — one full-width row per entry.
 ///
@@ -143,14 +107,7 @@ const _apptRailWidth = 46.0;
 const _apptRowInset = 14.0;
 
 class _HomeApptTable extends StatelessWidget {
-  const _HomeApptTable({
-    required this.entries,
-    required this.customers,
-    required this.language,
-    required this.onTapAppointment,
-    required this.onTapFree,
-    required this.onTapClosed,
-  });
+  const _HomeApptTable({required this.entries, required this.customers, required this.language, required this.onTapAppointment, required this.onTapFree, required this.onTapClosed});
 
   final List<_TimelineEntry> entries;
   final List<Customer> customers;
@@ -158,14 +115,16 @@ class _HomeApptTable extends StatelessWidget {
 
   /// Tapping a customer row opens the same actions sheet the Senenama
   /// (schedule) screen uses — it no longer navigates away from home.
-  final void Function(Appointment appointment, Customer? customer)
-  onTapAppointment;
-  final void Function(DateTime start, DateTime end, DateTime availableEnd)
-  onTapFree;
+  final void Function(Appointment appointment, Customer? customer) onTapAppointment;
+  final void Function(DateTime start, DateTime end, DateTime availableEnd) onTapFree;
   final void Function(ClosedTime closed) onTapClosed;
 
   @override
   Widget build(BuildContext context) {
+    // Flip [_useTimelineQueueDesign] to false to get the original rows back.
+    if (_useTimelineQueueDesign) {
+      return _HomeQueueTimeline(entries: entries, customers: customers, language: language, onTapAppointment: onTapAppointment, onTapFree: onTapFree, onTapClosed: onTapClosed);
+    }
     final busy = entries.whereType<_ApptEntry>().length;
     final free = entries.whereType<_FreeEntry>().length;
     return Column(
@@ -176,17 +135,8 @@ class _HomeApptTable extends StatelessWidget {
           final entry = e.value;
           final isLast = index == entries.length;
           if (entry is _ApptEntry) {
-            final customer = entry.appointment.customerId == null
-                ? null
-                : _findCustomer(customers, entry.appointment.customerId!);
-            return _HomeApptRow(
-              index: index,
-              appointment: entry.appointment,
-              customer: customer,
-              language: language,
-              onTap: () => onTapAppointment(entry.appointment, customer),
-              showDivider: !isLast,
-            );
+            final customer = entry.appointment.customerId == null ? null : _findCustomer(customers, entry.appointment.customerId!);
+            return _HomeApptRow(index: index, appointment: entry.appointment, customer: customer, language: language, onTap: () => onTapAppointment(entry.appointment, customer), showDivider: !isLast);
           }
           if (entry is _ClosedEntry) {
             return _HomeFreeRow(
@@ -200,14 +150,7 @@ class _HomeApptTable extends StatelessWidget {
             );
           }
           final gap = entry as _FreeEntry;
-          return _HomeFreeRow(
-            index: index,
-            start: gap.start,
-            end: gap.end,
-            language: language,
-            onTap: () => onTapFree(gap.start, gap.end, gap.availableEnd),
-            showDivider: !isLast,
-          );
+          return _HomeFreeRow(index: index, start: gap.start, end: gap.end, language: language, onTap: () => onTapFree(gap.start, gap.end, gap.availableEnd), showDivider: !isLast);
         }),
       ],
     );

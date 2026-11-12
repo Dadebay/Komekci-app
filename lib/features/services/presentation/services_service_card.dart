@@ -7,8 +7,6 @@ class _ServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final provider = context.read<ServiceProvider>();
     final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
     final tokens = context.appTokens;
@@ -50,7 +48,7 @@ class _ServiceCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              t(tk: 'Gizlin', ru: 'Скрыта', en: 'Hidden'),
+                              AppStrings.servicesHidden2.select(language),
                               style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white),
                             ),
                           ),
@@ -139,8 +137,8 @@ class _ServiceCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       service.active
-                          ? t(tk: 'Görünýär', ru: 'Видна', en: 'Visible')
-                          : t(tk: 'Gizlin', ru: 'Скрыта', en: 'Hidden'),
+                          ? AppStrings.servicesVisible2.select(language)
+                          : AppStrings.servicesHidden2.select(language),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -165,7 +163,7 @@ class _ServiceCard extends StatelessWidget {
                           AppIcon(Icons.edit_outlined, size: 14, color: tokens.textPrimary),
                           const SizedBox(width: 6),
                           Text(
-                            t(tk: 'Üýtget', ru: 'Изменить', en: 'Edit'),
+                            AppStrings.servicesEdit.select(language),
                             style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textPrimary),
                           ),
                         ],
@@ -199,22 +197,16 @@ class _ServiceCard extends StatelessWidget {
 
   Future<void> _confirmDelete(BuildContext context, SalonService service) async {
     final language = context.read<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final provider = context.read<ServiceProvider>();
     final toast = AppToast.of(context);
     final confirmed = await _showConfirmDialog(
       context,
       icon: Icons.delete_outline,
       danger: true,
-      title: t(tk: 'Hyzmaty pozmaly?', ru: 'Удалить услугу?', en: 'Delete this service?'),
-      message: t(
-        tk: '"${service.name}" hyzmaty sanawdan aýrylar.',
-        ru: '«${service.name}» будет удалена из списка.',
-        en: '"${service.name}" will be removed from the list.',
-      ),
-      confirmLabel: t(tk: 'Poz', ru: 'Удалить', en: 'Delete'),
-      cancelLabel: t(tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
+      title: AppStrings.servicesDeleteThisService.select(language),
+      message: AppStrings.servicesWillBeRemovedFromThe(service.name).select(language),
+      confirmLabel: AppStrings.servicesDelete.select(language),
+      cancelLabel: AppStrings.servicesCancel.select(language),
     );
     if (!confirmed) return;
     try {

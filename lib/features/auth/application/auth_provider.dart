@@ -79,10 +79,38 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Sign-in code for an existing account.
-  Future<void> requestOtp(String phone) async {
-    lastOtpRetryAfter = await _auth.requestOtp(phone);
+  ///
+  /// Returns true when the server signed in without a code (its test number):
+  /// the account is loaded and the caller should open the home screen.
+  Future<bool> requestOtp(String phone) async {
+    final result = await _auth.requestOtp(phone);
+    if (result.signedIn) {
+      await refreshMe();
+      return true;
+    }
+    lastOtpRetryAfter = result.retryAfter;
     _step = AuthStep.otpSent;
     notifyListeners();
+    return false;
+  }
+
+  /// Client SMS sign-in: the user texts the code in the challenge to the
+  /// number it names.
+  ///
+  /// Null means the server signed in without an SMS (its test number): the
+  /// account is loaded and the caller should open the home screen.
+  Future<SmsOtpChallenge?> requestSmsOtp(String phone, {String purpose = 'login'}) async {
+    final challenge = await _auth.requestSmsOtp(phone, purpose: purpose);
+    if (challenge == null) await refreshMe();
+    return challenge;
+  }
+
+  /// One poll of the SMS sign-in. On `verified` the account is loaded and the
+  /// app switches to its role.
+  Future<SmsOtpState> pollSmsOtp(SmsOtpChallenge challenge) async {
+    final state = await _auth.pollSmsOtp(challenge);
+    if (state == SmsOtpState.verified) await refreshMe();
+    return state;
   }
 
   /// Confirms the code, loads the account and switches the app to its role.

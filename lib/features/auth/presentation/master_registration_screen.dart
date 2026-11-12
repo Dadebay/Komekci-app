@@ -148,19 +148,19 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
       _NicknameState.idle => null,
     };
     final nicknameNote = switch (_nicknameState) {
-      _NicknameState.free => (t(tk: 'Bu lakam elýeterli', ru: 'Никнейм свободен', en: 'Nickname is available'), tokens.success),
-      _NicknameState.taken => (t(tk: 'Bu lakam eýesiz däl', ru: 'Этот никнейм уже занят', en: 'This nickname is taken'), tokens.danger),
+      _NicknameState.free => (AppStrings.authNicknameIsAvailable.select(language), tokens.success),
+      _NicknameState.taken => (AppStrings.authThisNicknameIsTaken.select(language), tokens.danger),
       _NicknameState.invalid => (
-        t(tk: '3–20 simwol: a–z, 0–9 we _ (sanly başlap bilmez)', ru: '3–20 символов: a–z, 0–9 и _ (не с цифры)', en: '3–20 characters: a–z, 0–9 and _ (no leading digit)'),
+        AppStrings.auth320CharactersAZ.select(language),
         tokens.danger,
       ),
-      _ => (t(tk: 'Müşderiler sizi şu lakam bilen tapar', ru: 'Клиенты найдут вас по этому никнейму', en: 'Clients will find you by this nickname'), tokens.textSecondary),
+      _ => (AppStrings.authClientsWillFindYouBy.select(language), tokens.textSecondary),
     };
 
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: _MasterSetupHeader(
-        title: t(tk: 'MASTER HASABY', ru: 'ПРОФИЛЬ МАСТЕРА', en: 'MASTER PROFILE'),
+        title: AppStrings.authMasterProfile.select(language),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -173,27 +173,27 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
               const SizedBox(height: 24),
               Center(
                 child: Text(
-                  t(tk: 'Profiliňizi dörediň', ru: 'Создайте профиль', en: 'Create your profile'),
+                  AppStrings.authCreateYourProfile.select(language),
                   style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -.3),
                 ),
               ),
               const SizedBox(height: 6),
               Center(
                 child: Text(
-                  t(tk: 'Müşderiler sizi şeýle görer', ru: 'Так вас увидят клиенты', en: 'This is how clients will see you'),
+                  AppStrings.authThisIsHowClientsWill.select(language),
                   style: TextStyle(fontSize: 13.5, color: tokens.textSecondary),
                 ),
               ),
               const SizedBox(height: 22),
               _photoHeader(tokens, t),
               const SizedBox(height: 26),
-              _section(t(tk: 'Esasy maglumat', ru: 'Основное', en: 'Basics')),
+              _section(AppStrings.authBasics.select(language)),
               _field(
                 tokens,
                 t,
                 index: _nameIndex,
-                label: t(tk: 'Adyňyz', ru: 'Имя', en: 'Your name'),
-                hint: t(tk: 'Adyňyzy ýazyň', ru: 'Введите имя', en: 'Enter your name'),
+                label: AppStrings.authYourName.select(language),
+                hint: AppStrings.authEnterYourName.select(language),
                 icon: Icons.person_outline,
                 capitalization: TextCapitalization.words,
                 maxLength: 50,
@@ -202,7 +202,7 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
                 tokens,
                 t,
                 index: _nicknameIndex,
-                label: t(tk: 'Lakam (nickname)', ru: 'Никнейм', en: 'Nickname'),
+                label: AppStrings.authNickname.select(language),
                 hint: 'ayna_style',
                 icon: Icons.alternate_email,
                 suffix: nicknameSuffix,
@@ -232,8 +232,8 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
                 tokens,
                 t,
                 index: _addressIndex,
-                label: t(tk: 'Iş salgyňyz', ru: 'Рабочий адрес', en: 'Work address'),
-                hint: t(tk: 'Şäher, etrap, köçe', ru: 'Город, район, улица', en: 'City, district, street'),
+                label: AppStrings.authWorkAddress.select(language),
+                hint: AppStrings.authCityDistrictStreet.select(language),
                 icon: Icons.location_on_outlined,
                 maxLength: 255,
               ),
@@ -241,15 +241,15 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
                 tokens,
                 t,
                 index: _aboutIndex,
-                label: t(tk: 'Özüňiz barada', ru: 'О себе', en: 'About you'),
-                hint: t(tk: 'Tejribäňiz, hyzmatlaryňyz barada gysgaça ýazyň', ru: 'Коротко об опыте и услугах', en: 'A few words about your experience and services'),
+                label: AppStrings.cabinetAboutYou.select(language),
+                hint: AppStrings.authAFewWordsAboutYour.select(language),
                 icon: Icons.edit_outlined,
                 maxLines: 4,
                 maxLength: 2000,
                 capitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 4),
-              _section(t(tk: 'Sosial ulgamlar', ru: 'Соцсети', en: 'Social media')),
+              _section(AppStrings.cabinetSocialMedia.select(language)),
               _field(tokens, t, index: _instagramIndex, label: 'Instagram', hint: '@instagram_lakam', icon: Icons.camera_alt_outlined, required: false, keyboardType: TextInputType.url),
               _field(tokens, t, index: _tiktokIndex, label: 'TikTok', hint: '@tiktok_lakam', icon: Icons.music_note_outlined, required: false, keyboardType: TextInputType.url),
               if (_formError != null) ...[_FieldError(_formError!), const SizedBox(height: 10)],
@@ -258,7 +258,7 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
-                    t(tk: 'Dowam etmek üçin * bilen bellenen meýdanlary dolduryň.', ru: 'Заполните поля, отмеченные *, чтобы продолжить.', en: 'Fill in the fields marked * to continue.'),
+                    AppStrings.authFillInTheFieldsMarked.select(language),
                     style: TextStyle(fontSize: 12, color: tokens.danger),
                   ),
                 ),
@@ -270,7 +270,7 @@ class _MasterRegistrationScreenState extends State<MasterRegistrationScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 14),
           child: MasterActionButton(
-            label: _submitting ? t(tk: 'Iberilýär...', ru: 'Отправка...', en: 'Sending...') : t(tk: 'Kod iber', ru: 'Отправить код', en: 'Send code'),
+            label: _submitting ? AppStrings.authSending.select(language) : AppStrings.profileSendCode.select(language),
             enabled: !_submitting,
             trailingArrow: true,
             onTap: () => _continue(t),

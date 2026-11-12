@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// API theme codes. Legacy codes stay valid for existing accounts and servers.
 enum KomekciTheme { ivory, onyx, champagne, rose, blue, gold, red }
@@ -13,10 +13,7 @@ KomekciThemeStyle themeStyleFor(KomekciTheme theme) => switch (theme) {
 };
 
 /// Use a new API code when enabled; otherwise save an enabled legacy code.
-KomekciTheme? enabledThemeForStyle(
-  Iterable<KomekciTheme> enabled,
-  KomekciThemeStyle style,
-) {
+KomekciTheme? enabledThemeForStyle(Iterable<KomekciTheme> enabled, KomekciThemeStyle style) {
   final canonical = switch (style) {
     KomekciThemeStyle.gold => KomekciTheme.ivory,
     KomekciThemeStyle.blue => KomekciTheme.onyx,

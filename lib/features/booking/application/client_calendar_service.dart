@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import '../../../core/localization/app_strings.dart';
 import 'package:device_calendar_plus/device_calendar_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -39,13 +40,6 @@ class CalendarBookingDetails {
     locale: value,
   );
 
-  String _pick({required String tk, required String ru, required String en}) =>
-      switch (locale) {
-        'ru' => ru,
-        'en' => en,
-        _ => tk,
-      };
-
   static String _clock(DateTime date) =>
       '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 
@@ -69,72 +63,31 @@ class CalendarBookingDetails {
   DateTime get dayPlanEnd =>
       DateTime(startsAt.year, startsAt.month, startsAt.day, 10, 30);
 
-  String get dayPlanTitle => _pick(
-    tk: 'Şu gün ýazgyňyz bar — $masterName master',
-    ru: 'Сегодня у вас запись — мастер $masterName',
-    en: 'You have a booking today — $masterName',
-  );
+  String get dayPlanTitle =>
+      AppStrings.calendarDayPlanTitle(masterName).selectCode(locale);
 
   String get dayPlanDescription {
     final start = _clock(startsAt);
-    return _pick(
-      tk: 'Şu gün sagat $start-da $masterName master bilen ýazgyňyz bar ($serviceName). Bellenen wagtyňyzda geliň.',
-      ru: 'Сегодня в $start у вас запись к мастеру $masterName ($serviceName). Пожалуйста, приходите вовремя.',
-      en: 'Today at $start you have a booking with $masterName ($serviceName). Please arrive on time.',
-    );
+    return AppStrings.calendarDayPlanDescription(
+      start,
+      masterName,
+      serviceName,
+    ).selectCode(locale);
   }
 
-  String get title => '$serviceName — $masterName master';
+  String get title =>
+      AppStrings.calendarTitle(serviceName, masterName).selectCode(locale);
 
   String get description {
-    final months = locale == 'tk'
-        ? const [
-            'ýanwar',
-            'fewral',
-            'mart',
-            'aprel',
-            'maý',
-            'iýun',
-            'iýul',
-            'awgust',
-            'sentýabr',
-            'oktýabr',
-            'noýabr',
-            'dekabr',
-          ]
-        : locale == 'ru'
-        ? const [
-            'января',
-            'февраля',
-            'марта',
-            'апреля',
-            'мая',
-            'июня',
-            'июля',
-            'августа',
-            'сентября',
-            'октября',
-            'ноября',
-            'декабря',
-          ]
-        : const [
-            'January',
-            'February',
-            'March',
-            'April',
-            'May',
-            'June',
-            'July',
-            'August',
-            'September',
-            'October',
-            'November',
-            'December',
-          ];
+    final months = switch (locale) {
+      'ru' => AppStrings.calendarMonthsRu,
+      'en' => AppStrings.monthsFullEn,
+      _ => AppStrings.calendarMonthsTk,
+    };
     final start = _clock(startsAt);
     final day = '${startsAt.day} ${months[startsAt.month - 1]}';
     return '$day · $start–${_clock(endsAt)}\n'
-        '${_pick(tk: 'Ýazgyňyz $start-da. Haýyş edýäris, bellenen wagtyňyzda geliň.', ru: 'Ваша запись в $start. Пожалуйста, приходите вовремя.', en: 'Your booking is at $start. Please arrive on time.')}';
+        '${AppStrings.calendarDescription(start).selectCode(locale)}';
   }
 
   String get signature => jsonEncode([

@@ -15,50 +15,30 @@ class _SubscriptionStatusChip extends StatelessWidget {
     final tokens = context.appTokens;
     final (label, color) = promo?.active == true
         ? (
-            pickTr(
-              language,
-              tk: 'Mugt aý',
-              ru: 'Бесплатный месяц',
-              en: 'Free month',
-            ),
+            AppStrings.cabinetFreeMonth.select(language),
             tokens.success,
           )
         : promo?.isAvailable == true
         ? (
-            pickTr(
-              language,
-              tk: 'Mugt aý bar',
-              ru: 'Месяц доступен',
-              en: 'Free month available',
-            ),
+            AppStrings.cabinetFreeMonthAvailable.select(language),
             tokens.accent,
           )
         : promo?.paidAccess == true
         ? (
-            pickTr(language, tk: 'Aktiw', ru: 'Активна', en: 'Active'),
+            AppStrings.cabinetActive.select(language),
             tokens.success,
           )
         : switch (status) {
             SubscriptionStatus.active => (
-              pickTr(language, tk: 'Aktiw', ru: 'Активна', en: 'Active'),
+              AppStrings.cabinetActive.select(language),
               tokens.success,
             ),
             SubscriptionStatus.grace => (
-              pickTr(
-                language,
-                tk: 'Töleg wagty',
-                ru: 'Льготный период',
-                en: 'Grace period',
-              ),
+              AppStrings.cabinetGracePeriod.select(language),
               tokens.warning,
             ),
             SubscriptionStatus.suspended => (
-              pickTr(
-                language,
-                tk: 'Duruzylan',
-                ru: 'Приостановлена',
-                en: 'Suspended',
-              ),
+              AppStrings.cabinetSuspended.select(language),
               tokens.danger,
             ),
           };

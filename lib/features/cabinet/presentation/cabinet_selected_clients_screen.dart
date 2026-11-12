@@ -22,8 +22,6 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final query = _searchController.text.trim().toLowerCase();
     final provider = context.watch<CustomerProvider>();
     final clients = provider.customers
@@ -41,11 +39,7 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(
-          tk: 'Saýlanan müşderiler',
-          ru: 'Выбранные клиенты',
-          en: 'Selected clients',
-        ),
+        title: AppStrings.cabinetSelectedClients.select(language),
         action: AppHelpButton(
           onTap: () =>
               Navigator.push(context, pageRoute(const SupportScreen())),
@@ -60,11 +54,7 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                 children: [
                   _InfoBanner(
                     icon: Icons.groups_outlined,
-                    text: t(
-                      tk: 'Habar ibermek üçin müşderileri saýlaň. Soňra habar tekstini ýazyň we iberiň.',
-                      ru: 'Выберите клиентов для отправки. Затем напишите текст сообщения и отправьте.',
-                      en: 'Choose clients to send to. Then write the message text and send it.',
-                    ),
+                    text: AppStrings.cabinetChooseClientsToSendTo.select(language),
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -72,7 +62,7 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                     onChanged: (_) => setState(() {}),
                     style: const TextStyle(fontSize: 14),
                     decoration: InputDecoration(
-                      hintText: t(tk: 'Gözleg', ru: 'Поиск', en: 'Search'),
+                      hintText: AppStrings.cabinetSearch.select(language),
                       hintStyle: TextStyle(
                         color: tokens.textSecondary,
                         fontSize: 14,
@@ -106,19 +96,15 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                     const Center(child: CircularProgressIndicator()),
                   if (provider.error != null && provider.customers.isEmpty)
                     RetryErrorState(
-                      title: t(tk: 'Müşderileri ýükläp bolmady', ru: 'Не удалось загрузить клиентов', en: 'Could not load clients'),
-                      text: t(tk: 'Täzeden synanyşyň.', ru: 'Попробуйте ещё раз.', en: 'Please try again.'),
-                      retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                      title: AppStrings.cabinetCouldNotLoadClients.select(language),
+                      text: AppStrings.cabinetPleaseTryAgain.select(language),
+                      retryLabel: AppStrings.profileTryAgain.select(language),
                       onRetry: provider.load,
                     ),
                   Row(
                     children: [
                       Text(
-                        t(
-                          tk: 'Saýlananlar: ${selected.length}',
-                          ru: 'Выбрано: ${selected.length}',
-                          en: 'Selected: ${selected.length}',
-                        ),
+                        AppStrings.cabinetSelected(selected.length).select(language),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -140,11 +126,7 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                         child: Row(
                           children: [
                             Text(
-                              t(
-                                tk: 'Ählisini saýlamak',
-                                ru: 'Выбрать всех',
-                                en: 'Select all',
-                              ),
+                              AppStrings.cabinetSelectAll.select(language),
                               style: TextStyle(
                                 fontSize: 12.5,
                                 color: tokens.textSecondary,
@@ -166,11 +148,11 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                       phone: c.phone,
                       subtitle: !canSend
                           ? widget.forPush
-                              ? t(tk: 'Push üçin elýeterli däl', ru: 'Push недоступен', en: 'Push unavailable')
-                              : t(tk: 'Telefon belgisi ýok', ru: 'Нет номера телефона', en: 'No phone number')
+                              ? AppStrings.cabinetPushUnavailable.select(language)
+                              : AppStrings.cabinetNoPhoneNumber.select(language)
                           : c.lastVisit == null
                               ? ''
-                              : '${t(tk: "Soňky gezek", ru: "Последний визит", en: "Last visit")}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
+                              : '${AppStrings.cabinetLastVisit.select(language)}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
                       checked: checked,
                       enabled: canSend,
                       onTap: canSend
@@ -191,7 +173,7 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: MasterActionButton(
                 label:
-                    '${t(tk: "Dowam et", ru: "Продолжить", en: "Continue")} (${selected.length})',
+                    '${AppStrings.cabinetContinue.select(language)} (${selected.length})',
                 enabled: selected.isNotEmpty && selected.length <= 50,
                 onTap: () => Navigator.pop(context, selected.toList()),
               ),

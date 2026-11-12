@@ -3,16 +3,10 @@ part of '../../../app/komekci_app.dart';
 extension _WorkingBreakSettings on _WorkingHoursScreenState {
   List<Widget> _breakSettings({required AppLanguage language, required StateSetter update}) {
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return [
                     const SizedBox(height: 22),
                     Text(
-                      t(
-                        tk: 'Goşmaça sazlamalar',
-                        ru: 'Дополнительные настройки',
-                        en: 'Additional settings',
-                      ),
+                      AppStrings.cabinetAdditionalSettings.select(language),
                       style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -64,11 +58,7 @@ extension _WorkingBreakSettings on _WorkingHoursScreenState {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            t(
-                                              tk: 'Arakesme wagty',
-                                              ru: 'Время перерыва',
-                                              en: 'Break time',
-                                            ),
+                                            AppStrings.cabinetBreakTime.select(language),
                                             style: TextStyle(
                                               color: tokens.textPrimary,
                                               fontSize: 14.5,
@@ -78,16 +68,8 @@ extension _WorkingBreakSettings on _WorkingHoursScreenState {
                                           const SizedBox(height: 2),
                                           Text(
                                             _breakEnabled
-                                                ? t(
-                                                    tk: 'Iş günlerinde',
-                                                    ru: 'В рабочие дни',
-                                                    en: 'On working days',
-                                                  )
-                                                : t(
-                                                    tk: 'Goşulmady',
-                                                    ru: 'Не добавлен',
-                                                    en: 'Not set',
-                                                  ),
+                                                ? AppStrings.cabinetOnWorkingDays.select(language)
+                                                : AppStrings.cabinetNotSet2.select(language),
                                             style: TextStyle(
                                               color: tokens.textSecondary,
                                               fontSize: 11.5,
@@ -97,11 +79,7 @@ extension _WorkingBreakSettings on _WorkingHoursScreenState {
                                       ),
                                     ),
                                     Semantics(
-                                      label: t(
-                                        tk: 'Arakesme wagty',
-                                        ru: 'Время перерыва',
-                                        en: 'Break time',
-                                      ),
+                                      label: AppStrings.cabinetBreakTime.select(language),
                                       child: Switch(
                                         value: _breakEnabled,
                                         activeThumbColor: tokens.surface,
@@ -121,11 +99,7 @@ extension _WorkingBreakSettings on _WorkingHoursScreenState {
                                     final result = await _pickTimeRange(
                                       context,
                                       language: language,
-                                      title: t(
-                                        tk: 'Arakesme wagty',
-                                        ru: 'Время перерыва',
-                                        en: 'Break time',
-                                      ),
+                                      title: AppStrings.cabinetBreakTime.select(language),
                                       start: _breakStart,
                                       end: _breakEnd,
                                     );

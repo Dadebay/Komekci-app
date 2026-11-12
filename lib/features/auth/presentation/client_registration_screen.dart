@@ -125,19 +125,19 @@ class _ClientRegistrationScreenState extends State<ClientRegistrationScreen> {
       _NicknameState.idle => null,
     };
     final nicknameHint = switch (_nicknameState) {
-      _NicknameState.free => (t(tk: 'Bu lakam elýeterli', ru: 'Никнейм свободен', en: 'Nickname is available'), tokens.success),
-      _NicknameState.taken => (t(tk: 'Bu lakam eýesiz däl', ru: 'Этот никнейм уже занят', en: 'This nickname is taken'), tokens.danger),
+      _NicknameState.free => (AppStrings.authNicknameIsAvailable.select(language), tokens.success),
+      _NicknameState.taken => (AppStrings.authThisNicknameIsTaken.select(language), tokens.danger),
       _NicknameState.invalid => (
-        t(tk: '3–20 simwol: a–z, 0–9 we _ (sanly başlap bilmez)', ru: '3–20 символов: a–z, 0–9 и _ (не с цифры)', en: '3–20 characters: a–z, 0–9 and _ (no leading digit)'),
+        AppStrings.auth320CharactersAZ.select(language),
         tokens.danger,
       ),
-      _ => (t(tk: 'Müşderiler sizi şu lakam bilen tapar', ru: 'Мастера найдут вас по этому никнейму', en: 'Masters will find you by this nickname'), tokens.textSecondary),
+      _ => (AppStrings.authMastersWillFindYouBy.select(language), tokens.textSecondary),
     };
 
     return AppScaffold(
       titleInAppBar: true,
-      title: t(tk: 'Profiliňizi dörediň', ru: 'Создайте профиль', en: 'Create your profile'),
-      subtitle: t(tk: 'Bary-ýogy bir minut gerek', ru: 'Это займёт одну минуту', en: 'It only takes a minute'),
+      title: AppStrings.authCreateYourProfile.select(language),
+      subtitle: AppStrings.authItOnlyTakesAMinute.select(language),
       child: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: Column(
@@ -172,8 +172,8 @@ class _ClientRegistrationScreenState extends State<ClientRegistrationScreen> {
                       const SizedBox(height: 10),
                       Text(
                         _photo == null
-                            ? t(tk: 'Profil suratyny goşuň', ru: 'Добавьте фото профиля', en: 'Add a profile photo')
-                            : t(tk: 'Suraty üýtgetmek üçin basyň', ru: 'Нажмите, чтобы изменить фото', en: 'Tap to change the photo'),
+                            ? AppStrings.authAddAProfilePhoto2.select(language)
+                            : AppStrings.authTapToChangeThePhoto.select(language),
                         style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: _photoError != null ? tokens.danger : tokens.textSecondary),
                       ),
                       if (_photoError != null) _FieldError(_photoError!),
@@ -183,7 +183,7 @@ class _ClientRegistrationScreenState extends State<ClientRegistrationScreen> {
               ),
             ),
             const SizedBox(height: 26),
-            _label(t(tk: 'Adyňyz', ru: 'Ваше имя', en: 'Your name')),
+            _label(AppStrings.authYourName2.select(language)),
             TextField(
               controller: _nameController,
               textCapitalization: TextCapitalization.words,
@@ -193,7 +193,7 @@ class _ClientRegistrationScreenState extends State<ClientRegistrationScreen> {
               style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w600),
               decoration: registrationDecoration(
                 tokens,
-                hint: t(tk: 'Adyňyzy ýazyň', ru: 'Введите имя', en: 'Enter your name'),
+                hint: AppStrings.authEnterYourName.select(language),
                 icon: Icons.person_outline,
                 error: _nameError != null,
               ),
@@ -205,7 +205,7 @@ class _ClientRegistrationScreenState extends State<ClientRegistrationScreen> {
             ),
             if (_nameError != null) _FieldError(_nameError!),
             const SizedBox(height: 18),
-            _label(t(tk: 'Lakam (nickname)', ru: 'Никнейм', en: 'Nickname')),
+            _label(AppStrings.authNickname.select(language)),
             TextField(
               controller: _nicknameController,
               autocorrect: false,
@@ -236,7 +236,7 @@ class _ClientRegistrationScreenState extends State<ClientRegistrationScreen> {
               },
             ),
             const SizedBox(height: 18),
-            _label(t(tk: 'Telefon belgiňiz', ru: 'Номер телефона', en: 'Phone number')),
+            _label(AppStrings.profilePhoneNumber.select(language)),
             TextField(
               controller: _phoneController,
               keyboardType: TextInputType.phone,
@@ -259,14 +259,14 @@ class _ClientRegistrationScreenState extends State<ClientRegistrationScreen> {
             const SizedBox(height: 26),
             if (_formError != null) ...[_FieldError(_formError!), const SizedBox(height: 12)],
             PrimaryButton(
-              label: t(tk: 'Hasaba durmak', ru: 'Зарегистрироваться', en: 'Register'),
+              label: AppStrings.authRegister.select(language),
               loading: _submitting,
               onTap: () => _submit(t),
             ),
             const SizedBox(height: 14),
             Center(
               child: Text(
-                t(tk: 'Telefon belgiňize SMS kody iberiler.', ru: 'На ваш номер придёт SMS с кодом.', en: "We'll text a code to your number."),
+                AppStrings.authWeLlTextACode.select(language),
                 style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
               ),
             ),

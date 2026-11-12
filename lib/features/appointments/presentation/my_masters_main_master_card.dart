@@ -8,7 +8,6 @@ class _MainMasterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final master = connection.master;
     return Container(
       padding: const EdgeInsets.all(18),
@@ -26,7 +25,7 @@ class _MainMasterCard extends StatelessWidget {
                     AppIcon(Icons.star_border, size: 13, color: tokens.accentOn),
                     const SizedBox(width: 4),
                     Text(
-                      t(tk: 'Esasy master', ru: 'Основной мастер', en: 'Main master'),
+                      AppStrings.appointmentsMainMaster.select(language),
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: tokens.accentOn),
                     ),
                   ],
@@ -97,7 +96,7 @@ class _MainMasterCard extends StatelessWidget {
                     onPressed: () => Navigator.push(context, pageRoute(BookingPage(master: master))),
                     icon: AppIcon(Icons.calendar_month_outlined, size: 18, color: tokens.surface),
                     label: Text(
-                      t(tk: 'Ýazyl', ru: 'Записаться', en: 'Book'),
+                      AppStrings.appointmentsBook.select(language),
                       style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: tokens.surface),
                     ),
                   ),
@@ -114,7 +113,7 @@ class _MainMasterCard extends StatelessWidget {
                   ),
                   onPressed: () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master))),
                   child: Text(
-                    t(tk: 'Profil', ru: 'Профиль', en: 'Profile'),
+                    AppStrings.profileProfile.select(language),
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: tokens.textPrimary),
                   ),
                 ),
@@ -135,7 +134,6 @@ class _MyMasterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final master = connection.master;
     final connected = connection.status == ConnectionStatus.accepted;
 
@@ -210,7 +208,7 @@ class _MyMasterCard extends StatelessWidget {
                       ),
                       onPressed: () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master))),
                       child: Text(
-                        t(tk: 'Profil', ru: 'Профиль', en: 'Profile'),
+                        AppStrings.profileProfile.select(language),
                         style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: tokens.textPrimary),
                       ),
                     ),
@@ -224,7 +222,7 @@ class _MyMasterCard extends StatelessWidget {
                       style: FilledButton.styleFrom(backgroundColor: tokens.textPrimary, shape: const StadiumBorder()),
                       onPressed: () => Navigator.push(context, pageRoute(BookingPage(master: master))),
                       child: Text(
-                        t(tk: 'Ýazyl', ru: 'Записаться', en: 'Book'),
+                        AppStrings.appointmentsBook.select(language),
                         style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: tokens.surface),
                       ),
                     ),
@@ -242,7 +240,7 @@ class _MyMasterCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      t(tk: 'Masteriň kabul etmegine garaşylýar', ru: 'Ждём ответа мастера', en: 'Waiting for the master to accept'),
+                      AppStrings.appointmentsWaitingForTheMasterTo.select(language),
                       style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.warning),
                     ),
                   ),

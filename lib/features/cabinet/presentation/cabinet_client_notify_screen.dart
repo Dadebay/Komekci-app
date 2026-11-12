@@ -8,29 +8,19 @@ class ClientNotifyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
 
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(
-          tk: 'Müşderilere habar',
-          ru: 'Сообщения клиентам',
-          en: 'Messages to clients',
-        ),
+        title: AppStrings.cabinetMessagesToClients.select(language),
       ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
           children: [
             Text(
-              t(
-                tk: 'Müşderilere habar iberiň',
-                ru: 'Напишите клиентам',
-                en: 'Message your clients',
-              ),
+              AppStrings.cabinetMessageYourClients.select(language),
               style: TextStyle(
                 color: tokens.textPrimary,
                 fontSize: 24,
@@ -40,11 +30,7 @@ class ClientNotifyScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              t(
-                tk: 'Müşderileri saýlap, olara push habar ýa-da SMS iberiň.',
-                ru: 'Выберите клиентов и отправьте push-уведомление или SMS.',
-                en: 'Choose clients and send a push notification or SMS.',
-              ),
+              AppStrings.cabinetChooseClientsAndSendA.select(language),
               style: TextStyle(
                 color: tokens.textSecondary,
                 fontSize: 13.5,
@@ -88,11 +74,7 @@ class ClientNotifyScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              t(
-                                tk: 'Täze habar',
-                                ru: 'Новое сообщение',
-                                en: 'New message',
-                              ),
+                              AppStrings.cabinetNewMessage.select(language),
                               style: TextStyle(
                                 color: tokens.textPrimary,
                                 fontSize: 16,
@@ -101,11 +83,7 @@ class ClientNotifyScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              t(
-                                tk: 'Push ýa-da SMS iber',
-                                ru: 'Отправить push или SMS',
-                                en: 'Send push or SMS',
-                              ),
+                              AppStrings.cabinetSendPushOrSms.select(language),
                               style: TextStyle(
                                 color: tokens.textSecondary,
                                 fontSize: 12.5,
@@ -127,11 +105,7 @@ class ClientNotifyScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             Text(
-              t(
-                tk: 'Awtomatiki ýatlatmalar',
-                ru: 'Автоматические напоминания',
-                en: 'Automatic reminders',
-              ),
+              AppStrings.cabinetAutomaticReminders.select(language),
               style: TextStyle(
                 color: tokens.textPrimary,
                 fontSize: 16,
@@ -157,11 +131,7 @@ class ClientNotifyScreen extends StatelessWidget {
                   const SizedBox(width: 13),
                   Expanded(
                     child: Text(
-                      t(
-                        tk: 'Ýazgy ýatlatmalary müşderilere ulgam tarapyndan awtomatiki iberilýär.',
-                        ru: 'Напоминания о записи отправляются клиентам автоматически.',
-                        en: 'Booking reminders are sent to clients automatically.',
-                      ),
+                      AppStrings.cabinetBookingRemindersAreSentTo.select(language),
                       style: TextStyle(
                         color: tokens.textSecondary,
                         fontSize: 13,

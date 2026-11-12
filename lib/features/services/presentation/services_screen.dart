@@ -15,34 +15,24 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   Future<bool> _offerFreeMonth({bool afterService = false}) async {
     final language = context.read<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return _showFreeMonthDialog(
       context,
-      title: t(tk: '1 aý mugt', ru: '1 месяц бесплатно', en: '1 month free'),
+      title: AppStrings.services1MonthFree.select(language),
       message: afterService
-          ? t(
-              tk: 'Hyzmat goşuldy. Mugt aýy indi işjeňleşdiriň.',
-              ru: 'Услуга добавлена. Теперь активируйте бесплатный месяц.',
-              en: 'Your service was added. Activate your free month now.',
-            )
-          : t(
-              tk: 'Ilkinji aýy tölegsiz ulanyň.',
-              ru: 'Пользуйтесь первым месяцем бесплатно.',
-              en: 'Use your first month for free.',
-            ),
+          ? AppStrings.servicesYourServiceWasAddedActivate.select(language)
+          : AppStrings.servicesUseYourFirstMonthFor.select(language),
       steps: afterService
           ? [
-              t(tk: 'Mugt aýy işjeňleşdiriň', ru: 'Активируйте бесплатный месяц', en: 'Activate the free month'),
-              t(tk: 'Aý gutarandan soň töleg gerek', ru: 'После месяца потребуется оплата', en: 'Payment is needed after the month ends'),
+              AppStrings.servicesActivateTheFreeMonth.select(language),
+              AppStrings.servicesPaymentIsNeededAfterThe.select(language),
             ]
           : [
-              t(tk: 'Mugt aýy işjeňleşdiriň', ru: 'Активируйте бесплатный месяц', en: 'Activate the free month'),
-              t(tk: 'Hyzmatyňyzy goşuň', ru: 'Добавьте услугу', en: 'Add your service'),
-              t(tk: 'Aý gutarandan soň töleg gerek', ru: 'После месяца потребуется оплата', en: 'Payment is needed after the month ends'),
+              AppStrings.servicesActivateTheFreeMonth.select(language),
+              AppStrings.servicesAddYourService.select(language),
+              AppStrings.servicesPaymentIsNeededAfterThe.select(language),
             ],
-      confirmLabel: t(tk: 'Mugt aýy ulan', ru: 'Использовать месяц', en: 'Use free month'),
-      cancelLabel: t(tk: 'Soň', ru: 'Позже', en: 'Later'),
+      confirmLabel: AppStrings.servicesUseFreeMonth.select(language),
+      cancelLabel: AppStrings.servicesLater.select(language),
     );
   }
 
@@ -132,8 +122,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final provider = context.watch<ServiceProvider>();
     final services = provider.services;
     final hidden = services.where((s) => !s.active).length;
@@ -141,7 +129,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Hyzmatlar', ru: 'Услуги', en: 'Services'),
+        title: AppStrings.servicesServices.select(language),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openingService ? null : _openCreateService,
@@ -150,7 +138,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         elevation: 4,
         icon: const AppIcon(Icons.add, size: 22),
         label: Text(
-          t(tk: 'Täze hyzmat goş', ru: 'Добавить услугу', en: 'Add service'),
+          AppStrings.servicesAddService2.select(language),
           style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
         ),
       ),
@@ -166,28 +154,16 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 runSpacing: 8,
                 children: [
                   _ServicesPill(
-                    label: t(
-                      tk: '${services.length} hyzmat',
-                      ru: 'Услуг: ${services.length}',
-                      en: '${services.length} services',
-                    ),
+                    label: AppStrings.servicesServices2(services.length).select(language),
                     color: tokens.accent,
                   ),
                   _ServicesPill(
-                    label: t(
-                      tk: '${services.length - hidden} görünýär',
-                      ru: 'Видно: ${services.length - hidden}',
-                      en: '${services.length - hidden} visible',
-                    ),
+                    label: AppStrings.servicesVisible(services.length - hidden).select(language),
                     color: tokens.success,
                   ),
                   if (hidden > 0)
                     _ServicesPill(
-                      label: t(
-                        tk: '$hidden gizlin',
-                        ru: 'Скрыто: $hidden',
-                        en: '$hidden hidden',
-                      ),
+                      label: AppStrings.servicesHidden(hidden).select(language),
                       color: tokens.textSecondary,
                     ),
                 ],
@@ -204,16 +180,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
             else if (services.isEmpty)
               EmptyState(
                 icon: Icons.content_cut,
-                title: t(
-                  tk: 'Heniz hyzmat ýok',
-                  ru: 'Услуг пока нет',
-                  en: 'No services yet',
-                ),
-                text: t(
-                  tk: 'Aşakdaky "Täze hyzmat goş" düwmesine basyp ilkinji hyzmatyňyzy goşuň.',
-                  ru: 'Нажмите «Добавить услугу» внизу, чтобы создать первую услугу.',
-                  en: 'Tap "Add service" below to create your first one.',
-                ),
+                title: AppStrings.servicesNoServicesYet.select(language),
+                text: AppStrings.servicesTapAddServiceBelowTo.select(language),
               )
             else
               ...services.map((service) => _ServiceCard(service: service)),

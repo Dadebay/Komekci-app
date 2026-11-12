@@ -1,3 +1,4 @@
+import '../../../core/localization/app_strings.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/localization/language_provider.dart';
@@ -61,7 +62,7 @@ class AppSettingsProvider extends ChangeNotifier {
   /// and Russian, anything else shows the ISO code the API sent.
   String currencyLabel(AppLanguage language) {
     if (currency.toUpperCase() == 'TMT') {
-      return pickTr(language, tk: 'manat', ru: 'манат', en: 'TMT');
+      return AppStrings.appTmt.select(language);
     }
     return currency;
   }

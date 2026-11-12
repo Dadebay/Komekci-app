@@ -47,12 +47,7 @@ extension _HomeDashboardRefresh on _HomeDashboardScreenState {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              pickTr(
-                language,
-                tk: 'Maglumatlary täzelemek başartmady. Öňki maglumatlar görkezilýär.',
-                ru: 'Не удалось обновить данные. Показаны прежние значения.',
-                en: 'Could not refresh data. Previous values are shown.',
-              ),
+              AppStrings.homeCouldNotRefreshDataPrevious.select(language),
             ),
           ),
         );

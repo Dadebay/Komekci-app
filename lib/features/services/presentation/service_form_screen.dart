@@ -104,27 +104,26 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
-    final required = t(tk: 'Bu meýdan hökmany', ru: 'Обязательное поле', en: 'This field is required');
+    final required = AppStrings.servicesThisFieldIsRequired.select(language);
 
     String? nameError() {
       if (!_showErrors || _nameOk) return null;
-      return _nameController.text.trim().isEmpty ? required : t(tk: 'Iň az 2 harp', ru: 'Минимум 2 символа', en: 'At least 2 characters');
+      return _nameController.text.trim().isEmpty ? required : AppStrings.servicesAtLeast2Characters.select(language);
     }
 
     String? durationError() {
       if (!_showErrors || _durationOk) return null;
       return _minutes == null
-          ? t(tk: 'Wagty saýlaň', ru: 'Выберите длительность', en: 'Choose a duration')
-          : t(tk: '$_minMinutes–$_maxMinutes minut aralygynda', ru: 'От $_minMinutes до $_maxMinutes минут', en: 'Between $_minMinutes and $_maxMinutes minutes');
+          ? AppStrings.servicesChooseADuration.select(language)
+          : AppStrings.servicesBetweenAndMinutes(_minMinutes, _maxMinutes).select(language);
     }
 
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: _isEditing ? t(tk: 'Hyzmaty üýtget', ru: 'Изменить услугу', en: 'Edit service') : t(tk: 'Täze hyzmat goş', ru: 'Новая услуга', en: 'New service'),
+        title: _isEditing ? AppStrings.servicesEditService.select(language) : AppStrings.servicesNewService.select(language),
       ),
       body: SafeArea(
         child: Column(
@@ -138,23 +137,23 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                     file: _photo,
                     existing: widget.service,
                     invalid: _showErrors && !_hasImage,
-                    title: t(tk: 'Hyzmatyň suraty', ru: 'Фото услуги', en: 'Service photo'),
-                    hint: t(tk: 'JPG ýa-da PNG. Surat awtomatiki kiçeldiler.', ru: 'JPG или PNG. Фото уменьшится автоматически.', en: 'JPG or PNG. The photo is resized automatically.'),
-                    changeLabel: t(tk: 'Suraty üýtget', ru: 'Изменить фото', en: 'Change photo'),
+                    title: AppStrings.servicesServicePhoto.select(language),
+                    hint: AppStrings.servicesJpgOrPngThePhoto.select(language),
+                    changeLabel: AppStrings.servicesChangePhoto.select(language),
                     errorText: required,
                     onPicked: (file) => setState(() => _photo = file),
                   ),
                   const SizedBox(height: 14),
                   _ProfileSection(
                     icon: Icons.content_cut,
-                    title: t(tk: 'Hyzmat barada', ru: 'Об услуге', en: 'About the service'),
+                    title: AppStrings.servicesAboutTheService.select(language),
                     backgroundColor: tokens.surface,
                     children: [
                       _ProfileField(
                         controller: _nameController,
-                        label: t(tk: 'Hyzmatyň ady', ru: 'Название услуги', en: 'Service name'),
+                        label: AppStrings.servicesServiceName.select(language),
                         icon: Icons.content_cut,
-                        hint: t(tk: 'Mysal: Saç kesmek', ru: 'Например: Стрижка', en: 'Example: Haircut'),
+                        hint: AppStrings.servicesExampleHaircut.select(language),
                         errorText: nameError(),
                         textInputAction: TextInputAction.next,
                         inputFormatters: [LengthLimitingTextInputFormatter(_nameMax)],
@@ -162,9 +161,9 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                       ),
                       _ProfileField(
                         controller: _descriptionController,
-                        label: t(tk: 'Düşündiriş (islege görä)', ru: 'Описание (необязательно)', en: 'Description (optional)'),
+                        label: AppStrings.servicesDescriptionOptional.select(language),
                         icon: Icons.sticky_note_2_outlined,
-                        hint: t(tk: 'Hyzmat barada gysgaça düşündiriň...', ru: 'Кратко опишите услугу...', en: 'Briefly describe the service...'),
+                        hint: AppStrings.servicesBrieflyDescribeTheService.select(language),
                         maxLines: 4,
                         minLines: 3,
                         keyboardType: TextInputType.multiline,
@@ -175,14 +174,14 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                   const SizedBox(height: 14),
                   _ProfileSection(
                     icon: Icons.payments_outlined,
-                    title: t(tk: 'Baha we wagt', ru: 'Цена и время', en: 'Price & time'),
+                    title: AppStrings.servicesPriceTime.select(language),
                     backgroundColor: tokens.surface,
                     children: [
                       _ProfileField(
                         controller: _priceController,
-                        label: t(tk: 'Bahasy', ru: 'Цена', en: 'Price'),
+                        label: AppStrings.servicesPrice.select(language),
                         icon: Icons.payments_outlined,
-                        hint: t(tk: 'Mysal: 80', ru: 'Например: 80', en: 'Example: 80'),
+                        hint: AppStrings.servicesExample80.select(language),
                         errorText: _showErrors && !_priceOk ? required : null,
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.done,
@@ -194,9 +193,9 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                         onChanged: (_) => setState(() {}),
                       ),
                       _DurationPicker(
-                        label: t(tk: 'Wagty (minut)', ru: 'Длительность (мин)', en: 'Duration (min)'),
-                        otherLabel: t(tk: 'Başga', ru: 'Другое', en: 'Other'),
-                        customFieldLabel: t(tk: 'Başga wagt (minut)', ru: 'Своя длительность (мин)', en: 'Custom duration (min)'),
+                        label: AppStrings.servicesDurationMin.select(language),
+                        otherLabel: AppStrings.servicesOther.select(language),
+                        customFieldLabel: AppStrings.servicesCustomDurationMin.select(language),
                         customHint: '$_minMinutes–$_maxMinutes',
                         selected: _customDuration ? null : _minutes,
                         custom: _customDuration,
@@ -215,10 +214,10 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
               error: _error,
               saving: _saving,
               label: _saving
-                  ? t(tk: 'Saklanýar...', ru: 'Сохранение...', en: 'Saving...')
+                  ? AppStrings.servicesSaving.select(language)
                   : _isEditing
-                  ? t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save')
-                  : t(tk: 'Hyzmaty goş', ru: 'Добавить услугу', en: 'Add service'),
+                  ? AppStrings.servicesSave.select(language)
+                  : AppStrings.servicesAddService.select(language),
               onSave: _save,
             ),
           ],

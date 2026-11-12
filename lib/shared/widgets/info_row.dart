@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
 import 'app_icon.dart';
@@ -42,17 +42,8 @@ class StatusChip extends StatelessWidget {
     final late = label.startsWith('Late');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-      decoration: BoxDecoration(
-        color: late ? const Color(0xffFBE3E0) : const Color(0xffFBF1D8),
-        borderRadius: BorderRadius.circular(11),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          color: late ? Colors.deepOrange : const Color(0xff77540E),
-        ),
-      ),
+      decoration: BoxDecoration(color: late ? const Color(0xffFBE3E0) : const Color(0xffFBF1D8), borderRadius: BorderRadius.circular(11)),
+      child: Text(label, style: TextStyle(fontSize: 11, color: late ? Colors.deepOrange : const Color(0xff77540E))),
     );
   }
 }
@@ -62,10 +53,5 @@ class SettingRow extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => ListTile(
-    onTap: onTap,
-    contentPadding: EdgeInsets.zero,
-    title: Text(label),
-    trailing: const AppIcon(Icons.chevron_right),
-  );
+  Widget build(BuildContext context) => ListTile(onTap: onTap, contentPadding: EdgeInsets.zero, title: Text(label), trailing: const AppIcon(Icons.chevron_right));
 }

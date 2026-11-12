@@ -10,10 +10,8 @@ class _ClientProfileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final profile = context.watch<ClientProfileProvider>();
-    final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final bookings = context.watch<ClientBookingsProvider>().bookings;
-    final upcoming = bookings.where((b) => b.status == ClientBookingStatus.expected).length;
+    final upcoming = bookings.where((b) => b.isUpcoming).length;
     final masters = context.watch<ClientMastersProvider>().accepted.length;
 
     Widget stat(String value, String label) => Expanded(
@@ -88,11 +86,11 @@ class _ClientProfileCard extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                stat('${bookings.length}', t(tk: 'Ýazgy', ru: 'Записей', en: 'Bookings')),
+                stat('${bookings.length}', AppStrings.profileBookings.select(context.read<LanguageProvider>().language)),
                 Container(width: 1, height: 32, color: tokens.border),
-                stat('$upcoming', t(tk: 'Indiki', ru: 'Предстоящих', en: 'Upcoming')),
+                stat('$upcoming', AppStrings.profileUpcoming.select(context.read<LanguageProvider>().language)),
                 Container(width: 1, height: 32, color: tokens.border),
-                stat('$masters', t(tk: 'Master', ru: 'Мастеров', en: 'Masters')),
+                stat('$masters', AppStrings.profileMasters.select(context.read<LanguageProvider>().language)),
               ],
             ),
           ],
@@ -204,18 +202,10 @@ class _ClientLogoutButton extends StatelessWidget {
     final confirmed = await _showConfirmDialog(
       context,
       icon: Icons.logout,
-      title: t(
-        tk: 'Ulgamdan çykmaly?',
-        ru: 'Выйти из аккаунта?',
-        en: 'Sign out?',
-      ),
-      message: t(
-        tk: 'Ýene-de girmek üçin telefon belgiňizi tassyklamaly bolarsyňyz.',
-        ru: 'Чтобы войти снова, потребуется подтвердить номер телефона.',
-        en: "You'll need to verify your phone number again to sign back in.",
-      ),
-      confirmLabel: t(tk: 'Çyk', ru: 'Выйти', en: 'Sign out'),
-      cancelLabel: t(tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
+      title: AppStrings.profileSignOut.select(context.read<LanguageProvider>().language),
+      message: AppStrings.profileYouLlNeedToVerify.select(context.read<LanguageProvider>().language),
+      confirmLabel: AppStrings.profileSignOut2.select(context.read<LanguageProvider>().language),
+      cancelLabel: AppStrings.servicesCancel.select(context.read<LanguageProvider>().language),
       danger: true,
     );
     if (!confirmed || !context.mounted) return;
@@ -243,7 +233,7 @@ class _ClientLogoutButton extends StatelessWidget {
             ),
             const SizedBox(width: 14),
             Text(
-              t(tk: 'Ulgamdan çyk', ru: 'Выйти из аккаунта', en: 'Sign out'),
+              AppStrings.profileSignOut3.select(context.read<LanguageProvider>().language),
               style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: tokens.danger),
             ),
           ],

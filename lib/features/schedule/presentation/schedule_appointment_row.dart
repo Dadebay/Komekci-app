@@ -131,12 +131,7 @@ class _AppointmentRow extends StatelessWidget {
                     if (canCall) ...[
                       const SizedBox(width: 4),
                       IconButton(
-                        tooltip: pickTr(
-                          language,
-                          tk: 'Jaň etmek',
-                          ru: 'Позвонить',
-                          en: 'Call',
-                        ),
+                        tooltip: AppStrings.scheduleCall.select(language),
                         onPressed: () => launchUrl(
                           Uri(scheme: 'tel', path: phone.replaceAll(' ', '')),
                         ),
@@ -239,7 +234,7 @@ class _FreeSlotRow extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              '· ${pickTr(language, tk: "Boş wagt", ru: "Свободно", en: "Free")}',
+              '· ${AppStrings.scheduleFree2.select(language)}',
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,

@@ -22,20 +22,18 @@ Future<void> _openSupportContact(String contact) {
 
 List<Widget> _configuredContactRows(BuildContext context, AppContact contact) {
   final language = context.read<LanguageProvider>().language;
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   return [
     if (contact.phone case final phone?)
       _ContactRow(
         icon: Icons.phone_outlined,
-        title: t(tk: 'Telefon', ru: 'Телефон', en: 'Phone'),
+        title: AppStrings.profilePhone.select(language),
         value: phone,
         onTap: () => launchUrl(Uri(scheme: 'tel', path: phone)),
       ),
     if (contact.email case final email?)
       _ContactRow(
         icon: Icons.mail_outline,
-        title: t(tk: 'E-poçta', ru: 'Эл. почта', en: 'Email'),
+        title: AppStrings.profileEmail.select(language),
         value: email,
         onTap: () => launchUrl(Uri(scheme: 'mailto', path: email)),
       ),
@@ -57,11 +55,7 @@ List<Widget> _configuredContactRows(BuildContext context, AppContact contact) {
         onTap: () async {
           await Clipboard.setData(ClipboardData(text: imo));
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(
-              tk: 'IMO belgisi nusgalandy.',
-              ru: 'Контакт IMO скопирован.',
-              en: 'IMO contact copied.',
-            ))));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppStrings.profileImoContactCopied.select(language))));
           }
           await launchUrl(Uri.parse('https://imo.im/'), mode: LaunchMode.externalApplication);
         },
@@ -69,7 +63,7 @@ List<Widget> _configuredContactRows(BuildContext context, AppContact contact) {
     if (contact.address case final address?)
       _ContactRow(
         icon: Icons.location_on_outlined,
-        title: t(tk: 'Salgy', ru: 'Адрес', en: 'Address'),
+        title: AppStrings.profileAddress.select(language),
         value: address,
         onTap: null,
       ),
@@ -85,67 +79,33 @@ class ClientSupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final supportContact = context.watch<AppSettingsProvider>().supportContact;
     final contact = context.watch<AppSettingsProvider>().contact;
 
     final faqs = <(String, String)>[
       (
-        t(
-          tk: 'Duşuşygy nädip ýatyryp bolar?',
-          ru: 'Как отменить запись?',
-          en: 'How do I cancel a booking?',
-        ),
-        t(
-          tk: '"Duşuşyklar" bölüminden degişli duşuşygy açyň we "Ýatyr" düwmesine basyň. Duşuşykdan azyndan 2 sagat öň ýatyrsaňyz, töleg alynmaýar.',
-          ru: 'Откройте нужную запись во вкладке «Записи» и нажмите «Отменить». Если отменить не позднее чем за 2 часа до визита, плата не взимается.',
-          en: 'Open the booking under the "Bookings" tab and tap "Cancel". Cancelling at least 2 hours before the appointment is free of charge.',
-        ),
+        AppStrings.profileHowDoICancelA.select(language),
+        AppStrings.profileOpenTheBookingUnderThe.select(language),
       ),
       (
-        t(
-          tk: 'Halanan masterlerim nirede saklanýar?',
-          ru: 'Где хранятся мои избранные мастера?',
-          en: 'Where are my favourite masters saved?',
-        ),
-        t(
-          tk: 'Aşaky menýudaky ýürek nyşanyna basyp, halanlaryňyzy islendik wagt görüp bilersiňiz. Masteriň profilindäki ýürek belligi bilen goşup/aýryp bolýar.',
-          ru: 'Нажмите на значок сердца в нижнем меню, чтобы увидеть избранное в любое время. Добавляйте и убирайте мастеров сердцем на странице их профиля.',
-          en: 'Tap the heart icon in the bottom menu to see your favourites anytime. Add or remove a master with the heart on their profile page.',
-        ),
+        AppStrings.profileWhereAreMyFavouriteMasters.select(language),
+        AppStrings.profileTapTheHeartIconIn.select(language),
       ),
       (
-        t(
-          tk: 'Töleg nädip amala aşyrylýar?',
-          ru: 'Как происходит оплата?',
-          en: 'How does payment work?',
-        ),
-        t(
-          tk: 'Häzirki wagtda tölegler salon ýerinde nagt ýa-da kart bilen alynýar. Programmanyň içinden onlaýn töleg ýakynda goşular.',
-          ru: 'Сейчас оплата принимается наличными или картой прямо в салоне. Онлайн-оплата в приложении появится позже.',
-          en: 'Payments are currently taken in person at the salon, by cash or card. In-app online payment is coming soon.',
-        ),
+        AppStrings.profileHowDoesPaymentWork.select(language),
+        AppStrings.profilePaymentsAreCurrentlyTakenIn.select(language),
       ),
       (
-        t(
-          tk: 'Telefon belgimi üýtgedip bolarmy?',
-          ru: 'Можно ли изменить номер телефона?',
-          en: 'Can I change my phone number?',
-        ),
-        t(
-          tk: '"Profil" bölüminden adyňyzy we belgiňizi redaktläp bilersiňiz. Uly üýtgeşmeler üçin goldaw gullugy bilen habarlaşyň.',
-          ru: 'Вы можете изменить имя и номер в разделе «Профиль». Для более сложных случаев свяжитесь со службой поддержки.',
-          en: 'You can edit your name and number from the "Profile" tab. For anything more complex, contact support below.',
-        ),
+        AppStrings.profileCanIChangeMyPhone.select(language),
+        AppStrings.profileYouCanEditYourName.select(language),
       ),
     ];
 
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Goldaw', ru: 'Поддержка', en: 'Support'),
+        title: AppStrings.profileSupport.select(language),
       ),
       body: SafeArea(
         bottom: false,
@@ -153,25 +113,21 @@ class ClientSupportScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
             Text(
-              t(
-                tk: 'Ýygy-ýygydan soralýan soraglar',
-                ru: 'Частые вопросы',
-                en: 'Frequently asked questions',
-              ),
+              AppStrings.profileFrequentlyAskedQuestions.select(language),
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 10),
             ...faqs.map((faq) => _FaqTile(question: faq.$1, answer: faq.$2)),
             const SizedBox(height: 22),
             Text(
-              t(tk: 'Bize habarlaşyň', ru: 'Свяжитесь с нами', en: 'Get in touch'),
+              AppStrings.profileGetInTouch.select(language),
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 10),
             if (supportContact.isNotEmpty)
               _ContactRow(
                 icon: Icons.support_agent_outlined,
-                title: t(tk: 'Goldaw', ru: 'Поддержка', en: 'Support'),
+                title: AppStrings.profileSupport.select(language),
                 value: supportContact,
                 onTap: () => _openSupportContact(supportContact),
               ),
@@ -179,7 +135,7 @@ class ClientSupportScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _ContactRow(
               icon: Icons.info_outline,
-              title: t(tk: 'Biz barada', ru: 'О нас', en: 'About us'),
+              title: AppStrings.profileAboutUs.select(language),
               value: '',
               onTap: () => Navigator.push(context, pageRoute(const AboutScreen())),
             ),

@@ -1,74 +1,120 @@
 part of '../../../app/komekci_app.dart';
 
 extension _SendMessageChannels on _SendMessageScreenState {
-  List<String> _resolvePhoneNumbers() {
-    return _recipients.map((c) => c.phone).where((phone) => phone.isNotEmpty).toSet().toList();
-  }
-
-  Future<void> _sendRealSms(AppLanguage language, List<String> numbers) async {
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
-    final status = await Permission.sms.request();
-    if (!status.isGranted) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            t(
-              tk: 'SMS ibermek üçin rugsat gerek.',
-              ru: 'Для отправки SMS нужно разрешение.',
-              en: 'Permission is needed to send SMS.',
+  /// Opens the phone's own messaging app with the text filled in, one client
+  /// at a time. Nothing is sent from here, so the app needs no SMS permission,
+  /// and clients never see each other's numbers (a single group message
+  /// would show them).
+  Future<void> _sendSmsViaApp(AppLanguage language, List<Customer> customers) async {
+    final message = _messageController.text.trim();
+    final tokens = context.appTokens;
+    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
+    final opened = <String>{};
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: tokens.surface,
+      isScrollControlled: true,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setSheetState) => SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * .8),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    t(tk: 'SMS ibermek', ru: 'Отправка SMS', en: 'Send SMS'),
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    t(
+                      tk: 'Her müşderi üçin SMS programmasy açylar. Tekst taýýar, diňe “Iber” düwmesine basyň.',
+                      ru: 'Для каждого клиента откроется приложение SMS с готовым текстом. Остаётся нажать «Отправить».',
+                      en: 'The messaging app opens for each client with the text ready. Just tap send there.',
+                    ),
+                    style: TextStyle(fontSize: 13, height: 1.4, color: tokens.textSecondary),
+                  ),
+                  const SizedBox(height: 14),
+                  Flexible(
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: customers.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final customer = customers[index];
+                        final done = opened.contains(customer.id);
+                        return Container(
+                          padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+                          decoration: BoxDecoration(
+                            color: tokens.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: done ? tokens.success : tokens.border),
+                          ),
+                          child: Row(
+                            children: [
+                              _CustomerAvatar(customer: customer, radius: 18),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(customer.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                                    Text(customer.phone, style: TextStyle(fontSize: 12, color: tokens.textSecondary)),
+                                  ],
+                                ),
+                              ),
+                              TextButton.icon(
+                                onPressed: () async {
+                                  final ok = await _openSmsApp(customer.phone, message);
+                                  if (ok) {
+                                    setSheetState(() => opened.add(customer.id));
+                                  } else if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(AppStrings.cabinetCouldNotSendTheSms.select(language))),
+                                    );
+                                  }
+                                },
+                                icon: AppIcon(done ? Icons.check_circle : Icons.sms_outlined, size: 18, color: done ? tokens.success : tokens.accent),
+                                label: Text(
+                                  done ? t(tk: 'Täzeden', ru: 'Ещё раз', en: 'Again') : t(tk: 'Aç', ru: 'Открыть', en: 'Open'),
+                                  style: TextStyle(fontWeight: FontWeight.w700, color: done ? tokens.success : tokens.accent),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      );
-      return;
-    }
-    final message = _messageController.text.trim();
-    var sent = 0;
-    var unknown = 0;
-    for (final number in numbers) {
-      final result = await BackgroundSms.sendMessage(
-        phoneNumber: number,
-        message: message,
-      );
-      if (result == SmsStatus.sent) {
-        sent++;
-      } else if (result == SmsStatus.unknown) {
-        unknown++;
-      }
-    }
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        duration: Duration(seconds: unknown > 0 ? 8 : 4),
-        content: Text(
-          unknown > 0
-              ? t(
-                  tk: '$sent/${numbers.length} SMS iberilendigi tassyklandy. $unknown SMS-iň netijesi näbelli; gaýtadan ibermezden öň SMS taryhyny barlaň.',
-                  ru: 'Подтверждено SMS: $sent из ${numbers.length}. Результат $unknown неизвестен; проверьте историю SMS перед повторной отправкой.',
-                  en: '$sent/${numbers.length} SMS confirmed sent. $unknown unconfirmed; check SMS history before retrying.',
-                )
-              : sent == numbers.length
-                  ? t(
-                      tk: '$sent/${numbers.length} SMS iberilendigi tassyklandy.',
-                      ru: 'Подтверждено SMS: $sent из ${numbers.length}.',
-                      en: '$sent/${numbers.length} SMS confirmed sent.',
-                    )
-                  : t(
-                      tk: '$sent/${numbers.length} SMS iberildi, galanlaryny iberip bolmady.',
-                      ru: 'Отправлено SMS: $sent из ${numbers.length}; остальные не отправлены.',
-                      en: '$sent/${numbers.length} SMS sent; the rest failed.',
-                    ),
-        ),
       ),
     );
-    if (sent == numbers.length) Navigator.pop(context);
+    if (mounted && opened.length == customers.length) Navigator.pop(context);
+  }
+
+  /// `sms:` link with the text prefilled. iOS wants `&body=` after the number,
+  /// Android `?body=`.
+  Future<bool> _openSmsApp(String phone, String message) async {
+    final number = phone.replaceAll(RegExp(r'[^\d+]'), '');
+    final body = Uri.encodeComponent(message);
+    final uri = Uri.parse(Platform.isIOS ? 'sms:$number&body=$body' : 'sms:$number?body=$body');
+    try {
+      return await launchUrl(uri);
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> _pickChannel(AppLanguage language, {required StateSetter update}) async {
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final picked = await showModalBottomSheet<bool>(
       context: context,
@@ -86,11 +132,7 @@ extension _SendMessageChannels on _SendMessageScreenState {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  t(
-                    tk: 'Geplesik görnüşi',
-                    ru: 'Способ отправки',
-                    en: 'Delivery method',
-                  ),
+                  AppStrings.cabinetDeliveryMethod.select(language),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -104,11 +146,7 @@ extension _SendMessageChannels on _SendMessageScreenState {
                     color: tokens.accent,
                   ),
                   title: Text(
-                    t(
-                      tk: 'Push habar',
-                      ru: 'Push-уведомление',
-                      en: 'Push notification',
-                    ),
+                    AppStrings.cabinetPushNotification.select(language),
                     style: const TextStyle(
                       fontSize: 14.5,
                       fontWeight: FontWeight.w600,

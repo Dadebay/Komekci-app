@@ -3,8 +3,6 @@ part of '../../../app/komekci_app.dart';
 extension _NewSlotServicePicker on _NewSlotAppointmentSheetState {
   Future<void> _showServicePicker(List<SalonService> services, {required StateSetter update}) async {
     final language = context.read<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final picked = await showModalBottomSheet<SalonService>(
       context: context,
@@ -32,11 +30,7 @@ extension _NewSlotServicePicker on _NewSlotAppointmentSheetState {
               ),
               const SizedBox(height: 16),
               Text(
-                t(
-                  tk: 'Hyzmat saýlaň',
-                  ru: 'Выберите услугу',
-                  en: 'Choose a service',
-                ),
+                AppStrings.scheduleChooseAService.select(language),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -46,16 +40,8 @@ extension _NewSlotServicePicker on _NewSlotAppointmentSheetState {
               if (services.isEmpty)
                 EmptyState(
                   icon: Icons.content_cut,
-                  title: t(
-                    tk: 'Hyzmat ýok',
-                    ru: 'Услуг нет',
-                    en: 'No services',
-                  ),
-                  text: t(
-                    tk: 'Ilki bilen hyzmat goşuň.',
-                    ru: 'Сначала добавьте услугу.',
-                    en: 'Add a service first.',
-                  ),
+                  title: AppStrings.bookingNoServices.select(language),
+                  text: AppStrings.scheduleAddAServiceFirst.select(language),
                 )
               else
                 ...services.map((s) {
@@ -72,12 +58,8 @@ extension _NewSlotServicePicker on _NewSlotAppointmentSheetState {
                     ),
                     subtitle: Text(
                       fits
-                          ? '${s.minutes} ${t(tk: 'min', ru: 'мин', en: 'min')} · ${s.price} ${context.read<AppSettingsProvider>().currencyLabel(language)}'
-                          : t(
-                              tk: 'Bu wagt hyzmat üçin ýeterlik däl',
-                              ru: 'Недостаточно времени для услуги',
-                              en: 'Not enough time for this service',
-                            ),
+                          ? '${s.minutes} ${AppStrings.bookingMin2.select(language)} · ${s.price} ${context.read<AppSettingsProvider>().currencyLabel(language)}'
+                          : AppStrings.scheduleNotEnoughTimeForThis.select(language),
                       style: TextStyle(
                         fontSize: 12,
                         color: fits ? tokens.textSecondary : tokens.danger,

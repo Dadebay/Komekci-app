@@ -38,8 +38,8 @@ IconData _statusIcon(CustomerStatus status) => switch (status) {
 
 String _statusLabel(CustomerStatus status, AppLanguage language) => switch (status) {
   CustomerStatus.vip => 'VIP',
-  CustomerStatus.regular => pickTr(language, tk: 'Hemişelik', ru: 'Постоянный', en: 'Regular'),
-  CustomerStatus.newClient => pickTr(language, tk: 'Täze', ru: 'Новый', en: 'New'),
+  CustomerStatus.regular => AppStrings.scheduleRegular.select(language),
+  CustomerStatus.newClient => AppStrings.customersNew2.select(language),
 };
 
 /// Shared "are you sure" dialog: icon badge, centred copy, a cancel outline

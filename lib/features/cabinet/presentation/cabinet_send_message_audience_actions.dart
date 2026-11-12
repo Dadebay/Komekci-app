@@ -2,39 +2,17 @@ part of '../../../app/komekci_app.dart';
 
 extension _SendMessageAudienceActions on _SendMessageScreenState {
   String _audienceSubtitle(AppLanguage language, int index) {
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     switch (index) {
       case 0:
-        return t(
-          tk: 'Ähli müşderilere iberiler (${_eligibleClients.length} adam).',
-          ru: 'Будет отправлено всем клиентам (${_eligibleClients.length} чел.).',
-          en: 'Will be sent to all clients (${_eligibleClients.length} people).',
-        );
+        return AppStrings.cabinetWillBeSentToAll(_eligibleClients.length).select(language);
       case 1:
         return _selectedIds.isEmpty
-            ? t(
-                tk: 'Müşderileri saýlap iberiň.',
-                ru: 'Выберите клиентов для отправки.',
-                en: 'Choose clients to send to.',
-              )
-            : t(
-                tk: '${_selectedIds.length} müşderi saýlandy.',
-                ru: 'Выбрано клиентов: ${_selectedIds.length}.',
-                en: '${_selectedIds.length} clients selected.',
-              );
+            ? AppStrings.cabinetChooseClientsToSendTo2.select(language)
+            : AppStrings.cabinetClientsSelected(_selectedIds.length).select(language);
       default:
         return _recentIds.isEmpty
-            ? t(
-                tk: 'Belli bir wagtyň içinde ýazylan müşderiler.',
-                ru: 'Клиенты за определённый период.',
-                en: 'Clients within a specific time period.',
-              )
-            : t(
-                tk: '${_recentIds.length} müşderi saýlandy.',
-                ru: 'Выбрано клиентов: ${_recentIds.length}.',
-                en: '${_recentIds.length} clients selected.',
-              );
+            ? AppStrings.cabinetClientsWithinASpecificTime.select(language)
+            : AppStrings.cabinetClientsSelected(_recentIds.length).select(language);
     }
   }
 
@@ -74,35 +52,21 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
         (_pushChannel && _titleController.text.trim().isEmpty)) {
       return;
     }
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final methodLabel = _pushChannel
-        ? t(tk: 'Push habar', ru: 'Push-уведомление', en: 'Push notification')
+        ? AppStrings.cabinetPushNotification.select(language)
         : 'SMS';
     final int recipientCount;
     final String recipientLabel;
     switch (_audience) {
       case 0:
         recipientCount = recipients.length;
-        recipientLabel = t(
-          tk: 'ähli müşderilere',
-          ru: 'всем клиентам',
-          en: 'to all clients',
-        );
+        recipientLabel = AppStrings.cabinetToAllClients.select(language);
       case 1:
         recipientCount = recipients.length;
-        recipientLabel = t(
-          tk: 'saýlanan müşderilere',
-          ru: 'выбранным клиентам',
-          en: 'to selected clients',
-        );
+        recipientLabel = AppStrings.cabinetToSelectedClients.select(language);
       default:
         recipientCount = recipients.length;
-        recipientLabel = t(
-          tk: 'soňky wagt aralygyndaky müşderilere',
-          ru: 'клиентам за период',
-          en: 'to clients from the recent period',
-        );
+        recipientLabel = AppStrings.cabinetToClientsFromTheRecent.select(language);
     }
     final tokens = context.appTokens;
     final confirmed = await showModalBottomSheet<bool>(
@@ -121,11 +85,7 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  t(
-                    tk: 'Habary tassyklaň',
-                    ru: 'Подтвердите отправку',
-                    en: 'Confirm sending',
-                  ),
+                  AppStrings.cabinetConfirmSending.select(language),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -133,11 +93,7 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  t(
-                    tk: '$methodLabel $recipientLabel iberiler · $recipientCount adam. Dowam etmek isleýärsiňizmi?',
-                    ru: '$methodLabel будет отправлено $recipientLabel · $recipientCount чел. Продолжить?',
-                    en: '$methodLabel will be sent $recipientLabel · $recipientCount people. Continue?',
-                  ),
+                  AppStrings.cabinetWillBeSentPeopleContinue(methodLabel, recipientLabel, recipientCount).select(language),
                   style: TextStyle(
                     fontSize: 13,
                     color: tokens.textSecondary,
@@ -158,7 +114,7 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
                         ),
                         onPressed: () => Navigator.pop(sheetContext, false),
                         child: Text(
-                          t(tk: 'Ýok', ru: 'Отмена', en: 'Cancel'),
+                          AppStrings.cabinetCancel.select(language),
                           style: TextStyle(
                             fontSize: 14.5,
                             fontWeight: FontWeight.w600,
@@ -170,7 +126,7 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
                     const SizedBox(width: 12),
                     Expanded(
                       child: MasterActionButton(
-                        label: t(tk: 'Iber', ru: 'Отправить', en: 'Send'),
+                        label: AppStrings.cabinetSend.select(language),
                         enabled: true,
                         onTap: () => Navigator.pop(sheetContext, true),
                       ),
@@ -185,32 +141,24 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
     );
     if (confirmed != true || !mounted) return;
 
-    if (!_pushChannel && Platform.isAndroid) {
-      final numbers = _resolvePhoneNumbers();
-      if (numbers.isNotEmpty) {
-        update(() => _sending = true);
-        try {
-          await _sendRealSms(language, numbers);
-        } catch (_) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(
-              tk: 'SMS iberilip bilmedi.',
-              ru: 'Не удалось отправить SMS.',
-              en: 'Could not send the SMS.',
-            ))));
-          }
-        } finally {
-          if (mounted) update(() => _sending = false);
-        }
+    if (!_pushChannel) {
+      final withPhone = recipients.where((c) => c.phone.isNotEmpty).toList();
+      if (withPhone.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              pickTr(
+                language,
+                tk: 'SMS ibermek üçin müşderiniň telefon belgisi gerek.',
+                ru: 'Для SMS нужен номер телефона клиента.',
+                en: 'SMS needs the client\'s phone number.',
+              ),
+            ),
+          ),
+        );
         return;
       }
-    }
-    if (!_pushChannel) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(
-        tk: 'SMS ibermek üçin Android we müşderiniň telefon belgisi gerek.',
-        ru: 'Для SMS нужен Android и номер телефона клиента.',
-        en: 'SMS requires Android and a client phone number.',
-      ))));
+      await _sendSmsViaApp(language, withPhone);
       return;
     }
     update(() => _sending = true);
@@ -225,11 +173,7 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
       final skipped = (response['skipped'] as List? ?? const []).length;
       final push = response['success_count'] as int? ?? 0;
       final failed = response['failure_count'] as int? ?? 0;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(
-        tk: 'Gelen habarlar: $inbox, push tassyklandy: $push, şowsuz: $failed, geçildi: $skipped.',
-        ru: 'Входящие: $inbox, push подтверждено: $push, не доставлено: $failed, пропущено: $skipped.',
-        en: 'Inbox: $inbox, push confirmed: $push, failed: $failed, skipped: $skipped.',
-      ))));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppStrings.cabinetInboxPushConfirmedFailedSkipped(inbox, push, failed, skipped).select(language))));
       Navigator.pop(context);
     } catch (error) {
       if (!mounted) return;
@@ -237,11 +181,7 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
           ? error.details['rejected'] as List?
           : null;
       final message = rejected != null && rejected.isNotEmpty
-          ? t(
-              tk: 'Habar iberilmedi. Rugsat berilmedik hasaplar: ${rejected.join(', ')}.',
-              ru: 'Ничего не отправлено. Недоступные аккаунты: ${rejected.join(', ')}.',
-              en: 'Nothing was sent. Unavailable accounts: ${rejected.join(', ')}.',
-            )
+          ? AppStrings.cabinetNothingWasSentUnavailableAccounts(rejected.join(', ')).select(language)
           : apiErrorMessage(error, language);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       update(() => _sending = false);

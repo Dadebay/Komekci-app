@@ -51,8 +51,6 @@ class _BookingPageState extends State<BookingPage> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final services = _services;
     ApiService? selected;
@@ -69,9 +67,9 @@ class _BookingPageState extends State<BookingPage> {
               master: widget.master,
               current: 1,
               labels: [
-                t(tk: 'Hyzmat', ru: 'Услуга', en: 'Service'),
-                t(tk: 'Wagt', ru: 'Время', en: 'Time'),
-                t(tk: 'Tassykla', ru: 'Подтв.', en: 'Confirm'),
+                AppStrings.bookingService.select(language),
+                AppStrings.bookingTime2.select(language),
+                AppStrings.bookingConfirm.select(language),
               ],
             ),
             Expanded(
@@ -79,21 +77,17 @@ class _BookingPageState extends State<BookingPage> {
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                 children: [
                   _BookingTitle(
-                    title: t(tk: 'Hyzmaty saýlaň', ru: 'Выберите услугу', en: 'Select a service'),
+                    title: AppStrings.bookingSelectAService.select(language),
                     subtitle: services == null || services.isEmpty
                         ? null
-                        : t(
-                            tk: '${services.length} hyzmat elýeterli',
-                            ru: 'Доступно услуг: ${services.length}',
-                            en: '${services.length} services available',
-                          ),
+                        : AppStrings.bookingServicesAvailable(services.length).select(language),
                   ),
                   const SizedBox(height: 18),
                   if (_error != null)
                     RetryErrorState(
-                      title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
+                      title: AppStrings.requestsSomethingWentWrong.select(language),
                       text: apiErrorMessage(_error!, language),
-                      retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                      retryLabel: AppStrings.profileTryAgain.select(language),
                       onRetry: _load,
                     )
                   else if (services == null)
@@ -104,30 +98,14 @@ class _BookingPageState extends State<BookingPage> {
                   else if (!_acceptingBookings)
                     EmptyState(
                       icon: Icons.event_busy_outlined,
-                      title: t(
-                        tk: 'Ýazgy wagtlaýyn ýapyk',
-                        ru: 'Запись временно закрыта',
-                        en: 'Bookings are paused',
-                      ),
-                      text: t(
-                        tk: 'Master häzirlikçe täze ýazgylary kabul etmeýär.',
-                        ru: 'Мастер временно не принимает новые записи.',
-                        en: 'This master is not accepting new bookings right now.',
-                      ),
+                      title: AppStrings.bookingBookingsArePaused.select(language),
+                      text: AppStrings.bookingThisMasterIsNotAccepting.select(language),
                     )
                   else if (services.isEmpty)
                     EmptyState(
                       icon: Icons.content_cut,
-                      title: t(
-                        tk: 'Hyzmat ýok',
-                        ru: 'Услуг нет',
-                        en: 'No services',
-                      ),
-                      text: t(
-                        tk: 'Bu master heniz hyzmat goşmady.',
-                        ru: 'Мастер пока не добавил услуги.',
-                        en: 'This master hasn’t added any services yet.',
-                      ),
+                      title: AppStrings.bookingNoServices.select(language),
+                      text: AppStrings.bookingThisMasterHasnTAdded.select(language),
                     )
                   else
                     ...services.map(
@@ -146,12 +124,12 @@ class _BookingPageState extends State<BookingPage> {
       ),
       bottomNavigationBar: _BookingBottomBar(
         caption: selected == null
-            ? t(tk: 'Hyzmat saýlaň', ru: 'Выберите услугу', en: 'Pick a service')
-            : '${selected.durationMin} ${t(tk: 'min', ru: 'мин', en: 'min')}',
+            ? AppStrings.bookingPickAService.select(language)
+            : '${selected.durationMin} ${AppStrings.bookingMin2.select(language)}',
         value: selected == null
             ? '—'
             : '${formatMoney(selected.price)} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
-        label: t(tk: 'Dowam et', ru: 'Далее', en: 'Continue'),
+        label: AppStrings.bookingContinue.select(language),
         onPressed: selected == null
             ? null
             : () => Navigator.push(
@@ -241,7 +219,7 @@ class _ServiceOption extends StatelessWidget {
                             AppIcon(Icons.schedule_outlined, size: 12, color: t.textSecondary),
                             const SizedBox(width: 4),
                             Text(
-                              '${service.minutes} ${pickTr(language, tk: "min", ru: "мин", en: "min")}',
+                              '${service.minutes} ${AppStrings.bookingMin.select(language)}',
                               style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: t.textSecondary),
                             ),
                           ],

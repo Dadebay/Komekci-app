@@ -22,8 +22,6 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = widget.language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final query = _controller.text.trim().toLowerCase();
     final digits = query.replaceAll(RegExp(r'\D'), '');
     final results = query.isEmpty
@@ -66,11 +64,7 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            t(
-                              tk: 'Müşderi saýlaň',
-                              ru: 'Выберите клиента',
-                              en: 'Choose a customer',
-                            ),
+                            AppStrings.scheduleChooseACustomer.select(language),
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
@@ -79,11 +73,7 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            t(
-                              tk: 'Ýazgy üçin müşderini tapyň',
-                              ru: 'Найдите клиента для записи',
-                              en: 'Find a customer for this booking',
-                            ),
+                            AppStrings.scheduleFindACustomerForThis.select(language),
                             style: TextStyle(
                               fontSize: 12.5,
                               color: tokens.textSecondary,
@@ -93,7 +83,7 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
                       ),
                     ),
                     IconButton(
-                      tooltip: t(tk: 'Ýap', ru: 'Закрыть', en: 'Close'),
+                      tooltip: AppStrings.notificationsClose.select(language),
                       onPressed: () => Navigator.pop(context),
                       icon: AppIcon(
                         Icons.close,
@@ -121,11 +111,7 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
                     style: TextStyle(fontSize: 14, color: tokens.textPrimary),
                     decoration: InputDecoration(
                       filled: false,
-                      hintText: t(
-                        tk: 'Ady ýa-da telefon belgisi',
-                        ru: 'Имя или номер телефона',
-                        en: 'Name or phone number',
-                      ),
+                      hintText: AppStrings.scheduleNameOrPhoneNumber.select(language),
                       hintStyle: TextStyle(color: tokens.textSecondary),
                       prefixIcon: Center(
                         widthFactor: 1,
@@ -146,11 +132,7 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
                       suffixIcon: query.isEmpty
                           ? null
                           : IconButton(
-                              tooltip: t(
-                                tk: 'Arassala',
-                                ru: 'Очистить',
-                                en: 'Clear',
-                              ),
+                              tooltip: AppStrings.scheduleClear.select(language),
                               onPressed: () {
                                 _controller.clear();
                                 setState(() {});
@@ -175,16 +157,8 @@ class _CustomerPickerSheetState extends State<_CustomerPickerSheet> {
                   children: [
                     Text(
                       query.isEmpty
-                          ? t(
-                              tk: 'Ähli müşderiler',
-                              ru: 'Все клиенты',
-                              en: 'All customers',
-                            )
-                          : t(
-                              tk: 'Gözleg netijeleri',
-                              ru: 'Результаты поиска',
-                              en: 'Search results',
-                            ),
+                          ? AppStrings.scheduleAllCustomers.select(language)
+                          : AppStrings.scheduleSearchResults.select(language),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,

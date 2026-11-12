@@ -137,14 +137,13 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
       });
       return;
     }
-    toast.success(pickTr(language, tk: 'Profil ýatda saklandy.', ru: 'Профиль сохранён.', en: 'Profile saved.'));
+    toast.success(AppStrings.profileProfileSaved.select(language));
     navigator.pop();
   }
 
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final profile = context.watch<MasterProfileProvider>();
     final nicknameError = _nicknameTaken || _nicknameInvalid;
@@ -152,7 +151,7 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Profil', ru: 'Профиль', en: 'Profile'),
+        title: AppStrings.profileProfile.select(language),
       ),
       body: SafeArea(
         child: Column(
@@ -172,25 +171,25 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                     onPickBanner: _pickBanner,
                     onPickAvatar: _changeAvatar,
                     bannerLabel: _banner != null || profile.bannerUrl != null
-                        ? t(tk: 'Banneri üýtget', ru: 'Изменить баннер', en: 'Change banner')
-                        : t(tk: 'Banner goş', ru: 'Добавить баннер', en: 'Add banner'),
-                    bannerHint: t(tk: 'Profiliň ýokarsynda görner', ru: 'Отображается наверху профиля', en: 'Shown at the top of the profile'),
+                        ? AppStrings.cabinetChangeBanner.select(language)
+                        : AppStrings.cabinetAddBanner.select(language),
+                    bannerHint: AppStrings.cabinetShownAtTheTopOf.select(language),
                   ),
                   const SizedBox(height: 18),
                   _ProfileSection(
                     icon: Icons.person_outline,
-                    title: t(tk: 'Esasy maglumatlar', ru: 'Основное', en: 'Basics'),
+                    title: AppStrings.cabinetBasics.select(language),
                     children: [
                       _ProfileField(
                         controller: _controllers[_nameIndex],
-                        label: t(tk: 'Adyňyz', ru: 'Имя', en: 'Name'),
+                        label: AppStrings.profileName.select(language),
                         icon: Icons.person_outline,
                         textInputAction: TextInputAction.next,
                         inputFormatters: [LengthLimitingTextInputFormatter(_nameMax)],
                       ),
                       _ProfileField(
                         controller: _controllers[_nicknameIndex],
-                        label: t(tk: 'Lakamyňyz', ru: 'Никнейм', en: 'Nickname'),
+                        label: AppStrings.cabinetNickname2.select(language),
                         icon: Icons.account_box_outlined,
                         textInputAction: TextInputAction.next,
                         autocorrect: false,
@@ -198,11 +197,11 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                         errorText: !nicknameError
                             ? null
                             : _nicknameTaken
-                            ? t(tk: 'Bu lakam eýesiz däl', ru: 'Этот никнейм уже занят', en: 'This nickname is already taken')
-                            : t(tk: '3-20 harp: kiçi harp, san we _', ru: '3-20 символов: строчные буквы, цифры и _', en: '3-20 chars: lowercase letters, numbers and _'),
+                            ? AppStrings.cabinetThisNicknameIsAlreadyTaken.select(language)
+                            : AppStrings.cabinet320CharsLowercaseLetters.select(language),
                         helperText: nicknameError || _nicknameChecking || _nicknameAvailable
                             ? null
-                            : t(tk: 'Müşderiler sizi şu at bilen tapar', ru: 'По этому имени клиенты найдут вас', en: 'Clients find you by this name'),
+                            : AppStrings.cabinetClientsFindYouByThis.select(language),
                         statusIcon: _nicknameChecking
                             ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: tokens.accent))
                             : _nicknameAvailable
@@ -217,8 +216,8 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                         ),
                       ),
                       _ProfilePhoneRow(
-                        label: t(tk: 'Telefon belgiňiz', ru: 'Телефон', en: 'Phone number'),
-                        action: t(tk: 'Üýtget', ru: 'Изменить', en: 'Change'),
+                        label: AppStrings.cabinetPhoneNumber.select(language),
+                        action: AppStrings.profileChange.select(language),
                         phone: displayPhone(profile.phone),
                         onTap: _changePhone,
                       ),
@@ -227,18 +226,18 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                   const SizedBox(height: 14),
                   _ProfileSection(
                     icon: Icons.location_on_outlined,
-                    title: t(tk: 'Salgy we beýan', ru: 'Адрес и описание', en: 'Address & bio'),
+                    title: AppStrings.cabinetAddressBio.select(language),
                     children: [
                       _ProfileField(
                         controller: _controllers[_addressIndex],
-                        label: t(tk: 'Salgysy', ru: 'Адрес', en: 'Address'),
+                        label: AppStrings.cabinetAddress.select(language),
                         icon: Icons.location_on_outlined,
                         textInputAction: TextInputAction.next,
                         inputFormatters: [LengthLimitingTextInputFormatter(_addressMax)],
                       ),
                       _ProfileField(
                         controller: _controllers[_aboutIndex],
-                        label: t(tk: 'Özüňiz barada', ru: 'О себе', en: 'About you'),
+                        label: AppStrings.cabinetAboutYou.select(language),
                         icon: Icons.edit_outlined,
                         maxLines: 4,
                         minLines: 3,
@@ -250,14 +249,14 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                   const SizedBox(height: 14),
                   _ProfileSection(
                     icon: Icons.link_outlined,
-                    title: t(tk: 'Sosial ulgamlar', ru: 'Соцсети', en: 'Social media'),
-                    subtitle: t(tk: 'Islege görä', ru: 'Необязательно', en: 'Optional'),
+                    title: AppStrings.cabinetSocialMedia.select(language),
+                    subtitle: AppStrings.cabinetOptional.select(language),
                     children: [
                       _ProfileField(
                         controller: _controllers[_instagramIndex],
                         label: 'Instagram',
                         icon: Icons.camera_alt_outlined,
-                        hint: '@${t(tk: 'lakamyňyz', ru: 'ник', en: 'handle')}',
+                        hint: '@${AppStrings.cabinetHandle.select(language)}',
                         keyboardType: TextInputType.url,
                         textInputAction: TextInputAction.next,
                         autocorrect: false,
@@ -266,7 +265,7 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                         controller: _controllers[_tiktokIndex],
                         label: 'TikTok',
                         icon: Icons.music_note_outlined,
-                        hint: '@${t(tk: 'lakamyňyz', ru: 'ник', en: 'handle')}',
+                        hint: '@${AppStrings.cabinetHandle.select(language)}',
                         keyboardType: TextInputType.url,
                         textInputAction: TextInputAction.done,
                         autocorrect: false,
@@ -282,8 +281,8 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                 error: _error,
                 saving: _saving,
                 canSave: _dirty && !nicknameError && !_saving,
-                previewLabel: t(tk: 'Öňünden gör', ru: 'Просмотр', en: 'Preview'),
-                saveLabel: _saving ? t(tk: 'Saklanýar...', ru: 'Сохранение...', en: 'Saving...') : t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save'),
+                previewLabel: AppStrings.cabinetPreview2.select(language),
+                saveLabel: _saving ? AppStrings.servicesSaving.select(language) : AppStrings.servicesSave.select(language),
                 onPreview: () => _openPreview(profile),
                 onSave: _save,
               ),

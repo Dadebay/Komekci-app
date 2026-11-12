@@ -97,18 +97,12 @@ class _TransferInstructions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          t(
-            tk: 'Pul geçirilmeli belgi',
-            ru: 'Номер для перевода',
-            en: 'Number to send to',
-          ),
+          AppStrings.authNumberToSendTo.select(language),
           style: TextStyle(color: tokens.textSecondary, fontSize: 12.5),
         ),
         const SizedBox(height: 8),
@@ -131,7 +125,7 @@ class _TransferInstructions extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: t(tk: 'Göçür', ru: 'Копировать', en: 'Copy'),
+                tooltip: AppStrings.authCopy.select(language),
                 icon: AppIcon(
                   Icons.copy_outlined,
                   color: tokens.accent,
@@ -143,7 +137,7 @@ class _TransferInstructions extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        t(tk: 'Göçürildi', ru: 'Скопировано', en: 'Copied'),
+                        AppStrings.authCopied.select(language),
                       ),
                     ),
                   );
@@ -154,11 +148,7 @@ class _TransferInstructions extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          t(
-            tk: 'Bu belgä bir geçirimde $amount $cur iberiň (iň az ${formatMoney(topup.phoneMinAmount)} $cur). SMS programmasy açyldy: "$_topUpShortCode" belgisine ugradyň.',
-            ru: 'Переведите на этот номер $amount $cur одним переводом (минимум ${formatMoney(topup.phoneMinAmount)} $cur). Откроется SMS на номер "$_topUpShortCode" — отправьте его.',
-            en: 'Send $amount $cur to this number in a single transfer (minimum ${formatMoney(topup.phoneMinAmount)} $cur). The SMS to "$_topUpShortCode" opens pre-filled — just send it.',
-          ),
+          AppStrings.authSendToThisNumberIn(amount, cur, formatMoney(topup.phoneMinAmount), _topUpShortCode).select(language),
           style: TextStyle(
             color: tokens.textSecondary,
             fontSize: 12.5,
@@ -170,11 +160,7 @@ class _TransferInstructions extends StatelessWidget {
           onPressed: onResendSms,
           icon: AppIcon(Icons.sms_outlined, size: 17, color: tokens.accent),
           label: Text(
-            t(
-              tk: 'SMS-i täzeden aç',
-              ru: 'Открыть SMS снова',
-              en: 'Open the SMS again',
-            ),
+            AppStrings.authOpenTheSmsAgain.select(language),
           ),
         ),
         if (pendingMessage != null) ...[
@@ -202,11 +188,7 @@ class _TransferInstructions extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  t(
-                    tk: 'Töleg garaşylýar. Ýagdaý özi täzelener.',
-                    ru: 'Ждём перевод. Статус обновится сам.',
-                    en: 'Waiting for your transfer. This updates by itself.',
-                  ),
+                  AppStrings.authWaitingForYourTransferThis.select(language),
                   style: TextStyle(color: tokens.textSecondary, fontSize: 12.5),
                 ),
               ),

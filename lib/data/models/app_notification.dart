@@ -1,4 +1,5 @@
 import 'api/client_models.dart';
+import '../../core/localization/app_strings.dart';
 
 /// A notification shown in the bell/feed: either one from the server inbox
 /// (`GET /me/notifications`) or a push received while the app was open.
@@ -31,14 +32,24 @@ class AppNotification {
 
   factory AppNotification.fromApi(ApiNotification n) => AppNotification(
     id: 'n${n.id}',
-    title: n.title,
-    body: n.body,
+    title: _fixWording(n.title),
+    body: _fixWording(n.body),
     receivedAt: n.sentAt,
     data: n.payload,
     read: n.readAt != null,
     eventCode: n.eventCode,
     serverId: n.id,
   );
+
+  /// The server still words appointments as "kabul" (reception); the app
+  /// calls them "nobat" (turn/appointment).
+  static String _fixWording(String text) {
+    var result = text;
+    for (final (source, replacement) in AppStrings.notificationWording) {
+      result = result.replaceAll(source, replacement);
+    }
+    return result;
+  }
 
   AppNotification copyWith({bool? read}) => AppNotification(
     id: id,

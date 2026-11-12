@@ -18,8 +18,6 @@ Future<TimeOfDay?> showClearTimePicker(
   required AppLanguage language,
   String? title,
 }) {
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   final tokens = context.appTokens;
   var hour = initial.hour;
   var minute = initial.minute - initial.minute % 5;
@@ -49,7 +47,7 @@ Future<TimeOfDay?> showClearTimePicker(
               const SizedBox(height: 16),
               Text(
                 title ??
-                    t(tk: 'Wagty saýlaň', ru: 'Выберите время', en: 'Select time'),
+                    AppStrings.cabinetSelectTime.select(language),
                 style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 14),
@@ -114,7 +112,7 @@ Future<TimeOfDay?> showClearTimePicker(
               ),
               const SizedBox(height: 12),
               MasterActionButton(
-                label: t(tk: 'Bolýar', ru: 'Готово', en: 'Done'),
+                label: AppStrings.cabinetDone.select(language),
                 enabled: true,
                 leading: Icons.check_rounded,
                 onTap: () => Navigator.pop(
@@ -124,7 +122,7 @@ Future<TimeOfDay?> showClearTimePicker(
               ),
               const SizedBox(height: 4),
               _DialogCancelButton(
-                label: t(tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
+                label: AppStrings.servicesCancel.select(language),
               ),
             ],
           ),
@@ -203,8 +201,6 @@ Future<(String, String)?> _pickTimeRange(
   required String start,
   required String end,
 }) {
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   var localStart = start;
   var localEnd = end;
   final tokens = context.appTokens;
@@ -246,7 +242,7 @@ Future<(String, String)?> _pickTimeRange(
                 children: [
                   Expanded(
                     child: _PickerField(
-                      label: t(tk: 'Başlangyç', ru: 'Начало', en: 'Start'),
+                      label: AppStrings.cabinetStart.select(language),
                       value: localStart,
                       icon: Icons.schedule_outlined,
                       trailingIcon: Icons.expand_more,
@@ -255,7 +251,7 @@ Future<(String, String)?> _pickTimeRange(
                           sheetContext,
                           initial: _parseTime(localStart),
                           language: language,
-                          title: t(tk: 'Başlangyç wagty', ru: 'Время начала', en: 'Start time'),
+                          title: AppStrings.cabinetStartTime.select(language),
                         );
                         if (picked != null) {
                           setSheetState(() => localStart = formatTime(picked));
@@ -266,7 +262,7 @@ Future<(String, String)?> _pickTimeRange(
                   const SizedBox(width: 12),
                   Expanded(
                     child: _PickerField(
-                      label: t(tk: 'Tamamlanyş', ru: 'Конец', en: 'End'),
+                      label: AppStrings.cabinetEnd.select(language),
                       value: localEnd,
                       icon: Icons.schedule_outlined,
                       trailingIcon: Icons.expand_more,
@@ -275,7 +271,7 @@ Future<(String, String)?> _pickTimeRange(
                           sheetContext,
                           initial: _parseTime(localEnd),
                           language: language,
-                          title: t(tk: 'Tamamlanyş wagty', ru: 'Время окончания', en: 'End time'),
+                          title: AppStrings.cabinetEndTime.select(language),
                         );
                         if (picked != null) {
                           setSheetState(() => localEnd = formatTime(picked));
@@ -296,11 +292,7 @@ Future<(String, String)?> _pickTimeRange(
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      t(
-                        tk: 'Tamamlanyş wagty başlangyçdan soň bolmaly',
-                        ru: 'Время окончания должно быть позже начала',
-                        en: 'End time must be after the start time',
-                      ),
+                      AppStrings.cabinetEndTimeMustBeAfter.select(language),
                       style: TextStyle(fontSize: 11.5, color: tokens.danger),
                     ),
                   ],
@@ -308,7 +300,7 @@ Future<(String, String)?> _pickTimeRange(
               ],
               const SizedBox(height: 20),
               MasterActionButton(
-                label: t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save'),
+                label: AppStrings.servicesSave.select(language),
                 enabled: !invalid,
                 leading: Icons.save_outlined,
                 onTap: () =>

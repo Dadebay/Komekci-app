@@ -6,47 +6,20 @@ class SupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final dark = tokens.brightness == Brightness.dark;
     final supportContact = context.watch<AppSettingsProvider>().supportContact;
     final contact = context.watch<AppSettingsProvider>().contact;
     final contactRows = _configuredContactRows(context, contact);
     final hasContact = supportContact.isNotEmpty || contactRows.isNotEmpty;
-    final faq = switch (language) {
-      AppLanguage.tk => [
-        (
-          'Abunany nädip tölemeli?',
-          'Kabinet → Töleg bölüminden balansyňyzy dolduryp bilersiňiz.',
-        ),
-        ('Hyzmat nädip goşulýar?', 'Kabinet → Hyzmatlar → Täze hyzmat goş.'),
-        (
-          'Iş wagtymy üýtgedip bilerinmi?',
-          'Hawa, Kabinet → Iş wagty bölüminden islendik wagt.',
-        ),
-      ],
-      AppLanguage.ru => [
-        ('Как оплатить подписку?', 'Кабинет → Оплата, пополните баланс.'),
-        ('Как добавить услугу?', 'Кабинет → Услуги → Добавить услугу.'),
-        ('Можно ли менять график?', 'Да, в разделе Кабинет → График работы.'),
-      ],
-      AppLanguage.en => [
-        (
-          'How do I pay for my subscription?',
-          'Cabinet → Billing, top up your balance there.',
-        ),
-        ('How do I add a service?', 'Cabinet → Services → Add service.'),
-        (
-          'Can I change my working hours?',
-          'Yes, any time from Cabinet → Working hours.',
-        ),
-      ],
-    };
+    final faq = [
+      for (final item in AppStrings.faq)
+        (item.question.select(language), item.answer.select(language)),
+    ];
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Kömek', ru: 'Помощь', en: 'Help'),
+        title: AppStrings.profileHelp.select(language),
       ),
       body: SafeArea(
         child: ListView(
@@ -78,11 +51,7 @@ class SupportScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    t(
-                      tk: 'Size nädip kömek edip bileris?',
-                      ru: 'Чем мы можем помочь?',
-                      en: 'How can we help?',
-                    ),
+                    AppStrings.cabinetHowCanWeHelp.select(language),
                     style: TextStyle(
                       color: dark ? tokens.textPrimary : tokens.surface,
                       fontSize: 22,
@@ -92,11 +61,7 @@ class SupportScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 9),
                   Text(
-                    t(
-                      tk: 'Soragyňyza jogap tapyň ýa-da elýeterli usul bilen bize ýüz tutuň.',
-                      ru: 'Найдите ответ на вопрос или свяжитесь с нами удобным способом.',
-                      en: 'Find an answer or reach us using an available contact method.',
-                    ),
+                    AppStrings.cabinetFindAnAnswerOrReach.select(language),
                     style: TextStyle(
                       color: dark ? tokens.textSecondary : tokens.surface.withValues(alpha: .72),
                       fontSize: 13,
@@ -108,11 +73,7 @@ class SupportScreen extends StatelessWidget {
             ),
             const SizedBox(height: 28),
             Text(
-              t(
-                tk: 'Bize habarlaşyň',
-                ru: 'Свяжитесь с нами',
-                en: 'Get in touch',
-              ),
+              AppStrings.profileGetInTouch.select(language),
               style: TextStyle(
                 color: tokens.textPrimary,
                 fontSize: 16,
@@ -123,11 +84,7 @@ class SupportScreen extends StatelessWidget {
             if (supportContact.isNotEmpty)
               _ContactRow(
                 icon: Icons.chat_bubble_outline,
-                title: t(
-                  tk: 'Goldaw bilen habarlaş',
-                  ru: 'Связаться с поддержкой',
-                  en: 'Contact support',
-                ),
+                title: AppStrings.cabinetContactSupport.select(language),
                 value: supportContact,
                 onTap: () => _openSupportContact(supportContact),
               ),
@@ -146,11 +103,7 @@ class SupportScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        t(
-                          tk: 'Aragatnaşyk maglumatlary häzir elýeterli däl.',
-                          ru: 'Контактные данные сейчас недоступны.',
-                          en: 'Contact details are not available right now.',
-                        ),
+                        AppStrings.cabinetContactDetailsAreNotAvailable.select(language),
                         style: TextStyle(
                           color: tokens.textSecondary,
                           fontSize: 13,
@@ -163,11 +116,7 @@ class SupportScreen extends StatelessWidget {
               ),
             const SizedBox(height: 28),
             Text(
-              t(
-                tk: 'Köp soralýan soraglar',
-                ru: 'Частые вопросы',
-                en: 'Frequently asked questions',
-              ),
+              AppStrings.cabinetFrequentlyAskedQuestions.select(language),
               style: TextStyle(
                 color: tokens.textPrimary,
                 fontSize: 16,
@@ -179,7 +128,7 @@ class SupportScreen extends StatelessWidget {
             const SizedBox(height: 18),
             _ContactRow(
               icon: Icons.info_outline,
-              title: t(tk: 'Biz barada', ru: 'О нас', en: 'About us'),
+              title: AppStrings.profileAboutUs.select(language),
               value: '',
               onTap: () =>
                   Navigator.push(context, pageRoute(const AboutScreen())),

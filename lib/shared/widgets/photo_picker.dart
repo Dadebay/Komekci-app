@@ -1,6 +1,7 @@
+import '../../core/localization/app_strings.dart';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
@@ -37,12 +38,12 @@ Future<File?> pickCompressedImage(BuildContext context, {AppLanguage language = 
           const SizedBox(height: 14),
           ListTile(
             leading: AppIcon(Icons.photo_camera_outlined, color: tokens.textPrimary, size: 21),
-            title: Text(pickTr(language, tk: 'Surat düşür', ru: 'Сделать фото', en: 'Take a photo')),
+            title: Text(AppStrings.sharedTakeAPhoto.select(language)),
             onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
           ),
           ListTile(
             leading: AppIcon(Icons.image_outlined, color: tokens.textPrimary, size: 21),
-            title: Text(pickTr(language, tk: 'Galereýadan saýla', ru: 'Выбрать из галереи', en: 'Choose from gallery')),
+            title: Text(AppStrings.sharedChooseFromGallery.select(language)),
             onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
           ),
           const SizedBox(height: 8),
@@ -59,12 +60,7 @@ Future<File?> pickCompressedImage(BuildContext context, {AppLanguage language = 
     // Could not be decoded, so it could not be shrunk: do not hand a big
     // file on to an upload that the server will turn down.
     toast.error(
-      pickTr(
-        language,
-        tk: 'Surat gaty uly ýa-da okalmady. Başga surat saýlaň.',
-        ru: 'Фото слишком большое или не читается. Выберите другое.',
-        en: 'The photo is too large or cannot be read. Choose another one.',
-      ),
+      AppStrings.sharedThePhotoIsTooLarge.select(language),
     );
     return null;
   }

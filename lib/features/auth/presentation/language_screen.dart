@@ -3,18 +3,18 @@ part of '../../../app/komekci_app.dart';
 const _languageOptions = [
   (
     language: AppLanguage.tk,
-    primary: 'Türkmençe',
-    secondary: 'Türkmen dili',
+    primary: AppStrings.languageTurkmen,
+    secondary: AppStrings.languageTurkmenDescription,
   ),
   (
     language: AppLanguage.ru,
-    primary: 'Русский',
-    secondary: 'Русский язык',
+    primary: AppStrings.languageRussian,
+    secondary: AppStrings.languageRussianDescription,
   ),
   (
     language: AppLanguage.en,
-    primary: 'English',
-    secondary: 'English language',
+    primary: AppStrings.languageEnglish,
+    secondary: AppStrings.languageEnglishDescription,
   ),
 ];
 
@@ -35,12 +35,7 @@ class LanguageScreen extends StatelessWidget {
     return Scaffold(
       appBar: standalone
           ? CabinetAppBar(
-              title: pickTr(
-                language.language,
-                tk: 'Dil',
-                ru: 'Язык',
-                en: 'Language',
-              ),
+              title: AppStrings.profileLanguage.select(language.language),
             )
           : null,
       body: Container(
@@ -75,12 +70,7 @@ class LanguageScreen extends StatelessWidget {
                   height: 40,
                   child: Center(
                     child: Text(
-                      pickTr(
-                        language.language,
-                        tk: 'Programmany ulanmak üçin öz diliňizi saýlaň',
-                        ru: 'Выберите предпочтительный язык для приложения',
-                        en: 'Choose your preferred language for the app',
-                      ),
+                      AppStrings.authChooseYourPreferredLanguageFor.select(language.language),
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       style: TextStyle(
@@ -111,12 +101,7 @@ class LanguageScreen extends StatelessWidget {
                 const Spacer(),
                 PrimaryButton(
                   label: standalone
-                      ? pickTr(
-                          language.language,
-                          tk: 'Ýatda sakla',
-                          ru: 'Сохранить',
-                          en: 'Save',
-                        )
+                      ? AppStrings.servicesSave.select(language.language)
                       : tr.continueText,
                   onTap: () => standalone
                       ? (() {

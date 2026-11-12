@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:hugeicons/hugeicons.dart';
 part 'nav_motion_painter.dart';
 
@@ -49,7 +49,9 @@ class NavMotionIcon extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     width: size,
     height: size,
-    child: CustomPaint(painter: _NavIconPainter(kind: kind, t: t, color: color, day: day ?? DateTime.now().day)),
+    child: CustomPaint(
+      painter: _NavIconPainter(kind: kind, t: t, color: color, day: day ?? DateTime.now().day),
+    ),
   );
 }
 

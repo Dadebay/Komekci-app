@@ -76,12 +76,7 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
     final range = await _pickTimeRange(
       context,
       language: language,
-      title: pickTr(
-        language,
-        tk: 'Şol gün üçin iş wagty',
-        ru: 'Часы работы в этот день',
-        en: 'Working hours for that day',
-      ),
+      title: AppStrings.cabinetWorkingHoursForThatDay.select(language),
       start: '10:00',
       end: '16:00',
     );
@@ -95,14 +90,12 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final daysOff = context.watch<ScheduleProvider>().overrides;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Aýratyn günler', ru: 'Особые дни', en: 'Special days'),
+        title: AppStrings.cabinetSpecialDays.select(language),
         action: AppHelpButton(
           onTap: () =>
               Navigator.push(context, pageRoute(const SupportScreen())),
@@ -117,11 +110,7 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
                 children: [
                   _InfoBanner(
                     icon: Icons.event_busy_outlined,
-                    text: t(
-                      tk: 'Bu günlerde hyzmat kabul edilmez. Islendik senäni goşup ýa-da aýryp bilersiňiz.',
-                      ru: 'В эти дни запись недоступна. Добавляйте или удаляйте любые даты.',
-                      en: 'Bookings are not accepted on these days. You can add or remove any date.',
-                    ),
+                    text: AppStrings.cabinetBookingsAreNotAcceptedOn.select(language),
                   ),
                   const SizedBox(height: 18),
                   if (daysOff.isEmpty)
@@ -129,11 +118,7 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 30),
                       child: Center(
                         child: Text(
-                          t(
-                            tk: 'Entek aýratyn gün goşulmady.',
-                            ru: 'Особые дни ещё не добавлены.',
-                            en: 'No special days added yet.',
-                          ),
+                          AppStrings.cabinetNoSpecialDaysAddedYet.select(language),
                           style: TextStyle(
                             color: tokens.textSecondary,
                             fontSize: 13,
@@ -207,11 +192,7 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
                           AppIcon(Icons.schedule_outlined, color: tokens.textPrimary, size: 18),
                           const SizedBox(width: 8),
                           Text(
-                            t(
-                              tk: 'Aýratyn iş wagty goş',
-                              ru: 'Добавить особые часы',
-                              en: 'Add special hours',
-                            ),
+                            AppStrings.cabinetAddSpecialHours.select(language),
                             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                           ),
                         ],
@@ -237,11 +218,7 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            t(
-                              tk: 'Gün goş',
-                              ru: 'Добавить день',
-                              en: 'Add day',
-                            ),
+                            AppStrings.cabinetAddDay.select(language),
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -257,7 +234,7 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: MasterActionButton(
-                label: t(tk: 'Taýýar', ru: 'Готово', en: 'Done'),
+                label: AppStrings.cabinetDone2.select(language),
                 enabled: true,
                 leading: Icons.check,
                 onTap: () => Navigator.pop(context),

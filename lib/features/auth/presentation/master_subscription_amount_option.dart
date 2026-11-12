@@ -20,12 +20,9 @@ class _AmountOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final tokens = context.appTokens;
-    final monthsLabel = pickTr(
-      language,
-      tk: '$months aý',
-      ru: months == 1 ? '1 месяц' : '$months мес.',
-      en: months == 1 ? '1 month' : '$months months',
-    );
+    final monthsLabel = months == 1
+        ? AppStrings.authOneMonth.select(language)
+        : AppStrings.authSeveralMonths(months).select(language);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -123,8 +120,6 @@ class _HowBalanceWorks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final example = fee * 2 + fee ~/ 2;
     final left = example - fee * 2;
@@ -144,22 +139,14 @@ class _HowBalanceWorks extends StatelessWidget {
           childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           leading: AppIcon(Icons.info_outline, color: tokens.accent, size: 20),
           title: Text(
-            t(
-              tk: 'Balans nähili işleýär?',
-              ru: 'Как работает баланс?',
-              en: 'How does the balance work?',
-            ),
+            AppStrings.authHowDoesTheBalanceWork.select(language),
             style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
           ),
           children: [
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                t(
-                  tk: 'Goýan puluňyz balansyňyzda saklanýar. Her aý abuna üçin $fee $cur awtomatiki tutulýar. Mysal üçin, balansyňyza $example $cur doldursaňyz, birinji aý $fee $cur, indiki aý ýene $fee $cur tutulýar. Galan $left $cur balansyňyzda saklanýar.',
-                  ru: 'Внесённые деньги хранятся на балансе. Каждый месяц за подписку автоматически списывается $fee $cur. Например, при пополнении на $example $cur: $fee $cur спишется в первый месяц, ещё $fee — во второй, оставшиеся $left останутся на балансе.',
-                  en: 'Money you add is kept on your balance. Each month, $fee $cur is automatically deducted for the subscription. For example, if you top up $example $cur, $fee $cur is deducted the first month, another $fee $cur the next, and the remaining $left $cur stays on your balance.',
-                ),
+                AppStrings.authMoneyYouAddIsKept(fee, cur, example, left).select(language),
                 style: TextStyle(
                   color: tokens.textSecondary,
                   fontSize: 12.5,

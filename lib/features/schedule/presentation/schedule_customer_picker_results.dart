@@ -10,8 +10,6 @@ class _CustomerPickerResults extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return Expanded(
                 child: results.isEmpty
                     ? Center(
@@ -37,11 +35,7 @@ class _CustomerPickerResults extends StatelessWidget {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                t(
-                                  tk: 'Müşderi tapylmady',
-                                  ru: 'Клиенты не найдены',
-                                  en: 'No customers found',
-                                ),
+                                AppStrings.scheduleNoCustomersFound.select(language),
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
@@ -51,16 +45,8 @@ class _CustomerPickerResults extends StatelessWidget {
                               const SizedBox(height: 5),
                               Text(
                                 query.isEmpty
-                                    ? t(
-                                        tk: 'Entek müşderi goşulmady',
-                                        ru: 'Клиенты ещё не добавлены',
-                                        en: 'No customers added yet',
-                                      )
-                                    : t(
-                                        tk: 'Başga at ýa-da belgi bilen gözläň',
-                                        ru: 'Попробуйте другое имя или номер',
-                                        en: 'Try another name or number',
-                                      ),
+                                    ? AppStrings.scheduleNoCustomersAddedYet.select(language)
+                                    : AppStrings.scheduleTryAnotherNameOrNumber.select(language),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 12.5,

@@ -11,25 +11,24 @@ Color _bookingStatusColor(AppThemeTokens tokens, ClientBookingStatus status) => 
 /// happened yet; null once it is over or was cancelled.
 String? _bookingCountdown(ClientBooking booking, AppLanguage language) {
   if (booking.status != ClientBookingStatus.expected) return null;
-  String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
   final now = DateTime.now();
   final diff = booking.startsAt.difference(now);
   if (diff.isNegative) {
-    return booking.endsAt.isAfter(now) ? t(tk: 'Häzir dowam edýär', ru: 'Идёт сейчас', en: 'In progress') : null;
+    return booking.endsAt.isAfter(now) ? AppStrings.homeInProgress.select(language) : null;
   }
   final today = DateTime(now.year, now.month, now.day);
   final day = DateTime(booking.startsAt.year, booking.startsAt.month, booking.startsAt.day);
   final days = day.difference(today).inDays;
   if (days == 0) {
     if (diff.inMinutes < 60) {
-      return t(tk: '${diff.inMinutes} min soň', ru: 'через ${diff.inMinutes} мин', en: 'in ${diff.inMinutes} min');
+      return AppStrings.homeInMin(diff.inMinutes).select(language);
     }
     final h = diff.inHours;
     final m = diff.inMinutes % 60;
-    return t(tk: '$h sag${m == 0 ? '' : ' $m min'} soň', ru: 'через $h ч${m == 0 ? '' : ' $m мин'}', en: 'in $h h${m == 0 ? '' : ' $m min'}');
+    return AppStrings.homeInH(h, m == 0 ? '' : ' $m min', m == 0 ? '' : ' $m мин').select(language);
   }
-  if (days == 1) return t(tk: 'Ertir', ru: 'Завтра', en: 'Tomorrow');
-  return t(tk: '$days gün soň', ru: 'через $days дн.', en: 'in $days days');
+  if (days == 1) return AppStrings.homeTomorrow.select(language);
+  return AppStrings.homeInDays(days).select(language);
 }
 
 /// One appointment, laid out like a ticket: a date tile tinted with the
@@ -53,7 +52,7 @@ class _ClientBookingRow extends StatelessWidget {
     final month = months[booking.startsAt.month - 1];
     final end = booking.startsAt.add(Duration(minutes: booking.minutes));
     String clock(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
-    final minLabel = pickTr(language, tk: 'min', ru: 'мин', en: 'min');
+    final minLabel = AppStrings.bookingMin2.select(language);
 
     return InkWell(
       onTap: () => Navigator.push(context, pageRoute(AppointmentDetailScreen(booking: booking))),
@@ -158,12 +157,11 @@ class _ClientBookingStatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final label = switch (status) {
-      ClientBookingStatus.expected => t(tk: 'Tassyklanan', ru: 'Подтверждено', en: 'Confirmed'),
-      ClientBookingStatus.completed => t(tk: 'Tamamlandy', ru: 'Завершено', en: 'Completed'),
-      ClientBookingStatus.cancelled => t(tk: 'Ýatyryldy', ru: 'Отменено', en: 'Cancelled'),
-      ClientBookingStatus.noShow => t(tk: 'Gelmedi', ru: 'Не пришёл', en: 'No-show'),
+      ClientBookingStatus.expected => AppStrings.homeConfirmed.select(language),
+      ClientBookingStatus.completed => AppStrings.scheduleCompleted.select(language),
+      ClientBookingStatus.cancelled => AppStrings.scheduleCancelled.select(language),
+      ClientBookingStatus.noShow => AppStrings.scheduleNoShow.select(language),
     };
     final fg = _bookingStatusColor(tokens, status);
     return Container(
@@ -220,7 +218,6 @@ class _NextBookingHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
     final countdown = _bookingCountdown(booking, language);
     String clock(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
@@ -238,7 +235,7 @@ class _NextBookingHero extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(color: tokens.accent, borderRadius: BorderRadius.circular(12)),
                   child: Text(
-                    t(tk: 'Indiki ýazgy', ru: 'Ближайшая запись', en: 'Next booking'),
+                    AppStrings.homeNextBooking.select(language),
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: tokens.accentOn),
                   ),
                 ),
@@ -266,7 +263,7 @@ class _NextBookingHero extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '· ${booking.minutes} ${t(tk: 'min', ru: 'мин', en: 'min')}',
+                  '· ${booking.minutes} ${AppStrings.bookingMin2.select(language)}',
                   style: TextStyle(fontSize: 13, color: tokens.textSecondary),
                 ),
               ],

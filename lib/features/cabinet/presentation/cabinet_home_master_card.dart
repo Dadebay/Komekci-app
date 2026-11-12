@@ -7,8 +7,6 @@ class _MasterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final balance = context.watch<BillingProvider>().balance;
     final profile = context.watch<MasterProfileProvider>();
     final tokens = context.appTokens;
@@ -104,7 +102,7 @@ class _MasterCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        t(tk: 'Balans', ru: 'Баланс', en: 'Balance'),
+                        AppStrings.cabinetBalance.select(language),
                         style: TextStyle(
                           fontSize: 11.5,
                           color: tokens.textSecondary,
@@ -136,7 +134,7 @@ class _MasterCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      t(tk: 'Doldur', ru: 'Пополнить', en: 'Top up'),
+                      AppStrings.cabinetTopUp.select(language),
                       style: TextStyle(
                         color: tokens.surface,
                         fontSize: 12.5,
@@ -273,12 +271,7 @@ class _HelpCard extends StatelessWidget {
             const SizedBox(width: 13),
             Expanded(
               child: Text(
-                pickTr(
-                  language,
-                  tk: 'Kömek gerekmi?',
-                  ru: 'Нужна помощь?',
-                  en: 'Need help?',
-                ),
+                AppStrings.cabinetNeedHelp.select(language),
                 style: const TextStyle(
                   fontSize: 14.5,
                   fontWeight: FontWeight.w700,

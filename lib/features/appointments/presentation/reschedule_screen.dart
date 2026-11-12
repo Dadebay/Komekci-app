@@ -98,7 +98,6 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final weekdayLabels = switch (language) {
       AppLanguage.tk => _weekdaysTk,
@@ -110,7 +109,7 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
     final slots = _slotsFor(_selectedDate);
 
     return AppScaffold(
-      title: t(tk: 'Ýazgyny üýtget', ru: 'Изменить запись', en: 'Change appointment'),
+      title: AppStrings.appointmentsChangeAppointment.select(language),
       subtitle: widget.booking.masterName,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +118,7 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
             child: ListView(
               children: [
                 Text(
-                  t(tk: 'Täze senäni saýlaň', ru: 'Новая дата', en: 'New date'),
+                  AppStrings.appointmentsNewDate.select(language),
                   style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 10),
@@ -150,15 +149,15 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  t(tk: 'Täze wagt', ru: 'Новое время', en: 'New time'),
+                  AppStrings.appointmentsNewTime.select(language),
                   style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 10),
                 if (_error != null)
                   RetryErrorState(
-                    title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
+                    title: AppStrings.requestsSomethingWentWrong.select(language),
                     text: apiErrorMessage(_error!, language),
-                    retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                    retryLabel: AppStrings.profileTryAgain.select(language),
                     onRetry: _load,
                   )
                 else if (availability == null)
@@ -169,8 +168,8 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
                 else if (!availability.acceptingBookings || slots.isEmpty)
                   EmptyState(
                     icon: Icons.schedule_outlined,
-                    title: t(tk: 'Boş wagt ýok', ru: 'Свободного времени нет', en: 'No free slots'),
-                    text: availability.message ?? t(tk: 'Başga gün saýlaň.', ru: 'Выберите другой день.', en: 'Please pick another day.'),
+                    title: AppStrings.bookingNoFreeSlots.select(language),
+                    text: availability.message ?? AppStrings.appointmentsPleasePickAnotherDay.select(language),
                   )
                 else
                   Wrap(
@@ -223,7 +222,7 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
             ),
           ),
           PrimaryButton(
-            label: t(tk: 'Täze wagty tassykla', ru: 'Подтвердить новое время', en: 'Confirm new time'),
+            label: AppStrings.appointmentsConfirmNewTime.select(language),
             loading: _saving,
             onTap: _selectedSlot == null ? () {} : _confirm,
           ),

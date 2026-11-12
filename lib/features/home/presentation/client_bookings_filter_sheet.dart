@@ -16,11 +16,6 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
       // parent's state (via the outer setState) so the list behind it updates too.
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) {
-          String t({
-            required String tk,
-            required String ru,
-            required String en,
-          }) => pickTr(language, tk: tk, ru: ru, en: en);
           void select(VoidCallback change) {
             update(change);
             setDialogState(() {});
@@ -47,7 +42,7 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        t(tk: 'Süzgüç', ru: 'Фильтр', en: 'Filter'),
+                        AppStrings.homeFilter.select(language),
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
@@ -70,7 +65,7 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            t(tk: 'Master', ru: 'Мастер', en: 'Master'),
+                            AppStrings.appointmentsMaster.select(language),
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -82,7 +77,7 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                             runSpacing: 8,
                             children: [
                               _FilterChipButton(
-                                label: t(tk: 'Ähli', ru: 'Все', en: 'All'),
+                                label: AppStrings.homeAll.select(language),
                                 selected: _filterMaster == null,
                                 onTap: () => select(() {
                                   _filterMaster = null;
@@ -106,7 +101,7 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                           if (_showPast) ...[
                             const SizedBox(height: 18),
                             Text(
-                              t(tk: 'Ýagdaý', ru: 'Статус', en: 'Status'),
+                              AppStrings.homeStatus.select(language),
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -118,7 +113,7 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                               runSpacing: 8,
                               children: [
                                 _FilterChipButton(
-                                  label: t(tk: 'Ähli', ru: 'Все', en: 'All'),
+                                  label: AppStrings.homeAll.select(language),
                                   selected: _filterStatus == null,
                                   onTap: () => select(() {
                                     _filterStatus = null;
@@ -127,11 +122,7 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                                   }),
                                 ),
                                 _FilterChipButton(
-                                  label: t(
-                                    tk: 'Tassyklanan',
-                                    ru: 'Подтверждено',
-                                    en: 'Confirmed',
-                                  ),
+                                  label: AppStrings.homeConfirmed.select(language),
                                   selected:
                                       _filterStatus ==
                                       ClientBookingStatus.expected,
@@ -143,11 +134,7 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                                   }),
                                 ),
                                 _FilterChipButton(
-                                  label: t(
-                                    tk: 'Tamamlandy',
-                                    ru: 'Завершено',
-                                    en: 'Completed',
-                                  ),
+                                  label: AppStrings.scheduleCompleted.select(language),
                                   selected:
                                       _filterStatus ==
                                       ClientBookingStatus.completed,
@@ -159,11 +146,7 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                                   }),
                                 ),
                                 _FilterChipButton(
-                                  label: t(
-                                    tk: 'Ýatyryldy',
-                                    ru: 'Отменено',
-                                    en: 'Cancelled',
-                                  ),
+                                  label: AppStrings.scheduleCancelled.select(language),
                                   selected:
                                       _filterStatus ==
                                       ClientBookingStatus.cancelled,
@@ -199,7 +182,7 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                                   _ClientBookingsScreenState._pageSize;
                             }),
                             child: Text(
-                              t(tk: 'Arassala', ru: 'Сбросить', en: 'Clear'),
+                              AppStrings.homeClear.select(language),
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -220,7 +203,7 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                             ),
                             onPressed: () => Navigator.pop(dialogContext),
                             child: Text(
-                              t(tk: 'Ulan', ru: 'Применить', en: 'Apply'),
+                              AppStrings.homeApply.select(language),
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,

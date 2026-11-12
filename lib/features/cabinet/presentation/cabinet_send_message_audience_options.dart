@@ -11,31 +11,17 @@ class _MessageAudienceOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final audienceTitles = switch (language) {
-      AppLanguage.tk => [
-        'Ähli müşderiler',
-        'Saýlanan müşderiler',
-        'Soňky wagt aralygyndaky müşderiler',
-      ],
-      AppLanguage.ru => [
-        'Все клиенты',
-        'Выбранные клиенты',
-        'Клиенты за период',
-      ],
-      AppLanguage.en => ['All clients', 'Selected clients', 'Recent clients'],
+      AppLanguage.tk => AppStrings.audienceTitlesTk,
+      AppLanguage.ru => AppStrings.audienceTitlesRu,
+      AppLanguage.en => AppStrings.audienceTitlesEn,
     };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
                   const SizedBox(height: 20),
                   _FieldLabel(
-                    text: t(
-                      tk: 'Kimlere ibermeli?',
-                      ru: 'Кому отправить?',
-                      en: 'Who to send to?',
-                    ),
+                    text: AppStrings.cabinetWhoToSendTo.select(language),
                   ),
                   const SizedBox(height: 10),
                   ...List.generate(3, (index) {

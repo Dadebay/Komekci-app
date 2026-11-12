@@ -27,10 +27,11 @@ Firebase configuration is required for notifications and analytics. The Android 
 ```sh
 flutter analyze
 flutter test
+dart format --output=none --set-exit-if-changed lib test
 flutter build apk --debug
 ```
 
-The GitHub Actions workflow runs these checks on pull requests and on `main`. The test suite covers appointment rules, API contracts, offline data, reminders, and key screen layouts.
+The GitHub Actions workflow runs analysis, tests, and a debug build on pull requests and on `main`. The format check is not part of CI yet because parts of the codebase are not formatted with `dart format`. The test suite covers appointment rules, API contracts, offline data, reminders, and key screen layouts.
 
 ## Android release
 
@@ -41,3 +42,22 @@ flutter build apk --release
 ```
 
 The APK is written to `build/app/outputs/flutter-apk/app-release.apk`. Verify its package, version, and signing certificate before sharing it. GitHub Releases are for direct APK downloads; publishing to Google Play requires the store's own release process.
+
+## Store release
+
+Version `1.0.0+1` has not been published yet: there is no Google Play or App Store listing, so this README links to none. Add the verified links and the GitHub Release here once they exist.
+
+Build the Play Store bundle and the iOS archive from the commit you intend to ship:
+
+```sh
+flutter build appbundle --release          # build/app/outputs/bundle/release/app-release.aab
+flutter build ipa --release                # needs Apple signing set up in Xcode
+```
+
+Raise the build number (`+N` in `pubspec.yaml`) for every upload; Play and App Store Connect reject a repeated one. Signing material, store accounts, and the pre-release checklist are described in [`docs/RELEASE.md`](docs/RELEASE.md). It records only where secrets live and who owns them, never their values.
+
+## Known limitations
+
+- Professionals send bulk SMS through the phone's own messaging app, one client at a time (`sms:` link). The app cannot confirm that a message was actually sent.
+- Several plugins are local forks under `third_party/` and some plugins do not support Swift Package Manager yet.
+- A running Kömekçi backend is required for sign-in, bookings, and billing.

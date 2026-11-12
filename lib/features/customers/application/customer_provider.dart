@@ -159,6 +159,16 @@ class CustomerProvider extends SessionScoped {
     notifyListeners();
   }
 
+  /// Sets the master's label for the client (`PATCH /me/clients/{id}`).
+  Future<void> setStatus(String id, CustomerStatus status) async {
+    final summary = await _repository.setClientStatus(id, Customer.statusToApi(status));
+    final saved = Customer.parseStatus(summary.status);
+    _customers = [
+      for (final c in _customers) c.id == id ? c.copyWith(status: saved) : c,
+    ];
+    notifyListeners();
+  }
+
   /// Removes the client from the book (`DELETE /me/clients/{id}`).
   Future<void> remove(String id) async {
     await _repository.removeClient(id);

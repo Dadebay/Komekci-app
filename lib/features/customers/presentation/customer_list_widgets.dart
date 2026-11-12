@@ -174,7 +174,11 @@ class _CustomerCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                _StatusBadge(status: customer.status, language: language),
+                _StatusBadge(
+                  status: customer.status,
+                  language: language,
+                  onTap: () => _pickCustomerStatus(context, customer, language),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -190,7 +194,7 @@ class _CustomerCard extends StatelessWidget {
                   Expanded(
                     child: _CardFact(
                       icon: Icons.history,
-                      label: pickTr(language, tk: 'Soňky sapar', ru: 'Последний визит', en: 'Last visit'),
+                      label: AppStrings.customersLastVisit.select(language),
                       value: customer.lastVisitDate == null
                           ? '—'
                           : formatDate(customer.lastVisitDate!),
@@ -204,8 +208,8 @@ class _CustomerCard extends StatelessWidget {
                           ? Icons.calendar_today_outlined
                           : Icons.schedule_outlined,
                       label: next == null
-                          ? pickTr(language, tk: 'Gelişi', ru: 'Визитов', en: 'Visits')
-                          : pickTr(language, tk: 'Indiki', ru: 'Следующий', en: 'Next'),
+                          ? AppStrings.customersVisits.select(language)
+                          : AppStrings.customersNext.select(language),
                       value: next == null
                           ? '${customer.totalVisits}'
                           : formatDate(next),

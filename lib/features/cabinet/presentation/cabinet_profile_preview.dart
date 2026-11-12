@@ -27,13 +27,12 @@ class _MasterProfilePreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: AppBar(
         leading: IconButton(icon: const AppIcon(Icons.arrow_back), onPressed: () => Navigator.maybePop(context)),
-        title: Text(t(tk: 'Öňünden görnüş', ru: 'Предпросмотр', en: 'Preview')),
+        title: Text(AppStrings.cabinetPreview.select(language)),
       ),
       body: SafeArea(
         child: ListView(
@@ -71,11 +70,11 @@ class _MasterProfilePreviewScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          name.isEmpty ? t(tk: 'Ady ýok', ru: 'Без имени', en: 'No name') : name,
+                          name.isEmpty ? AppStrings.cabinetNoName.select(language) : name,
                           style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 3),
-                        Text('@${nickname.isEmpty ? t(tk: 'lakam', ru: 'ник', en: 'nickname') : nickname}', style: TextStyle(color: tokens.textSecondary)),
+                        Text('@${nickname.isEmpty ? AppStrings.cabinetNickname.select(language) : nickname}', style: TextStyle(color: tokens.textSecondary)),
                         if (address.isNotEmpty) ...[
                           const SizedBox(height: 8),
                           Row(
@@ -91,7 +90,7 @@ class _MasterProfilePreviewScreen extends StatelessWidget {
                   ),
                   if (about.isNotEmpty) ...[
                     Text(
-                      t(tk: 'Hakynda', ru: 'О себе', en: 'About'),
+                      AppStrings.cabinetAbout.select(language),
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 8),
@@ -100,7 +99,7 @@ class _MasterProfilePreviewScreen extends StatelessWidget {
                   ],
                   if (instagram.isNotEmpty || tiktok.isNotEmpty) ...[
                     Text(
-                      t(tk: 'Sosial ulgamlar', ru: 'Соцсети', en: 'Social media'),
+                      AppStrings.cabinetSocialMedia.select(language),
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 10),

@@ -82,20 +82,10 @@ class _MasterEntryGateState extends State<MasterEntryGate>
     final confirmed = await _showConfirmDialog(
       context,
       icon: Icons.logout,
-      title: pickTr(
-        language,
-        tk: 'Başga hasaba geçmelimi?',
-        ru: 'Войти в другой аккаунт?',
-        en: 'Switch accounts?',
-      ),
-      message: pickTr(
-        language,
-        tk: 'Master hasabyndan çykyp, müşderi hasabyňyzyň telefon belgisi bilen girip bilersiňiz.',
-        ru: 'Выйдите из аккаунта мастера, затем войдите с номером телефона клиентского аккаунта.',
-        en: 'Sign out of the master account, then use your client account phone number to sign in.',
-      ),
-      confirmLabel: pickTr(language, tk: 'Çyk', ru: 'Выйти', en: 'Sign out'),
-      cancelLabel: pickTr(language, tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
+      title: AppStrings.homeSwitchAccounts.select(language),
+      message: AppStrings.homeSignOutOfTheMaster.select(language),
+      confirmLabel: AppStrings.profileSignOut2.select(language),
+      cancelLabel: AppStrings.servicesCancel.select(language),
     );
     if (!confirmed || !mounted || _leaving) return;
     setState(() => _leaving = true);
@@ -132,19 +122,9 @@ class _MasterEntryGateState extends State<MasterEntryGate>
               : Padding(
                   padding: const EdgeInsets.all(24),
                   child: RetryErrorState(
-                    title: pickTr(
-                      language,
-                      tk: 'Töleg ýagdaýyny barlap bolmady',
-                      ru: 'Не удалось проверить оплату',
-                      en: 'Could not check payment',
-                    ),
+                    title: AppStrings.homeCouldNotCheckPayment.select(language),
                     text: apiErrorMessage(_error!, language),
-                    retryLabel: pickTr(
-                      language,
-                      tk: 'Täzeden synanyş',
-                      ru: 'Повторить',
-                      en: 'Try again',
-                    ),
+                    retryLabel: AppStrings.profileTryAgain.select(language),
                     onRetry: _check,
                   ),
                 ),
@@ -167,8 +147,6 @@ class _ClientHomeState extends State<ClientHome> {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final pages = [
       const ClientHomeDashboard(),
       const ClientMastersScreen(),
@@ -190,10 +168,10 @@ class _ClientHomeState extends State<ClientHome> {
           HugeIcons.strokeRoundedUserCircle,
         ],
         labels: [
-          t(tk: 'Baş sahypa', ru: 'Главная', en: 'Home'),
-          t(tk: 'Masterlerim', ru: 'Мои мастера', en: 'My masters'),
-          t(tk: 'Ýazgylarym', ru: 'Мои записи', en: 'Bookings'),
-          t(tk: 'Profil', ru: 'Профиль', en: 'Profile'),
+          AppStrings.homeHome.select(language),
+          AppStrings.profileMyMasters.select(language),
+          AppStrings.homeBookings2.select(language),
+          AppStrings.profileProfile.select(language),
         ],
       ),
     );
@@ -348,8 +326,6 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
     final showingSavedData = context
         .watch<MasterOfflineCache>()
         .usingCachedData;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     // Index 3 ("Müşderi goşmak") is a push-style action, not a persistent tab —
     // the form has its own back arrow and pops rather than swapping content.
     final pages = [
@@ -381,11 +357,7 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        t(
-                          tk: 'Saklanan maglumatlar görkezilýär. Täzelemek we üýtgetmek üçin internet gerek.',
-                          ru: 'Показаны сохранённые данные. Для обновления и изменений нужен интернет.',
-                          en: 'Showing saved data. Internet is needed to refresh or make changes.',
-                        ),
+                        AppStrings.homeShowingSavedDataInternetIs.select(language),
                         style: TextStyle(
                           fontSize: 11.5,
                           color: tokens.textPrimary,
@@ -393,7 +365,7 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
                       ),
                     ),
                     IconButton(
-                      tooltip: t(tk: 'Täzele', ru: 'Обновить', en: 'Refresh'),
+                      tooltip: AppStrings.homeRefresh.select(language),
                       onPressed: _refreshingSavedData
                           ? null
                           : _refreshSavedData,
@@ -436,11 +408,11 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
           HugeIcons.strokeRoundedUserCircle,
         ],
         labels: [
-          t(tk: 'Baş sahypa', ru: 'Главная', en: 'Home'),
-          t(tk: 'Müşderiler', ru: 'Клиенты', en: 'Customers'),
-          t(tk: 'Senenama', ru: 'Календарь', en: 'Calendar'),
-          t(tk: 'Müşderi goşmak', ru: 'Добавить клиента', en: 'Add customer'),
-          t(tk: 'Kabinet', ru: 'Кабинет', en: 'Cabinet'),
+          AppStrings.homeHome.select(language),
+          AppStrings.homeCustomers.select(language),
+          AppStrings.homeCalendar.select(language),
+          AppStrings.homeAddCustomer.select(language),
+          AppStrings.homeCabinet.select(language),
         ],
       ),
     );

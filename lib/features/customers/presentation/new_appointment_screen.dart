@@ -68,12 +68,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
       service.minutes,
     )) {
       AppToast.of(context).error(
-        pickTr(
-          context.read<LanguageProvider>().language,
-          tk: 'Bu hyzmat saýlanan wagta sygmaýar. Başga wagt saýlaň.',
-          ru: 'Услуга не помещается в выбранное время. Выберите другое время.',
-          en: 'This service does not fit the selected time. Choose another time.',
-        ),
+        AppStrings.customersThisServiceDoesNotFit.select(context.read<LanguageProvider>().language),
       );
       return;
     }
@@ -102,10 +97,10 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
     await _showInfoDialog(
       context,
       icon: Icons.check,
-      title: pickTr(language, tk: 'Ýazgy döredildi', ru: 'Запись создана', en: 'Booking created'),
+      title: AppStrings.customersBookingCreated.select(language),
       message:
           '${widget.customer.name} — ${service.name}\n${formatDate(startsAt)} • ${formatTime(TimeOfDay.fromDateTime(startsAt))}',
-      actionLabel: pickTr(language, tk: 'Bolýar', ru: 'Готово', en: 'Done'),
+      actionLabel: AppStrings.cabinetDone.select(language),
     );
     if (mounted) Navigator.pop(context);
   }
@@ -113,8 +108,6 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final services = context.watch<ServiceProvider>().services;
     final selected = _serviceIndex != null && _serviceIndex! < services.length
         ? services[_serviceIndex!]
@@ -123,7 +116,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
 
     return Scaffold(
       backgroundColor: tokens.surface,
-      appBar: CabinetAppBar(title: t(tk: 'Täze ýazgy', ru: 'Новая запись', en: 'New booking')),
+      appBar: CabinetAppBar(title: AppStrings.customersNewBooking2.select(language)),
       body: SafeArea(
         child: Column(
           children: [
@@ -167,15 +160,15 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
                   ),
                   const SizedBox(height: 22),
                   _FieldLabel(
-                    text: t(tk: 'Hyzmat saýlaň', ru: 'Выберите услугу', en: 'Choose a service'),
+                    text: AppStrings.scheduleChooseAService.select(language),
                     required: true,
                   ),
                   const SizedBox(height: 8),
                   if (services.isEmpty)
                     EmptyState(
                       icon: Icons.content_cut,
-                      title: t(tk: 'Hyzmat ýok', ru: 'Услуг нет', en: 'No services'),
-                      text: t(tk: 'Ilki bilen hyzmat goşuň.', ru: 'Сначала добавьте услугу.', en: 'Add a service first.'),
+                      title: AppStrings.bookingNoServices.select(language),
+                      text: AppStrings.scheduleAddAServiceFirst.select(language),
                     )
                   else
                     ...services.asMap().entries.map((entry) {
@@ -237,7 +230,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
                   if (_showErrors && _serviceIndex == null) _ErrorText(language: language),
                   const SizedBox(height: 22),
                   _PickerField(
-                    label: t(tk: 'Sene we wagt', ru: 'Дата и время', en: 'Date and time'),
+                    label: AppStrings.customersDateAndTime.select(language),
                     value: '${formatDate(_date)} • ${formatTime(_time)}',
                     icon: Icons.calendar_month_outlined,
                     onTap: _pickDateTime,
@@ -248,7 +241,7 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: MasterActionButton(
-                label: t(tk: 'Ýazgyny tassykla', ru: 'Подтвердить запись', en: 'Confirm booking'),
+                label: AppStrings.bookingConfirmBooking2.select(language),
                 enabled: selected != null,
                 leading: Icons.check,
                 onTap: () => _confirm(services),

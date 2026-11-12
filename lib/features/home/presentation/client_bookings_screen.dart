@@ -30,19 +30,18 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final tk = language == AppLanguage.tk;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final canPop = _canPop;
     final provider = context.watch<ClientBookingsProvider>();
     final allBookings = provider.bookings;
     final masters = allBookings.map((b) => b.masterName).toSet().toList()..sort();
 
-    final upcomingAll = allBookings.where((b) => b.status == ClientBookingStatus.expected).toList()..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+    final upcomingAll = allBookings.where((b) => b.isUpcoming).toList()..sort((a, b) => a.startsAt.compareTo(b.startsAt));
     final pastCount = allBookings.length - upcomingAll.length;
 
     final filtered =
         allBookings.where((b) {
-            final isUpcoming = b.status == ClientBookingStatus.expected;
+            final isUpcoming = b.isUpcoming;
             if (isUpcoming == _showPast) return false;
             if (_filterMaster != null && b.masterName != _filterMaster) {
               return false;
@@ -101,7 +100,7 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Ýazgylarym', ru: 'Мои записи', en: 'My bookings'),
+        title: AppStrings.homeMyBookings.select(language),
         action: GestureDetector(
           onTap: () => _openFilterSheet(context, language: language, masters: masters),
           child: SizedBox(
@@ -122,9 +121,9 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: Row(
                 children: [
-                  tabButton(t(tk: 'Indiki', ru: 'Предстоящие', en: 'Upcoming'), upcomingAll.length, false),
+                  tabButton(AppStrings.homeUpcoming.select(language), upcomingAll.length, false),
                   const SizedBox(width: 10),
-                  tabButton(t(tk: 'Geçen', ru: 'Прошедшие', en: 'Past'), pastCount, true),
+                  tabButton(AppStrings.homePast.select(language), pastCount, true),
                 ],
               ),
             ),
@@ -139,15 +138,15 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
                             child: EmptyState(
                               icon: Icons.event_busy_outlined,
                               title: _hasActiveFilter
-                                  ? t(tk: 'Ýazgy tapylmady', ru: 'Записи не найдены', en: 'No bookings found')
+                                  ? AppStrings.homeNoBookingsFound.select(language)
                                   : _showPast
-                                  ? t(tk: 'Geçen ýazgy ýok', ru: 'Прошедших записей нет', en: 'No past bookings')
-                                  : t(tk: 'Indiki ýazgy ýok', ru: 'Предстоящих записей нет', en: 'No upcoming bookings'),
+                                  ? AppStrings.homeNoPastBookings.select(language)
+                                  : AppStrings.homeNoUpcomingBookings.select(language),
                               text: _hasActiveFilter
-                                  ? t(tk: 'Süzgüçi üýtgediň.', ru: 'Измените фильтр.', en: 'Try a different filter.')
+                                  ? AppStrings.homeTryADifferentFilter.select(language)
                                   : _showPast
-                                  ? t(tk: 'Tamamlanan ýazgylaryňyz şu ýerde görünýär.', ru: 'Здесь будут завершённые записи.', en: 'Finished bookings show up here.')
-                                  : t(tk: 'Master saýlap ýazylyň.', ru: 'Выберите мастера и запишитесь.', en: 'Choose a master and book an appointment.'),
+                                  ? AppStrings.homeFinishedBookingsShowUpHere.select(language)
+                                  : AppStrings.homeChooseAMasterAndBook.select(language),
                             ),
                           ),
                         ],
@@ -170,7 +169,7 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      t(tk: 'Ýene ýazgylar', ru: 'Другие записи', en: 'More bookings'),
+                                      AppStrings.homeMoreBookings.select(language),
                                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                                     ),
                                   ],
@@ -194,7 +193,7 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
                                   }
                                   setState(() => _visibleCount += _pageSize);
                                 },
-                                child: Text(t(tk: 'Has köp görkez', ru: 'Показать ещё', en: 'Show more')),
+                                child: Text(AppStrings.homeShowMore.select(language)),
                               ),
                             ),
                         ],

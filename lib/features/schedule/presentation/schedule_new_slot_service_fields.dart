@@ -3,16 +3,10 @@ part of '../../../app/komekci_app.dart';
 extension _NewSlotServiceFields on _NewSlotAppointmentSheetState {
   List<Widget> _serviceFields({required AppLanguage language, required List<SalonService> services}) {
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return [
                           _NewBookingSectionTitle(
                             number: 2,
-                            title: t(
-                              tk: 'Hyzmat saýlaň',
-                              ru: 'Выберите услугу',
-                              en: 'Choose a service',
-                            ),
+                            title: AppStrings.scheduleChooseAService.select(language),
                           ),
                           const SizedBox(height: 10),
                           GestureDetector(
@@ -61,11 +55,7 @@ extension _NewSlotServiceFields on _NewSlotAppointmentSheetState {
                                       children: [
                                         Text(
                                           _selectedService?.name ??
-                                              t(
-                                                tk: 'Hyzmat saýlaň',
-                                                ru: 'Выберите услугу',
-                                                en: 'Choose a service',
-                                              ),
+                                              AppStrings.scheduleChooseAService.select(language),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
@@ -77,7 +67,7 @@ extension _NewSlotServiceFields on _NewSlotAppointmentSheetState {
                                         if (_selectedService != null) ...[
                                           const SizedBox(height: 2),
                                           Text(
-                                            '${_selectedService!.minutes} ${t(tk: "min", ru: "мин", en: "min")} · ${_selectedService!.price} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
+                                            '${_selectedService!.minutes} ${AppStrings.bookingMin.select(language)} · ${_selectedService!.price} ${context.watch<AppSettingsProvider>().currencyLabel(language)}',
                                             style: TextStyle(
                                               fontSize: 11.5,
                                               color: tokens.textSecondary,

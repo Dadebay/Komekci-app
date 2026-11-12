@@ -3,12 +3,10 @@ part of '../../../app/komekci_app.dart';
 extension _WorkingWeekOverview on _WorkingHoursScreenState {
   List<Widget> _weeklyOverview({required AppLanguage language}) {
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final shortNames = switch (language) {
-      AppLanguage.tk => ['Du', 'Si', 'Ça', 'Pe', 'An', 'Şe', 'Ýe'],
-      AppLanguage.ru => ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
-      AppLanguage.en => ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+      AppLanguage.tk => AppStrings.weekdaysShortTk,
+      AppLanguage.ru => AppStrings.weekdaysShortRu,
+      AppLanguage.en => AppStrings.weekdaysShortEn,
     };
     final openDays = _days.where((day) => day.open).length;
     return [
@@ -43,11 +41,7 @@ extension _WorkingWeekOverview on _WorkingHoursScreenState {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      t(
-                                        tk: 'Hepdelik tertip',
-                                        ru: 'Неделя',
-                                        en: 'Your week',
-                                      ),
+                                      AppStrings.cabinetYourWeek.select(language),
                                       style: TextStyle(
                                         color: tokens.surface.withValues(
                                           alpha: .72,
@@ -58,7 +52,7 @@ extension _WorkingWeekOverview on _WorkingHoursScreenState {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      '$openDays / 7 ${t(tk: 'iş güni', ru: 'рабочих дней', en: 'working days')}',
+                                      '$openDays / 7 ${AppStrings.cabinetWorkingDays.select(language)}',
                                       style: TextStyle(
                                         color: tokens.surface,
                                         fontSize: 20,
@@ -118,11 +112,7 @@ extension _WorkingWeekOverview on _WorkingHoursScreenState {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      t(
-                        tk: 'Bu tertip müşderilere görünýän boş wagtlary kesgitleýär.',
-                        ru: 'Этот график определяет доступное клиентам время.',
-                        en: 'This schedule sets the times clients can book.',
-                      ),
+                      AppStrings.cabinetThisScheduleSetsTheTimes.select(language),
                       style: TextStyle(
                         color: tokens.textSecondary,
                         fontSize: 12.5,

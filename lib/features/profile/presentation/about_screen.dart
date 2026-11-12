@@ -7,13 +7,11 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final about = context.watch<AppSettingsProvider>().about;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Biz barada', ru: 'О нас', en: 'About us'),
+        title: AppStrings.profileAboutUs.select(language),
       ),
       body: SafeArea(
         child: ListView(
@@ -24,11 +22,7 @@ class AboutScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 90),
                   child: Text(
-                    t(
-                      tk: 'Maglumat entek goşulmady',
-                      ru: 'Информация пока не добавлена',
-                      en: 'No information yet',
-                    ),
+                    AppStrings.profileNoInformationYet.select(language),
                     textAlign: TextAlign.center,
                     style: TextStyle(color: tokens.textSecondary, fontSize: 15),
                   ),

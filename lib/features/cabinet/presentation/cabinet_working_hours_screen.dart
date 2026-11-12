@@ -81,12 +81,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
     setState(() => _saving = false);
     if (!ok) return;
     toast.success(
-      pickTr(
-        language,
-        tk: 'Iş wagty ýatda saklandy.',
-        ru: 'График сохранён.',
-        en: 'Working hours saved.',
-      ),
+      AppStrings.cabinetWorkingHoursSaved.select(language),
     );
     navigator.pop();
   }
@@ -95,12 +90,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
     final result = await _pickTimeRange(
       context,
       language: language,
-      title: pickTr(
-        language,
-        tk: 'Ähli günler üçin wagt',
-        ru: 'Время для всех дней',
-        en: 'Time for all days',
-      ),
+      title: AppStrings.cabinetTimeForAllDays.select(language),
       start: _days.first.start,
       end: _days.first.end,
     );
@@ -137,48 +127,22 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final schedule = context.watch<ScheduleProvider>();
     _adopt(schedule);
     final names = switch (language) {
-      AppLanguage.tk => [
-        'Duşenbe',
-        'Sişenbe',
-        'Çarşenbe',
-        'Penşenbe',
-        'Anna',
-        'Şenbe',
-        'Ýekşenbe',
-      ],
-      AppLanguage.ru => [
-        'Понедельник',
-        'Вторник',
-        'Среда',
-        'Четверг',
-        'Пятница',
-        'Суббота',
-        'Воскресенье',
-      ],
-      AppLanguage.en => [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday',
-        'Sunday',
-      ],
+      AppLanguage.tk => AppStrings.weekdaysFullTk,
+      AppLanguage.ru => AppStrings.weekdaysFullRu,
+      AppLanguage.en => AppStrings.weekdaysFullEn,
     };
     final nextVacation = schedule.nextVacation;
     final vacationValue = nextVacation != null
         ? '${formatDate(nextVacation.start)} - ${formatDate(nextVacation.end)}'
-        : t(tk: 'Bellenmedik', ru: 'Не задано', en: 'Not set');
+        : AppStrings.cabinetNotSet.select(language);
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Iş wagty', ru: 'График работы', en: 'Working hours'),
+        title: AppStrings.cabinetWorkingHours.select(language),
         action: AppHelpButton(
           onTap: () =>
               Navigator.push(context, pageRoute(const SupportScreen())),
@@ -202,11 +166,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                       runSpacing: 2,
                       children: [
                         Text(
-                          t(
-                            tk: 'Hepdäniň iş günleri',
-                            ru: 'Рабочие дни недели',
-                            en: 'Working days of the week',
-                          ),
+                          AppStrings.cabinetWorkingDaysOfTheWeek.select(language),
                           style: TextStyle(
                             color: tokens.textPrimary,
                             fontSize: 15,
@@ -216,11 +176,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                         TextButton(
                           onPressed: () => _applyToAllDays(language),
                           child: Text(
-                            t(
-                              tk: 'Hemme güne ulan',
-                              ru: 'Применить ко всем',
-                              en: 'Apply to all',
-                            ),
+                            AppStrings.cabinetApplyToAll.select(language),
                             style: const TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w600,
@@ -234,9 +190,9 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                     ..._breakSettings(language: language, update: setState),
                     _SettingRow(
                       icon: Icons.event_busy_outlined,
-                      title: t(tk: 'Dynç alyş', ru: 'Отпуск', en: 'Vacation'),
+                      title: AppStrings.cabinetVacation.select(language),
                       subtitle: schedule.vacations.length > 1
-                          ? '${schedule.vacations.length} ${t(tk: "döwür", ru: "периодов", en: "periods")}'
+                          ? '${schedule.vacations.length} ${AppStrings.cabinetPeriods.select(language)}'
                           : null,
                       value: vacationValue,
                       showChevron: true,
@@ -247,18 +203,10 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                     ),
                     _SettingRow(
                       icon: Icons.event_busy_outlined,
-                      title: t(
-                        tk: 'Aýratyn günler',
-                        ru: 'Особые дни',
-                        en: 'Special days',
-                      ),
-                      subtitle: t(
-                        tk: 'Goşmaça günleri ýa-da üýtgeşmeleri belläň',
-                        ru: 'Отметьте дополнительные дни или изменения',
-                        en: 'Mark additional days or changes',
-                      ),
+                      title: AppStrings.cabinetSpecialDays.select(language),
+                      subtitle: AppStrings.cabinetMarkAdditionalDaysOrChanges.select(language),
                       value:
-                          '${schedule.overrides.length} ${t(tk: "gün", ru: "дн.", en: "days")}',
+                          '${schedule.overrides.length} ${AppStrings.cabinetDays.select(language)}',
                       showChevron: true,
                       onTap: () => Navigator.push(
                         context,
@@ -272,11 +220,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: MasterActionButton(
-                label: t(
-                  tk: 'Üýtgeşmeleri ýatda sakla',
-                  ru: 'Сохранить изменения',
-                  en: 'Save changes',
-                ),
+                label: AppStrings.cabinetSaveChanges.select(language),
                 enabled: schedule.loaded && !_saving,
                 leading: Icons.save_outlined,
                 onTap: () => _save(language),

@@ -16,7 +16,6 @@ class ClientMastersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final masters = context.watch<ClientMastersProvider>();
     final canPop = Navigator.of(context).canPop();
@@ -55,9 +54,9 @@ class ClientMastersScreen extends StatelessWidget {
     final Widget content;
     if (masters.error != null && total == 0) {
       content = RetryErrorState(
-        title: t(tk: 'Ýalňyşlyk', ru: 'Ошибка', en: 'Something went wrong'),
+        title: AppStrings.requestsSomethingWentWrong.select(language),
         text: apiErrorMessage(masters.error!, language),
-        retryLabel: t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+        retryLabel: AppStrings.profileTryAgain.select(language),
         onRetry: masters.load,
       );
     } else if (total == 0) {
@@ -67,13 +66,9 @@ class ClientMastersScreen extends StatelessWidget {
               child: Center(child: CircularProgressIndicator()),
             )
           : _MastersEmpty(
-              title: t(tk: 'Baglanan masteriňiz ýok', ru: 'Связанных мастеров нет', en: 'No connected masters yet'),
-              text: t(
-                tk: 'Masteriň lakamyny ýa-da telefonyny giriziň, haýyş iberiň — kabul eden badyna ýazyp bilersiňiz.',
-                ru: 'Введите никнейм или телефон мастера и отправьте запрос — после принятия вы сможете записываться.',
-                en: 'Enter your master’s nickname or phone and send a request — once accepted you can book.',
-              ),
-              button: t(tk: 'Master goş', ru: 'Добавить мастера', en: 'Add master'),
+              title: AppStrings.appointmentsNoConnectedMastersYet.select(language),
+              text: AppStrings.appointmentsEnterYourMasterSNickname.select(language),
+              button: AppStrings.authAddMaster.select(language),
             );
     } else {
       content = Column(
@@ -82,12 +77,12 @@ class ClientMastersScreen extends StatelessWidget {
           if (main != null) ...[_MainMasterCard(connection: main)],
           if (others.isNotEmpty) ...[
             sectionTitle(
-              main == null ? t(tk: 'Baglanan masterler', ru: 'Подключённые мастера', en: 'Connected masters') : t(tk: 'Beýleki masterler', ru: 'Другие мастера', en: 'Other masters'),
+              main == null ? AppStrings.appointmentsConnectedMasters.select(language) : AppStrings.appointmentsOtherMasters.select(language),
               others.length,
             ),
             for (final c in others) _MyMasterCard(connection: c),
           ],
-          if (pending.isNotEmpty) ...[sectionTitle(t(tk: 'Garaşylýan haýyşlar', ru: 'Ожидают ответа', en: 'Pending requests'), pending.length), for (final c in pending) _MyMasterCard(connection: c)],
+          if (pending.isNotEmpty) ...[sectionTitle(AppStrings.appointmentsPendingRequests.select(language), pending.length), for (final c in pending) _MyMasterCard(connection: c)],
         ],
       );
     }
@@ -126,14 +121,14 @@ class ClientMastersScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          t(tk: 'Masterlerim', ru: 'Мои мастера', en: 'My masters'),
+                          AppStrings.profileMyMasters.select(language),
                           style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, height: 1.1),
                         ),
                         const SizedBox(height: 3),
                         Text(
                           total == 0
-                              ? t(tk: 'Heniz master goşulmady', ru: 'Мастеров пока нет', en: 'No masters yet')
-                              : t(tk: '$total master', ru: 'Мастеров: $total', en: '$total ${total == 1 ? 'master' : 'masters'}'),
+                              ? AppStrings.appointmentsNoMastersYet.select(language)
+                              : AppStrings.appointmentsMessage(total, total == 1 ? 'master' : 'masters').select(language),
                           style: TextStyle(fontSize: 13, color: tokens.textSecondary),
                         ),
                       ],
@@ -155,7 +150,7 @@ class ClientMastersScreen extends StatelessWidget {
                           AppIcon(Icons.add, size: 18, color: tokens.surface),
                           const SizedBox(width: 6),
                           Text(
-                            t(tk: 'Master goş', ru: 'Добавить', en: 'Add'),
+                            AppStrings.appointmentsAdd.select(language),
                             style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: tokens.surface),
                           ),
                         ],

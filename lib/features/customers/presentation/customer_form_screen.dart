@@ -92,14 +92,10 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
       context,
       icon: Icons.delete_outline,
       danger: true,
-      title: pickTr(language, tk: 'Müşderini pozmaly?', ru: 'Удалить клиента?', en: 'Delete customer?'),
-      message: pickTr(language,
-        tk: '"${customer.name}" sanawdan aýrylar. Bu hereketi yzyna gaýtaryp bolmaýar.',
-        ru: '«${customer.name}» будет удалён из списка без возможности восстановления.',
-        en: '"${customer.name}" will be removed from your customer list. This cannot be undone.',
-      ),
-      confirmLabel: pickTr(language, tk: 'Poz', ru: 'Удалить', en: 'Delete'),
-      cancelLabel: pickTr(language, tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
+      title: AppStrings.customersDeleteCustomer.select(language),
+      message: AppStrings.customersWillBeRemovedFromYour(customer.name).select(language),
+      confirmLabel: AppStrings.servicesDelete.select(language),
+      cancelLabel: AppStrings.servicesCancel.select(language),
     );
     if (!confirmed || !mounted) return;
     if (await runApi(context, () => provider.remove(customer.id))) {
@@ -112,16 +108,14 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
         title: _isEditing
-            ? t(tk: 'Müşderi bellik', ru: 'Заметка о клиенте', en: 'Customer note')
-            : t(tk: 'Täze müşderi', ru: 'Новый клиент', en: 'New customer'),
+            ? AppStrings.customersCustomerNote.select(language)
+            : AppStrings.customersNewCustomer.select(language),
       ),
       body: SafeArea(
         bottom: false,
@@ -130,21 +124,21 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                 children: [
                   _FormBanner(
                     title: _isEditing
-                        ? t(tk: 'Ýekelikde bellik', ru: 'Личная заметка', en: 'Private note')
-                        : t(tk: 'Täze müşderi ýazgy bilen goşulýar.', ru: 'Новый клиент добавляется вместе с записью.', en: 'A new customer is added with a booking.'),
+                        ? AppStrings.customersPrivateNote.select(language)
+                        : AppStrings.customersANewCustomerIsAdded.select(language),
                     subtitle: _isEditing
-                        ? t(tk: 'Ady, telefon belgisi we suraty müşderiniň özünden gelýär. Diňe şahsy bellik üýtgedilýär.', ru: 'Имя, телефон и фото берутся из профиля клиента. Изменить можно только личную заметку.', en: 'Name, phone and photo come from the customer profile. You can only edit your private note.')
-                        : t(tk: 'Adyny we telefon belgisini giriziň, soňra wagty saýlaň.', ru: 'Введите имя и телефон, затем выберите время записи.', en: 'Enter a name and phone number, then choose a booking time.'),
+                        ? AppStrings.customersNamePhoneAndPhotoCome.select(language)
+                        : AppStrings.customersEnterANameAndPhone.select(language),
                   ),
                   const SizedBox(height: 22),
                   if (_isEditing)
                     Center(child: _CustomerAvatar(customer: widget.customer!, radius: 46)),
                   if (_isEditing) const SizedBox(height: 24),
-                  _FieldLabel(text: t(tk: 'Ady', ru: 'Имя', en: 'Name'), required: !_isEditing),
+                  _FieldLabel(text: AppStrings.customersName.select(language), required: !_isEditing),
                   const SizedBox(height: 8),
                   _FormField(
                     controller: _nameController,
-                    hint: t(tk: 'Müşderiniň adyny ýazyň', ru: 'Введите имя клиента', en: 'Enter customer name'),
+                    hint: AppStrings.customersEnterCustomerName.select(language),
                     fillColor: tokens.surface,
                     invalid: _showErrors && !_nameOk,
                     enabled: !_isEditing,
@@ -152,7 +146,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   ),
                   const SizedBox(height: 18),
                   _FieldLabel(
-                    text: t(tk: 'Telefon belgisi', ru: 'Номер телефона', en: 'Phone number'),
+                    text: AppStrings.customersPhoneNumber.select(language),
                     required: !_isEditing,
                   ),
                   const SizedBox(height: 8),
@@ -172,13 +166,13 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   if (_isEditing) ...[
                     const SizedBox(height: 20),
                     _FieldLabel(
-                      text: t(tk: 'Bellik', ru: 'Заметка', en: 'Note'),
-                      optionalLabel: t(tk: '(islege görä)', ru: '(необязательно)', en: '(optional)'),
+                      text: AppStrings.bookingNote.select(language),
+                      optionalLabel: AppStrings.customersOptional.select(language),
                     ),
                     const SizedBox(height: 8),
                     _FormField(
                       controller: _noteController,
-                      hint: t(tk: 'Müşderi barada bellik goşuň...', ru: 'Добавьте заметку о клиенте...', en: 'Add a note about this customer...'),
+                      hint: AppStrings.customersAddANoteAboutThis.select(language),
                       fillColor: tokens.surface,
                       maxLines: 4,
                       maxLength: 2000,
@@ -189,7 +183,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                       child: TextButton(
                         onPressed: _confirmDelete,
                         child: Text(
-                          t(tk: 'Müşderini poz', ru: 'Удалить клиента', en: 'Delete customer'),
+                          AppStrings.customersDeleteCustomer2.select(language),
                           style: TextStyle(
                             color: tokens.danger,
                             fontWeight: FontWeight.w700,
@@ -214,8 +208,8 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                   children: [
                     MasterActionButton(
                       label: _isEditing
-                          ? t(tk: 'Ýatda sakla', ru: 'Сохранить', en: 'Save')
-                          : t(tk: 'Dowam et', ru: 'Продолжить', en: 'Continue'),
+                          ? AppStrings.servicesSave.select(language)
+                          : AppStrings.onboardingContinue.select(language),
                       enabled: _complete && !_saving,
                       leading: _isEditing ? Icons.save_outlined : null,
                       trailingArrow: !_isEditing,
@@ -225,7 +219,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                     TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: Text(
-                        t(tk: 'Ýatyrmazdan yzyna dön', ru: 'Вернуться без сохранения', en: 'Go back without saving'),
+                        AppStrings.customersGoBackWithoutSaving.select(language),
                         style: TextStyle(
                           color: tokens.accent,
                           fontWeight: FontWeight.w600,

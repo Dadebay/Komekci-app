@@ -36,7 +36,7 @@ class _ClosedTimeRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${formatTime(TimeOfDay.fromDateTime(closed.startsAt))} – ${formatTime(TimeOfDay.fromDateTime(closed.endsAt))} · ${pickTr(language, tk: 'Ýapyk wagt', ru: 'Закрытое время', en: 'Blocked time')}',
+                      '${formatTime(TimeOfDay.fromDateTime(closed.startsAt))} – ${formatTime(TimeOfDay.fromDateTime(closed.endsAt))} · ${AppStrings.scheduleBlockedTime.select(language)}',
                       style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: tokens.textPrimary),
                     ),
                     if (closed.note.isNotEmpty)

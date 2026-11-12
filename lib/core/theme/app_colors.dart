@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// KÖMEKÇI design tokens. Keep product colours independent from app bootstrap.
 const ink = Color(0xff1D1D1B);

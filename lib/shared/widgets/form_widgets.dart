@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
 import 'app_icon.dart';
@@ -6,13 +6,7 @@ import 'photo_picker.dart';
 import 'primary_button.dart';
 
 class AppScaffold extends StatelessWidget {
-  const AppScaffold({
-    super.key,
-    required this.title,
-    this.subtitle,
-    required this.child,
-    this.titleInAppBar = false,
-  });
+  const AppScaffold({super.key, required this.title, this.subtitle, required this.child, this.titleInAppBar = false});
   final String title;
   final String? subtitle;
   final Widget child;
@@ -25,9 +19,7 @@ class AppScaffold extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       centerTitle: true,
-      title: titleInAppBar
-          ? Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700))
-          : null,
+      title: titleInAppBar ? Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)) : null,
       leading: IconButton(icon: const AppIcon(Icons.arrow_back), onPressed: () => Navigator.maybePop(context)),
     ),
     body: SafeArea(
@@ -36,8 +28,7 @@ class AppScaffold extends StatelessWidget {
         child: Column(
           crossAxisAlignment: titleInAppBar ? CrossAxisAlignment.center : CrossAxisAlignment.start,
           children: [
-            if (!titleInAppBar)
-              Text(title, style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w700)),
+            if (!titleInAppBar) Text(title, style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w700)),
             if (subtitle != null) ...[
               SizedBox(height: titleInAppBar ? 0 : 7),
               Text(
@@ -186,32 +177,20 @@ class HeroPhoto extends StatelessWidget {
 /// "+993" shown at the start of a phone field at all times. `prefixText`
 /// only appears once the field is focused or filled, so it is drawn as an
 /// icon-slot widget instead.
-Widget phonePrefix(BuildContext context, {double fontSize = 16, FontWeight weight = FontWeight.w800}) =>
-    Padding(
-      padding: const EdgeInsets.only(left: 16, right: 10),
-      child: Text(
-        '+993',
-        style: TextStyle(
-          color: context.appTokens.textPrimary,
-          fontSize: fontSize,
-          fontWeight: weight,
-        ),
-      ),
-    );
+Widget phonePrefix(BuildContext context, {double fontSize = 16, FontWeight weight = FontWeight.w800}) => Padding(
+  padding: const EdgeInsets.only(left: 16, right: 10),
+  child: Text(
+    '+993',
+    style: TextStyle(color: context.appTokens.textPrimary, fontSize: fontSize, fontWeight: weight),
+  ),
+);
 
 const phonePrefixConstraints = BoxConstraints(minWidth: 0, minHeight: 0);
 
 /// Filled, rounded input style shared by the sign-up forms: an optional
 /// leading icon (or custom [prefix], e.g. the phone's "+993") and a status
 /// [suffix]. [error] switches the border and icon to the danger colour.
-InputDecoration registrationDecoration(
-  AppThemeTokens tokens, {
-  required String hint,
-  required IconData icon,
-  Widget? prefix,
-  Widget? suffix,
-  bool error = false,
-}) {
+InputDecoration registrationDecoration(AppThemeTokens tokens, {required String hint, required IconData icon, Widget? prefix, Widget? suffix, bool error = false}) {
   OutlineInputBorder border(Color color, [double width = 1]) => OutlineInputBorder(
     borderRadius: BorderRadius.circular(16),
     borderSide: BorderSide(color: color, width: width),
@@ -222,7 +201,8 @@ InputDecoration registrationDecoration(
     filled: true,
     fillColor: tokens.surfaceElevated,
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
-    prefixIcon: prefix ??
+    prefixIcon:
+        prefix ??
         Padding(
           padding: const EdgeInsets.only(left: 14, right: 10),
           child: AppIcon(icon, size: 20, color: error ? tokens.danger : tokens.textSecondary),

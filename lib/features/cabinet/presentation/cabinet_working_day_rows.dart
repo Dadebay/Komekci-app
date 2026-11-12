@@ -3,8 +3,6 @@ part of '../../../app/komekci_app.dart';
 extension _WorkingDayRows on _WorkingHoursScreenState {
   List<Widget> _workingDayRows({required AppLanguage language, required List<String> names, required StateSetter update}) {
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return List.generate(names.length, (index) {
                       final day = _days[index];
                       return Container(
@@ -73,16 +71,8 @@ extension _WorkingDayRows on _WorkingHoursScreenState {
                                             const SizedBox(height: 2),
                                             Text(
                                               day.open
-                                                  ? t(
-                                                      tk: 'Iş güni',
-                                                      ru: 'Рабочий день',
-                                                      en: 'Working day',
-                                                    )
-                                                  : t(
-                                                      tk: 'Dynç güni',
-                                                      ru: 'Выходной',
-                                                      en: 'Day off',
-                                                    ),
+                                                  ? AppStrings.cabinetWorkingDay.select(language)
+                                                  : AppStrings.cabinetDayOff.select(language),
                                               style: TextStyle(
                                                 color: tokens.textSecondary,
                                                 fontSize: 11.5,

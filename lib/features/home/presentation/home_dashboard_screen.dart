@@ -61,8 +61,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final tk = language == AppLanguage.tk;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final bookingProvider = context.watch<BookingProvider>();
     final customerProvider = context.watch<CustomerProvider>();
     final scheduleProvider = context.watch<ScheduleProvider>();
@@ -82,18 +80,20 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     final todayAppointments = bookingProvider.onDay(today);
     final entries = todayLoaded
         ? _buildTimeline(
-            todayAppointments,
-            today,
-            scheduleProvider.closedTimesLoaded(today) ? schedule : null,
-            closedTimes: scheduleProvider.closedTimesOn(today),
-          )
+                todayAppointments,
+                today,
+                scheduleProvider.closedTimesLoaded(today) ? schedule : null,
+                closedTimes: scheduleProvider.closedTimesOn(today),
+                // Free slots that have already started are no longer bookable.
+              )
+              .where(
+                (entry) =>
+                    entry is! _FreeEntry || entry.start.isAfter(DateTime.now()),
+              )
+              .toList()
         : <_TimelineEntry>[];
     final freeSlotsToday = entries.whereType<_FreeEntry>().length;
-    final unavailableHint = t(
-      tk: 'Ýüklenmedi',
-      ru: 'Не загружено',
-      en: 'Not loaded',
-    );
+    final unavailableHint = AppStrings.homeNotLoaded.select(language);
 
     // Compared against the live clock's time-of-day projected onto the mock
     // "today" date, since [dashboardToday] and [_clock] don't share a date.
@@ -169,14 +169,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                       numberCountUp: _numberCountUp,
                       icon: Icons.people_outline,
                       color: tokens.accent,
-                      label: t(
-                        tk: 'Şu günki nobat',
-                        ru: 'Очередь сегодня',
-                        en: "Today's queue",
-                      ),
+                      label: AppStrings.homeTodaySQueue.select(language),
                       value: todayLoaded ? '${todayAppointments.length}' : '—',
                       hint: todayLoaded
-                          ? t(tk: 'adam', ru: 'человек', en: 'people')
+                          ? AppStrings.homePeople3.select(language)
                           : unavailableHint,
                     ),
                   ),
@@ -188,11 +184,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                       numberCountUp: _numberCountUp,
                       icon: Icons.person_outline,
                       color: freeSlotColorDark,
-                      label: t(
-                        tk: 'Indiki müşderi',
-                        ru: 'Следующий клиент',
-                        en: 'Next customer',
-                      ),
+                      label: AppStrings.homeNextCustomer.select(language),
                       value: nextAppointment == null
                           ? '—'
                           : formatTime(
@@ -200,7 +192,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             ),
                       hint: nextAppointment == null
                           ? todayLoaded
-                                ? t(tk: 'Nobat ýok', ru: 'Никого', en: 'None')
+                                ? AppStrings.homeNone.select(language)
                                 : unavailableHint
                           : '${nextAppointment.clientName} · ${nextAppointment.serviceName}',
                     ),
@@ -217,18 +209,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                       numberCountUp: _numberCountUp,
                       icon: Icons.schedule_outlined,
                       color: const Color(0xff2A5DB0),
-                      label: t(
-                        tk: 'Boş wagtlar',
-                        ru: 'Свободные окна',
-                        en: 'Free slots',
-                      ),
+                      label: AppStrings.homeFreeSlots.select(language),
                       value: availabilityLoaded ? '$freeSlotsToday' : '—',
                       hint: availabilityLoaded
-                          ? t(
-                              tk: 'boş aralyk',
-                              ru: 'окон свободно',
-                              en: 'free slots',
-                            )
+                          ? AppStrings.homeFreeSlots2.select(language)
                           : unavailableHint,
                     ),
                   ),
@@ -240,20 +224,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                       numberCountUp: _numberCountUp,
                       icon: Icons.flag_outlined,
                       color: const Color(0xff5B5FC7),
-                      label: t(
-                        tk: 'Iş gutarýar',
-                        ru: 'Работа заканчивается',
-                        en: 'Work ends',
-                      ),
+                      label: AppStrings.homeWorkEnds.select(language),
                       value: todayLoaded && workEndsAt != null
                           ? formatTime(TimeOfDay.fromDateTime(workEndsAt))
                           : '—',
                       hint: todayLoaded
-                          ? t(
-                              tk: 'iş wagtynyň ahyry',
-                              ru: 'конец рабочего дня',
-                              en: 'end of work day',
-                            )
+                          ? AppStrings.homeEndOfWorkDay.select(language)
                           : unavailableHint,
                     ),
                   ),
@@ -262,7 +238,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               const SizedBox(height: 14),
               _DayTimelineCard(
                 tk: tk,
-                title: t(tk: 'ŞU GÜN', ru: 'СЕГОДНЯ', en: 'TODAY'),
+                title: AppStrings.homeToday.select(language),
                 dateLabel: formatDate(today),
                 accent: freeSlotColorDark,
                 accentBg: freeSlotBg,
@@ -272,20 +248,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     ? bookingProvider.loading
                           ? const Center(child: CircularProgressIndicator())
                           : RetryErrorState(
-                              title: t(
-                                tk: 'Şu günki ýazgylary görüp bolmaýar',
-                                ru: 'Не удалось показать записи на сегодня',
-                                en: 'Could not show today’s bookings',
+                              title: AppStrings.homeCouldNotShowTodayS.select(
+                                language,
                               ),
-                              text: t(
-                                tk: 'Internet bilen birigip, täzeden synanyşyň.',
-                                ru: 'Подключитесь к интернету и попробуйте ещё раз.',
-                                en: 'Connect to the internet and try again.',
-                              ),
-                              retryLabel: t(
-                                tk: 'Täzeden synanyş',
-                                ru: 'Повторить',
-                                en: 'Try again',
+                              text: AppStrings.homeConnectToTheInternetAnd
+                                  .select(language),
+                              retryLabel: AppStrings.profileTryAgain.select(
+                                language,
                               ),
                               onRetry: () => bookingProvider.refreshDay(today),
                             )
@@ -293,15 +262,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     ? BookingsEmptyState(
                         framed: false,
                         compact: true,
-                        title: t(
-                          tk: 'Şu gün ýazgy ýok',
-                          ru: 'На сегодня записей нет',
-                          en: 'No bookings today',
-                        ),
-                        text: t(
-                          tk: 'Boş wagtlary senenamadan görüp bilersiňiz.',
-                          ru: 'Свободное время можно посмотреть в расписании.',
-                          en: 'View available times in the schedule.',
+                        title: AppStrings.homeNoBookingsToday.select(language),
+                        text: AppStrings.homeViewAvailableTimesInThe.select(
+                          language,
                         ),
                       )
                     : _HomeApptTable(
@@ -329,11 +292,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               const SizedBox(height: 6),
               _OutlineActionButton(
                 icon: Icons.calendar_month_outlined,
-                label: t(
-                  tk: 'Ähli nobaty görmek',
-                  ru: 'Смотреть всё расписание',
-                  en: 'View full schedule',
-                ),
+                label: AppStrings.homeViewFullSchedule.select(language),
                 onTap: () => widget.onViewSchedule(today),
               ),
             ],

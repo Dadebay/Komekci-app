@@ -14,21 +14,13 @@ class _NotificationCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: unread
-            ? Color.alphaBlend(
-                tokens.accent.withValues(alpha: .045),
-                tokens.surfaceElevated,
-              )
-            : Color.alphaBlend(
-                tokens.textPrimary.withValues(alpha: .06),
-                tokens.surface,
-              ),
+        color: tokens.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(
             color: unread
                 ? tokens.accent.withValues(alpha: .3)
-                : tokens.textPrimary.withValues(alpha: .12),
+                : tokens.border,
           ),
         ),
         clipBehavior: Clip.antiAlias,
@@ -131,12 +123,7 @@ class _NotificationCard extends StatelessWidget {
                                     .acceptWaitlistOffer(offerId),
                               ),
                               child: Text(
-                                pickTr(
-                                  context.read<LanguageProvider>().language,
-                                  tk: 'Kabul et',
-                                  ru: 'Принять',
-                                  en: 'Accept',
-                                ),
+                                AppStrings.notificationsAccept.select(context.read<LanguageProvider>().language),
                               ),
                             ),
                             OutlinedButton(
@@ -151,12 +138,7 @@ class _NotificationCard extends StatelessWidget {
                                     .declineWaitlistOffer(offerId),
                               ),
                               child: Text(
-                                pickTr(
-                                  context.read<LanguageProvider>().language,
-                                  tk: 'Ret et',
-                                  ru: 'Отказаться',
-                                  en: 'Decline',
-                                ),
+                                AppStrings.notificationsDecline.select(context.read<LanguageProvider>().language),
                               ),
                             ),
                           ],

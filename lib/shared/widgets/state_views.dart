@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
 import 'app_icon.dart';
@@ -55,13 +55,7 @@ class EmptyState extends StatelessWidget {
 /// Empty appointment day, with the calendar illustration used on the master's
 /// home dashboard and schedule.
 class BookingsEmptyState extends StatelessWidget {
-  const BookingsEmptyState({
-    super.key,
-    required this.title,
-    required this.text,
-    this.framed = true,
-    this.compact = false,
-  });
+  const BookingsEmptyState({super.key, required this.title, required this.text, this.framed = true, this.compact = false});
 
   final String title;
   final String text;
@@ -73,9 +67,7 @@ class BookingsEmptyState extends StatelessWidget {
     final tokens = context.appTokens;
     return Container(
       width: double.infinity,
-      padding: compact
-          ? const EdgeInsets.fromLTRB(16, 8, 16, 14)
-          : const EdgeInsets.fromLTRB(20, 20, 20, 26),
+      padding: compact ? const EdgeInsets.fromLTRB(16, 8, 16, 14) : const EdgeInsets.fromLTRB(20, 20, 20, 26),
       decoration: framed
           ? BoxDecoration(
               color: tokens.surfaceElevated,
@@ -85,32 +77,18 @@ class BookingsEmptyState extends StatelessWidget {
           : null,
       child: Column(
         children: [
-          Image.asset(
-            'assets/images/empty_bookings_3d.png',
-            width: compact ? 92 : 168,
-            height: compact ? 92 : 168,
-            fit: BoxFit.contain,
-            excludeFromSemantics: true,
-          ),
+          Image.asset('assets/images/empty_bookings_3d.png', width: compact ? 92 : 168, height: compact ? 92 : 168, fit: BoxFit.contain, excludeFromSemantics: true),
           SizedBox(height: compact ? 4 : 8),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: tokens.textPrimary,
-            ),
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: tokens.textPrimary),
           ),
           SizedBox(height: compact ? 4 : 8),
           Text(
             text,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.4,
-              color: tokens.textSecondary,
-            ),
+            style: TextStyle(fontSize: 13, height: 1.4, color: tokens.textSecondary),
           ),
         ],
       ),
@@ -120,13 +98,7 @@ class BookingsEmptyState extends StatelessWidget {
 
 /// A failed load with a retry action — for real API errors, not empty results.
 class RetryErrorState extends StatelessWidget {
-  const RetryErrorState({
-    super.key,
-    required this.title,
-    required this.text,
-    required this.onRetry,
-    this.retryLabel = 'Retry',
-  });
+  const RetryErrorState({super.key, required this.title, required this.text, required this.onRetry, this.retryLabel = 'Retry'});
   final String title;
   final String text;
   final String retryLabel;
@@ -141,7 +113,10 @@ class RetryErrorState extends StatelessWidget {
       text: text,
       action: OutlinedButton(
         onPressed: onRetry,
-        style: OutlinedButton.styleFrom(foregroundColor: t.textPrimary, side: BorderSide(color: t.border)),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: t.textPrimary,
+          side: BorderSide(color: t.border),
+        ),
         child: Text(retryLabel),
       ),
     );
@@ -172,8 +147,7 @@ class LoadingSkeleton extends StatefulWidget {
 }
 
 class _LoadingSkeletonState extends State<LoadingSkeleton> with SingleTickerProviderStateMixin {
-  late final _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
-    ..repeat(reverse: true);
+  late final _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat(reverse: true);
 
   @override
   void dispose() {
