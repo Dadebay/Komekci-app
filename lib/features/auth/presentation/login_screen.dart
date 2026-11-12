@@ -102,7 +102,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 7),
                       Text(
-                        AppStrings.authContinueWithYourPhoneNumber.select(language),
+                        AppStrings.authContinueWithYourPhoneNumber.select(
+                          language,
+                        ),
                         style: TextStyle(
                           color: tokens.textSecondary,
                           fontSize: 14,
@@ -133,7 +135,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           prefixIcon: phonePrefix(context, fontSize: 17),
                           prefixIconConstraints: phonePrefixConstraints,
                           errorText: _showPhoneError
-                              ? AppStrings.authEnterAn8DigitPhone.select(language)
+                              ? AppStrings.authEnterAn8DigitPhone.select(
+                                  language,
+                                )
                               : _serverError,
                           errorMaxLines: 3,
                           filled: true,
@@ -160,7 +164,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 15),
                       Center(
                         child: Text(
-                          AppStrings.authByContinuingYouAcceptThe.select(language),
+                          AppStrings.authByContinuingYouAcceptThe.select(
+                            language,
+                          ),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: tokens.textSecondary,

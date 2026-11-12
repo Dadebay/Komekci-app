@@ -38,7 +38,9 @@ class RequestsScreen extends StatelessWidget {
                       )
                     : _ConnectionRequestsEmptyState(
                         title: AppStrings.requestsNoRequests.select(language),
-                        text: AppStrings.requestsClientsCanFindYouBy.select(language),
+                        text: AppStrings.requestsClientsCanFindYouBy.select(
+                          language,
+                        ),
                       )
               else
                 for (final r in requests)
@@ -58,13 +60,28 @@ class RequestsScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(r.clientName, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+                              Text(
+                                r.clientName,
+                                style: const TextStyle(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                               if ((r.clientNickname ?? '').isNotEmpty)
-                                Text('@${r.clientNickname}', style: TextStyle(fontSize: 12, color: tokens.textSecondary)),
+                                Text(
+                                  '@${r.clientNickname}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: tokens.textSecondary,
+                                  ),
+                                ),
                               const SizedBox(height: 2),
                               Text(
                                 formatDate(r.requestedAt),
-                                style: TextStyle(fontSize: 11, color: tokens.textSecondary),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: tokens.textSecondary,
+                                ),
                               ),
                             ],
                           ),
@@ -72,7 +89,8 @@ class RequestsScreen extends StatelessWidget {
                         IconButton(
                           tooltip: AppStrings.requestsDecline.select(language),
                           icon: AppIcon(Icons.close, color: tokens.danger),
-                          onPressed: () => runApi(context, () => provider.decline(r.id)),
+                          onPressed: () =>
+                              runApi(context, () => provider.decline(r.id)),
                         ),
                         FilledButton(
                           style: FilledButton.styleFrom(
@@ -81,10 +99,17 @@ class RequestsScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                           ),
                           onPressed: () async {
-                            final ok = await runApi(context, () => provider.accept(r.id));
-                            if (ok && context.mounted) context.read<CustomerProvider>().load();
+                            final ok = await runApi(
+                              context,
+                              () => provider.accept(r.id),
+                            );
+                            if (ok && context.mounted) {
+                              context.read<CustomerProvider>().load();
+                            }
                           },
-                          child: Text(AppStrings.notificationsAccept.select(language)),
+                          child: Text(
+                            AppStrings.notificationsAccept.select(language),
+                          ),
                         ),
                       ],
                     ),
@@ -98,7 +123,10 @@ class RequestsScreen extends StatelessWidget {
 }
 
 class _ConnectionRequestsEmptyState extends StatelessWidget {
-  const _ConnectionRequestsEmptyState({required this.title, required this.text});
+  const _ConnectionRequestsEmptyState({
+    required this.title,
+    required this.text,
+  });
 
   final String title;
   final String text;
@@ -187,6 +215,9 @@ Future<void> _confirmDeleteAccount(BuildContext context) async {
   final auth = context.read<AuthProvider>();
   final ok = await runApi(context, auth.deleteAccount);
   if (ok) {
-    navigator.pushAndRemoveUntil(pageRoute(const RoleScreen()), (route) => false);
+    navigator.pushAndRemoveUntil(
+      pageRoute(const RoleScreen()),
+      (route) => false,
+    );
   }
 }

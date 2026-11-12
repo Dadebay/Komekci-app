@@ -42,10 +42,11 @@ class _ProfileField extends StatelessWidget {
     final tokens = context.appTokens;
     final hasError = errorText != null;
     final multiline = maxLines > 1;
-    OutlineInputBorder border(Color color, [double width = 1]) => OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: color, width: width),
-    );
+    OutlineInputBorder border(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: color, width: width),
+        );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -53,7 +54,11 @@ class _ProfileField extends StatelessWidget {
           padding: const EdgeInsets.only(left: 2, bottom: 7),
           child: Text(
             label,
-            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary),
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: tokens.textSecondary,
+            ),
           ),
         ),
         TextField(
@@ -67,28 +72,56 @@ class _ProfileField extends StatelessWidget {
           minLines: minLines,
           maxLength: maxLength,
           maxLengthEnforcement: MaxLengthEnforcement.enforced,
-          style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: tokens.textPrimary),
+          style: TextStyle(
+            fontSize: 14.5,
+            fontWeight: FontWeight.w500,
+            color: tokens.textPrimary,
+          ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: tokens.disabled, fontWeight: FontWeight.w400),
+            hintStyle: TextStyle(
+              color: tokens.disabled,
+              fontWeight: FontWeight.w400,
+            ),
             // The helper is shown by us below, so the error and the
             // suggestion chips can sit in one column.
             counterStyle: TextStyle(fontSize: 11, color: tokens.textSecondary),
             filled: true,
             fillColor: tokens.surface,
             isDense: true,
-            contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: multiline ? 14 : 15),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: multiline ? 14 : 15,
+            ),
             prefixIcon: multiline
                 ? null
                 : Padding(
                     padding: const EdgeInsets.only(left: 14, right: 10),
-                    child: AppIcon(icon, size: 18, color: hasError ? tokens.danger : tokens.textSecondary),
+                    child: AppIcon(
+                      icon,
+                      size: 18,
+                      color: hasError ? tokens.danger : tokens.textSecondary,
+                    ),
                   ),
-            prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-            suffixIcon: statusIcon == null ? null : Padding(padding: const EdgeInsets.only(right: 14), child: statusIcon),
-            suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+            prefixIconConstraints: const BoxConstraints(
+              minWidth: 0,
+              minHeight: 0,
+            ),
+            suffixIcon: statusIcon == null
+                ? null
+                : Padding(
+                    padding: const EdgeInsets.only(right: 14),
+                    child: statusIcon,
+                  ),
+            suffixIconConstraints: const BoxConstraints(
+              minWidth: 0,
+              minHeight: 0,
+            ),
             enabledBorder: border(hasError ? tokens.danger : tokens.border),
-            focusedBorder: border(hasError ? tokens.danger : tokens.accent, 1.5),
+            focusedBorder: border(
+              hasError ? tokens.danger : tokens.accent,
+              1.5,
+            ),
             border: border(tokens.border),
           ),
         ),
@@ -97,7 +130,10 @@ class _ProfileField extends StatelessWidget {
         else if (helperText != null)
           Padding(
             padding: const EdgeInsets.only(top: 6, left: 4),
-            child: Text(helperText!, style: TextStyle(fontSize: 11.5, color: tokens.textSecondary)),
+            child: Text(
+              helperText!,
+              style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
+            ),
           ),
         ?footer,
       ],
@@ -108,7 +144,12 @@ class _ProfileField extends StatelessWidget {
 /// The phone number is changed through an SMS-confirmed dialog, so it is a
 /// read-only row with a "Change" action rather than a text field.
 class _ProfilePhoneRow extends StatelessWidget {
-  const _ProfilePhoneRow({required this.label, required this.action, required this.phone, required this.onTap});
+  const _ProfilePhoneRow({
+    required this.label,
+    required this.action,
+    required this.phone,
+    required this.onTap,
+  });
 
   final String label;
   final String action;
@@ -125,7 +166,11 @@ class _ProfilePhoneRow extends StatelessWidget {
           padding: const EdgeInsets.only(left: 2, bottom: 7),
           child: Text(
             label,
-            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary),
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: tokens.textSecondary,
+            ),
           ),
         ),
         InkWell(
@@ -140,20 +185,38 @@ class _ProfilePhoneRow extends StatelessWidget {
             ),
             child: Row(
               children: [
-                AppIcon(Icons.phone_outlined, size: 18, color: tokens.textSecondary),
+                AppIcon(
+                  Icons.phone_outlined,
+                  size: 18,
+                  color: tokens.textSecondary,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     phone,
-                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: tokens.textPrimary),
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w500,
+                      color: tokens.textPrimary,
+                    ),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-                  decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .14), borderRadius: BorderRadius.circular(14)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 11,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: tokens.accent.withValues(alpha: .14),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   child: Text(
                     action,
-                    style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: tokens.accent),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: tokens.accent,
+                    ),
                   ),
                 ),
               ],
@@ -167,7 +230,15 @@ class _ProfilePhoneRow extends StatelessWidget {
 
 /// Fixed bar under the form: a server error (if any), "Preview" and "Save".
 class _ProfileSaveBar extends StatelessWidget {
-  const _ProfileSaveBar({required this.error, required this.saving, required this.canSave, required this.previewLabel, required this.saveLabel, required this.onPreview, required this.onSave});
+  const _ProfileSaveBar({
+    required this.error,
+    required this.saving,
+    required this.canSave,
+    required this.previewLabel,
+    required this.saveLabel,
+    required this.onPreview,
+    required this.onSave,
+  });
 
   final String? error;
   final bool saving;
@@ -185,7 +256,13 @@ class _ProfileSaveBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: tokens.surface,
         border: Border(top: BorderSide(color: tokens.border)),
-        boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .05), blurRadius: 14, offset: const Offset(0, -4))],
+        boxShadow: [
+          BoxShadow(
+            color: tokens.textPrimary.withValues(alpha: .05),
+            blurRadius: 14,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -202,10 +279,17 @@ class _ProfileSaveBar extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  AppIcon(Icons.warning_amber_rounded, size: 16, color: tokens.danger),
+                  AppIcon(
+                    Icons.warning_amber_rounded,
+                    size: 16,
+                    color: tokens.danger,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(error!, style: TextStyle(fontSize: 12.5, color: tokens.danger)),
+                    child: Text(
+                      error!,
+                      style: TextStyle(fontSize: 12.5, color: tokens.danger),
+                    ),
                   ),
                 ],
               ),
@@ -220,15 +304,28 @@ class _ProfileSaveBar extends StatelessWidget {
                     foregroundColor: tokens.textPrimary,
                     side: BorderSide(color: tokens.border),
                     padding: const EdgeInsets.symmetric(horizontal: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
                   icon: const AppIcon(Icons.remove_red_eye_outlined, size: 18),
-                  label: Text(previewLabel, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  label: Text(
+                    previewLabel,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: MasterActionButton(label: saveLabel, enabled: canSave, leading: saving ? null : Icons.save_outlined, onTap: onSave),
+                child: MasterActionButton(
+                  label: saveLabel,
+                  enabled: canSave,
+                  leading: saving ? null : Icons.save_outlined,
+                  onTap: onSave,
+                ),
               ),
             ],
           ),

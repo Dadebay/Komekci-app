@@ -253,7 +253,10 @@ class _CardPaymentDialogState extends State<_CardPaymentDialog> {
             ),
             const SizedBox(height: 8),
             Text(
-              AppStrings.authChooseABankToPay(widget.amount, cur).select(language),
+              AppStrings.authChooseABankToPay(
+                widget.amount,
+                cur,
+              ).select(language),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: tokens.textSecondary,

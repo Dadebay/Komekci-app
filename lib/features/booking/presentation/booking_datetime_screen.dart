@@ -99,13 +99,34 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
 
     // Free times split into parts of the day, so a long list stays scannable.
     final groups = <(String, List<DateTime>)>[
-      (AppStrings.bookingMorning.select(language), [for (final x in slots) if (x.hour < 12) x]),
-      (AppStrings.bookingAfternoon.select(language), [for (final x in slots) if (x.hour >= 12 && x.hour < 17) x]),
-      (AppStrings.bookingEvening.select(language), [for (final x in slots) if (x.hour >= 17) x]),
+      (
+        AppStrings.bookingMorning.select(language),
+        [
+          for (final x in slots)
+            if (x.hour < 12) x,
+        ],
+      ),
+      (
+        AppStrings.bookingAfternoon.select(language),
+        [
+          for (final x in slots)
+            if (x.hour >= 12 && x.hour < 17) x,
+        ],
+      ),
+      (
+        AppStrings.bookingEvening.select(language),
+        [
+          for (final x in slots)
+            if (x.hour >= 17) x,
+        ],
+      ),
     ];
     final slotWidth = (MediaQuery.sizeOf(context).width - 40 - 30) / 4;
-    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
-    String clock(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(
+      language,
+    );
+    String clock(DateTime d) =>
+        '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -129,7 +150,8 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _BookingTitle(
                       title: AppStrings.bookingPickADateTime.select(language),
-                      subtitle: '${widget.service.name} · ${widget.service.durationMin} ${AppStrings.bookingMin2.select(language)} · ${formatMoney(widget.service.price)} $currency',
+                      subtitle:
+                          '${widget.service.name} · ${widget.service.durationMin} ${AppStrings.bookingMin2.select(language)} · ${formatMoney(widget.service.price)} $currency',
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -137,18 +159,28 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       children: [
-                        AppIcon(Icons.calendar_today_outlined, size: 15, color: tokens.accent),
+                        AppIcon(
+                          Icons.calendar_today_outlined,
+                          size: 15,
+                          color: tokens.accent,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           '${monthLabels[_selectedDate.month - 1]} ${_selectedDate.year}',
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
-                    height: max(100.0, MediaQuery.textScalerOf(context).scale(100)),
+                    height: max(
+                      100.0,
+                      MediaQuery.textScalerOf(context).scale(100),
+                    ),
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -182,9 +214,13 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: _error != null
                         ? RetryErrorState(
-                            title: AppStrings.requestsSomethingWentWrong.select(language),
+                            title: AppStrings.requestsSomethingWentWrong.select(
+                              language,
+                            ),
                             text: apiErrorMessage(_error!, language),
-                            retryLabel: AppStrings.profileTryAgain.select(language),
+                            retryLabel: AppStrings.profileTryAgain.select(
+                              language,
+                            ),
                             onRetry: _load,
                           )
                         : availability == null
@@ -195,15 +231,23 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                         : paused
                         ? EmptyState(
                             icon: Icons.event_busy_outlined,
-                            title: AppStrings.bookingBookingsArePaused.select(language),
-                            text: availability.message ??
-                                AppStrings.bookingThisMasterIsNotAccepting.select(language),
+                            title: AppStrings.bookingBookingsArePaused.select(
+                              language,
+                            ),
+                            text:
+                                availability.message ??
+                                AppStrings.bookingThisMasterIsNotAccepting
+                                    .select(language),
                           )
                         : slots.isEmpty
                         ? EmptyState(
                             icon: Icons.schedule_outlined,
-                            title: AppStrings.bookingNoFreeSlots.select(language),
-                            text: AppStrings.bookingThereIsNoFreeTime.select(language),
+                            title: AppStrings.bookingNoFreeSlots.select(
+                              language,
+                            ),
+                            text: AppStrings.bookingThereIsNoFreeTime.select(
+                              language,
+                            ),
                           )
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,14 +256,32 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                                 if (group.$2.isNotEmpty) ...[
                                   Row(
                                     children: [
-                                      Text(group.$1, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+                                      Text(
+                                        group.$1,
+                                        style: const TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
                                       const SizedBox(width: 8),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                        decoration: BoxDecoration(color: tokens.surfaceElevated, borderRadius: BorderRadius.circular(8)),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 7,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: tokens.surfaceElevated,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
                                         child: Text(
                                           '${group.$2.length}',
-                                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: tokens.textSecondary),
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            color: tokens.textSecondary,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -231,18 +293,44 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                                     children: [
                                       for (final slot in group.$2)
                                         GestureDetector(
-                                          onTap: () => setState(() => _selectedSlot = slot),
+                                          onTap: () => setState(
+                                            () => _selectedSlot = slot,
+                                          ),
                                           child: AnimatedContainer(
-                                            duration: const Duration(milliseconds: 180),
+                                            duration: const Duration(
+                                              milliseconds: 180,
+                                            ),
                                             width: slotWidth,
-                                            padding: const EdgeInsets.symmetric(vertical: 12),
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ),
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
-                                              color: _selectedSlot == slot ? tokens.textPrimary : tokens.surface,
-                                              borderRadius: BorderRadius.circular(14),
-                                              border: Border.all(color: _selectedSlot == slot ? tokens.textPrimary : tokens.border),
+                                              color: _selectedSlot == slot
+                                                  ? tokens.textPrimary
+                                                  : tokens.surface,
+                                              borderRadius:
+                                                  BorderRadius.circular(14),
+                                              border: Border.all(
+                                                color: _selectedSlot == slot
+                                                    ? tokens.textPrimary
+                                                    : tokens.border,
+                                              ),
                                               boxShadow: _selectedSlot == slot
-                                                  ? [BoxShadow(color: tokens.textPrimary.withValues(alpha: .22), blurRadius: 12, offset: const Offset(0, 5))]
+                                                  ? [
+                                                      BoxShadow(
+                                                        color: tokens
+                                                            .textPrimary
+                                                            .withValues(
+                                                              alpha: .22,
+                                                            ),
+                                                        blurRadius: 12,
+                                                        offset: const Offset(
+                                                          0,
+                                                          5,
+                                                        ),
+                                                      ),
+                                                    ]
                                                   : null,
                                             ),
                                             child: Text(
@@ -250,7 +338,9 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
                                               style: TextStyle(
                                                 fontSize: 13.5,
                                                 fontWeight: FontWeight.w700,
-                                                color: _selectedSlot == slot ? tokens.surface : tokens.textPrimary,
+                                                color: _selectedSlot == slot
+                                                    ? tokens.surface
+                                                    : tokens.textPrimary,
                                               ),
                                             ),
                                           ),
@@ -270,13 +360,21 @@ class _BookingDateTimeScreenState extends State<BookingDateTimeScreen> {
       ),
       bottomNavigationBar: _BookingBottomBar(
         caption: AppStrings.bookingSelectedTime.select(language),
-        value: _selectedSlot == null ? '—' : '${formatDate(_selectedSlot!)} · ${clock(_selectedSlot!)}',
+        value: _selectedSlot == null
+            ? '—'
+            : '${formatDate(_selectedSlot!)} · ${clock(_selectedSlot!)}',
         label: AppStrings.bookingContinue.select(language),
         onPressed: _selectedSlot == null
             ? null
             : () => Navigator.push(
                 context,
-                pageRoute(BookingConfirmScreen(service: widget.service, master: widget.master, startsAt: _selectedSlot!)),
+                pageRoute(
+                  BookingConfirmScreen(
+                    service: widget.service,
+                    master: widget.master,
+                    startsAt: _selectedSlot!,
+                  ),
+                ),
               ),
       ),
     );

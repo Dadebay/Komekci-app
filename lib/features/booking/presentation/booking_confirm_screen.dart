@@ -71,7 +71,12 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
     setState(() => _submitting = false);
     Navigator.push(
       context,
-      pageRoute(BookingSuccessScreen(appointment: booking, masterName: widget.master.name)),
+      pageRoute(
+        BookingSuccessScreen(
+          appointment: booking,
+          masterName: widget.master.name,
+        ),
+      ),
     );
   }
 
@@ -81,8 +86,15 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
     for (final s in raw) {
       final clock = RegExp(r'^(\d{1,2}):(\d{2})').firstMatch(s);
       if (clock != null && !s.contains('-')) {
-        out.add(DateTime(_startsAt.year, _startsAt.month, _startsAt.day,
-            int.parse(clock.group(1)!), int.parse(clock.group(2)!)));
+        out.add(
+          DateTime(
+            _startsAt.year,
+            _startsAt.month,
+            _startsAt.day,
+            int.parse(clock.group(1)!),
+            int.parse(clock.group(2)!),
+          ),
+        );
       } else {
         final parsed = parseApiTime(s);
         if (parsed != null) out.add(parsed);
@@ -101,7 +113,9 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
     final timeLabel =
         '${_startsAt.hour.toString().padLeft(2, '0')}:${_startsAt.minute.toString().padLeft(2, '0')}';
 
-    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(
+      language,
+    );
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -120,11 +134,18 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
             ),
             Expanded(
               child: ListView(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + MediaQuery.of(context).viewInsets.bottom),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  0,
+                  20,
+                  24 + MediaQuery.of(context).viewInsets.bottom,
+                ),
                 children: [
                   _BookingTitle(
                     title: AppStrings.bookingConfirmBooking.select(language),
-                    subtitle: AppStrings.bookingCheckTheDetailsBelow.select(language),
+                    subtitle: AppStrings.bookingCheckTheDetailsBelow.select(
+                      language,
+                    ),
                   ),
                   const SizedBox(height: 18),
                   Container(
@@ -139,13 +160,21 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                             Expanded(
                               child: Text(
                                 widget.service.name,
-                                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, height: 1.2),
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.2,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 10),
                             Text(
                               '${formatMoney(widget.service.price)} $currency',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: tokens.accent),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: tokens.accent,
+                              ),
                             ),
                           ],
                         ),
@@ -157,7 +186,9 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                               Expanded(
                                 child: _BookingInfoTile(
                                   icon: Icons.calendar_today_outlined,
-                                  caption: AppStrings.bookingDate2.select(language),
+                                  caption: AppStrings.bookingDate2.select(
+                                    language,
+                                  ),
                                   value: dateLabel,
                                 ),
                               ),
@@ -165,8 +196,11 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                               Expanded(
                                 child: _BookingInfoTile(
                                   icon: Icons.schedule_outlined,
-                                  caption: AppStrings.bookingTime3.select(language),
-                                  value: '$timeLabel · ${widget.service.durationMin} ${AppStrings.bookingMin.select(language)}',
+                                  caption: AppStrings.bookingTime3.select(
+                                    language,
+                                  ),
+                                  value:
+                                      '$timeLabel · ${widget.service.durationMin} ${AppStrings.bookingMin.select(language)}',
                                 ),
                               ),
                             ],
@@ -184,7 +218,10 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                       children: [
                         Text(
                           AppStrings.bookingNote.select(language),
-                          style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
+                          style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         TextField(
@@ -194,21 +231,28 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: tokens.surfaceElevated,
-                            hintText: AppStrings.bookingNoteForTheMasterOptional.select(language),
+                            hintText: AppStrings.bookingNoteForTheMasterOptional
+                                .select(language),
                           ),
                         ),
                         Material(
                           type: MaterialType.transparency,
                           child: CheckboxListTile(
                             value: _notifyEarlier,
-                            onChanged: (v) => setState(() => _notifyEarlier = v ?? false),
+                            onChanged: (v) =>
+                                setState(() => _notifyEarlier = v ?? false),
                             controlAffinity: ListTileControlAffinity.leading,
                             contentPadding: EdgeInsets.zero,
                             dense: true,
                             activeColor: tokens.textPrimary,
                             title: Text(
-                              AppStrings.bookingNotifyMeIfAnEarlier.select(language),
-                              style: const TextStyle(fontSize: 13, height: 1.35),
+                              AppStrings.bookingNotifyMeIfAnEarlier.select(
+                                language,
+                              ),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                height: 1.35,
+                              ),
                             ),
                           ),
                         ),
@@ -218,7 +262,9 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                   if (_error != null) ...[
                     const SizedBox(height: 8),
                     RetryErrorState(
-                      title: AppStrings.requestsSomethingWentWrong.select(language),
+                      title: AppStrings.requestsSomethingWentWrong.select(
+                        language,
+                      ),
                       text: _error!,
                       retryLabel: AppStrings.profileTryAgain.select(language),
                       onRetry: () => _confirm(t),
@@ -227,7 +273,10 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                       const SizedBox(height: 8),
                       Text(
                         AppStrings.bookingNearestFreeTimes.select(language),
-                        style: TextStyle(fontSize: 12.5, color: tokens.textSecondary),
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: tokens.textSecondary,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Wrap(
@@ -236,7 +285,9 @@ class _BookingConfirmScreenState extends State<BookingConfirmScreen> {
                         children: [
                           for (final slot in _suggestions)
                             ActionChip(
-                              label: Text('${formatDate(slot)} · ${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}'),
+                              label: Text(
+                                '${formatDate(slot)} · ${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}',
+                              ),
                               onPressed: () {
                                 setState(() {
                                   _startsAt = slot;

@@ -141,7 +141,10 @@ class _SubscriptionDaysCard extends StatelessWidget {
               if (isPromo && price > 0) ...[
                 const SizedBox(height: 8),
                 Text(
-                  AppStrings.cabinetThenMonth(formatMoney(price), currency).select(language),
+                  AppStrings.cabinetThenMonth(
+                    formatMoney(price),
+                    currency,
+                  ).select(language),
                   style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
                 ),
               ],

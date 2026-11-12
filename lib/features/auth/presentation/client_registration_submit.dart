@@ -4,17 +4,23 @@ extension _ClientRegistrationSubmit on _ClientRegistrationScreenState {
   String? _validateName(_Tr t) {
     final length = _nameController.text.trim().length;
     if (length < 2 || length > 50) {
-      return AppStrings.profileNameMustBe250.select(context.read<LanguageProvider>().language);
+      return AppStrings.profileNameMustBe250.select(
+        context.read<LanguageProvider>().language,
+      );
     }
     return null;
   }
 
   String? _validateNickname(_Tr t) {
     if (!nicknamePattern.hasMatch(_nickname)) {
-      return AppStrings.auth320CharsLowercaseLetters.select(context.read<LanguageProvider>().language);
+      return AppStrings.auth320CharsLowercaseLetters.select(
+        context.read<LanguageProvider>().language,
+      );
     }
     if (_nicknameState == _NicknameState.taken) {
-      return AppStrings.authThisNicknameIsTaken.select(context.read<LanguageProvider>().language);
+      return AppStrings.authThisNicknameIsTaken.select(
+        context.read<LanguageProvider>().language,
+      );
     }
     return null;
   }
@@ -22,7 +28,9 @@ extension _ClientRegistrationSubmit on _ClientRegistrationScreenState {
   String? _validatePhone(_Tr t) {
     final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
     if (digits.length != 8) {
-      return AppStrings.profileEnterTheFullNumber8.select(context.read<LanguageProvider>().language);
+      return AppStrings.profileEnterTheFullNumber8.select(
+        context.read<LanguageProvider>().language,
+      );
     }
     return null;
   }
@@ -33,7 +41,9 @@ extension _ClientRegistrationSubmit on _ClientRegistrationScreenState {
     final nicknameError = _validateNickname(t);
     final phoneError = _validatePhone(t);
     final photoError = _photo == null
-        ? AppStrings.authAProfilePhotoIsRequired.select(context.read<LanguageProvider>().language)
+        ? AppStrings.authAProfilePhotoIsRequired.select(
+            context.read<LanguageProvider>().language,
+          )
         : null;
     update(() {
       _nameError = nameError;
@@ -74,7 +84,9 @@ extension _ClientRegistrationSubmit on _ClientRegistrationScreenState {
           _submitting = false;
           _nicknameState = _NicknameState.taken;
           _nicknameSuggestions = check.suggestions;
-          _nicknameError = AppStrings.authThisNicknameIsTaken.select(context.read<LanguageProvider>().language);
+          _nicknameError = AppStrings.authThisNicknameIsTaken.select(
+            context.read<LanguageProvider>().language,
+          );
         });
         return;
       }

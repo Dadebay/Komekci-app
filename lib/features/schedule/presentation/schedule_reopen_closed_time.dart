@@ -28,8 +28,6 @@ Future<void> _reopenClosedTime(BuildContext context, ClosedTime closed) async {
     () => context.read<ScheduleProvider>().reopenTime(closed),
   );
   if (ok) {
-    toast.success(
-      AppStrings.scheduleTimeReopened.select(language),
-    );
+    toast.success(AppStrings.scheduleTimeReopened.select(language));
   }
 }

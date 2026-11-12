@@ -24,7 +24,13 @@ enum SessionRestore { signedIn, none, offline }
 /// always the account's own role — the API has no way for one account to act
 /// as both.
 class AuthProvider extends ChangeNotifier {
-  AuthProvider({required this._api, required this._auth, required this._meRepository, required this._devices, this.serviceReminder}) {
+  AuthProvider({
+    required this._api,
+    required this._auth,
+    required this._meRepository,
+    required this._devices,
+    this.serviceReminder,
+  }) {
     _api.onSessionExpired = _handleSessionExpired;
   }
 
@@ -99,7 +105,10 @@ class AuthProvider extends ChangeNotifier {
   ///
   /// Null means the server signed in without an SMS (its test number): the
   /// account is loaded and the caller should open the home screen.
-  Future<SmsOtpChallenge?> requestSmsOtp(String phone, {String purpose = 'login'}) async {
+  Future<SmsOtpChallenge?> requestSmsOtp(
+    String phone, {
+    String purpose = 'login',
+  }) async {
     final challenge = await _auth.requestSmsOtp(phone, purpose: purpose);
     if (challenge == null) await refreshMe();
     return challenge;
@@ -151,7 +160,8 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Step 1 of changing the phone number: SMS to the new number.
-  Future<int> requestPhoneChange(String phone) => _meRepository.requestPhoneChange(phone);
+  Future<int> requestPhoneChange(String phone) =>
+      _meRepository.requestPhoneChange(phone);
 
   /// Step 2: confirms the SMS code; the account now carries the new number.
   Future<void> confirmPhoneChange(String phone, String code) async {
@@ -162,7 +172,8 @@ class AuthProvider extends ChangeNotifier {
   /// them up. Best effort — the local choice already took effect.
   Future<void> savePreferences({String? locale, String? theme}) async {
     if (!isSignedIn) return;
-    if ((locale == null || locale == _me!.locale) && (theme == null || theme == _me!.theme)) {
+    if ((locale == null || locale == _me!.locale) &&
+        (theme == null || theme == _me!.theme)) {
       return;
     }
     try {
@@ -195,9 +206,11 @@ class AuthProvider extends ChangeNotifier {
     final reminder = serviceReminder;
     if (reminder != null) {
       unawaited(
-        reminder.sync(masterId: null, hasServices: false, locale: 'tk').catchError((Object error) {
-          debugPrint('Could not cancel master service reminder: $error');
-        }),
+        reminder
+            .sync(masterId: null, hasServices: false, locale: 'tk')
+            .catchError((Object error) {
+              debugPrint('Could not cancel master service reminder: $error');
+            }),
       );
     }
     _me = null;

@@ -225,18 +225,21 @@ class CustomerVisitsScreen extends StatelessWidget {
     );
     return Scaffold(
       backgroundColor: context.appTokens.surface,
-      appBar: CabinetAppBar(title: AppStrings.customersVisitHistory.select(language)),
+      appBar: CabinetAppBar(
+        title: AppStrings.customersVisitHistory.select(language),
+      ),
       body: SafeArea(
         child: customer == null
             ? const SizedBox.shrink()
             : ListView.builder(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                 itemCount: customer.visits.length,
-                itemBuilder: (_, index) =>
-                    _VisitRow(visit: customer.visits[index], language: language),
+                itemBuilder: (_, index) => _VisitRow(
+                  visit: customer.visits[index],
+                  language: language,
+                ),
               ),
       ),
     );
   }
 }
-

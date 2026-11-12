@@ -136,9 +136,7 @@ class _TransferInstructions extends StatelessWidget {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        AppStrings.authCopied.select(language),
-                      ),
+                      content: Text(AppStrings.authCopied.select(language)),
                     ),
                   );
                 },
@@ -148,7 +146,12 @@ class _TransferInstructions extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          AppStrings.authSendToThisNumberIn(amount, cur, formatMoney(topup.phoneMinAmount), _topUpShortCode).select(language),
+          AppStrings.authSendToThisNumberIn(
+            amount,
+            cur,
+            formatMoney(topup.phoneMinAmount),
+            _topUpShortCode,
+          ).select(language),
           style: TextStyle(
             color: tokens.textSecondary,
             fontSize: 12.5,
@@ -159,9 +162,7 @@ class _TransferInstructions extends StatelessWidget {
         TextButton.icon(
           onPressed: onResendSms,
           icon: AppIcon(Icons.sms_outlined, size: 17, color: tokens.accent),
-          label: Text(
-            AppStrings.authOpenTheSmsAgain.select(language),
-          ),
+          label: Text(AppStrings.authOpenTheSmsAgain.select(language)),
         ),
         if (pendingMessage != null) ...[
           const SizedBox(height: 8),

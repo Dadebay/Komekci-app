@@ -67,14 +67,16 @@ Color _apptStatusColor(AppointmentStatus status, AppThemeTokens tokens) {
   };
 }
 
-String _apptStatusLabel(AppointmentStatus status, AppLanguage language) =>
-    switch (status) {
-      AppointmentStatus.expected => AppStrings.scheduleUpcoming.select(language),
-      AppointmentStatus.arrived => AppStrings.scheduleArrived.select(language),
-      AppointmentStatus.completed => AppStrings.scheduleCompleted.select(language),
-      AppointmentStatus.cancelled => AppStrings.scheduleCancelled.select(language),
-      AppointmentStatus.noShow => AppStrings.scheduleNoShow.select(language),
-    };
+String _apptStatusLabel(
+  AppointmentStatus status,
+  AppLanguage language,
+) => switch (status) {
+  AppointmentStatus.expected => AppStrings.scheduleUpcoming.select(language),
+  AppointmentStatus.arrived => AppStrings.scheduleArrived.select(language),
+  AppointmentStatus.completed => AppStrings.scheduleCompleted.select(language),
+  AppointmentStatus.cancelled => AppStrings.scheduleCancelled.select(language),
+  AppointmentStatus.noShow => AppStrings.scheduleNoShow.select(language),
+};
 
 String _appointmentPhone(Appointment appointment, Customer? customer) {
   final customerPhone = customer?.phone.trim() ?? '';
@@ -82,4 +84,3 @@ String _appointmentPhone(Appointment appointment, Customer? customer) {
       ? customerPhone
       : appointment.clientPhone?.trim() ?? '';
 }
-

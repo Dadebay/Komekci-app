@@ -34,7 +34,9 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
 
   Future<void> _saveToCalendar() async {
     setState(() => _calendarSaving = true);
-    final result = await context.read<ClientBookingsProvider>().saveToCalendar(widget.appointment);
+    final result = await context.read<ClientBookingsProvider>().saveToCalendar(
+      widget.appointment,
+    );
     if (!mounted) return;
     setState(() {
       _calendarSaving = false;
@@ -73,12 +75,18 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                   width: 144,
                   height: 144,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .10), shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: tokens.accent.withValues(alpha: .10),
+                    shape: BoxShape.circle,
+                  ),
                   child: Container(
                     width: 112,
                     height: 112,
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .18), shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                      color: tokens.accent.withValues(alpha: .18),
+                      shape: BoxShape.circle,
+                    ),
                     child: Container(
                       width: 80,
                       height: 80,
@@ -86,9 +94,19 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                       decoration: BoxDecoration(
                         color: tokens.accent,
                         shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: tokens.accent.withValues(alpha: .4), blurRadius: 18, offset: const Offset(0, 8))],
+                        boxShadow: [
+                          BoxShadow(
+                            color: tokens.accent.withValues(alpha: .4),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      child: AppIcon(Icons.check, size: 38, color: tokens.accentOn),
+                      child: AppIcon(
+                        Icons.check,
+                        size: 38,
+                        color: tokens.accentOn,
+                      ),
                     ),
                   ),
                 ),
@@ -116,9 +134,21 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(a.serviceName, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                    Text(
+                      a.serviceName,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                     const SizedBox(height: 3),
-                    Text(widget.masterName, style: TextStyle(color: tokens.textSecondary, fontSize: 13)),
+                    Text(
+                      widget.masterName,
+                      style: TextStyle(
+                        color: tokens.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
                     const SizedBox(height: 14),
                     IntrinsicHeight(
                       child: Row(
@@ -136,7 +166,8 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                             child: _BookingInfoTile(
                               icon: Icons.schedule_outlined,
                               caption: AppStrings.bookingTime.select(language),
-                              value: '$timeLabel · ${a.minutes} ${AppStrings.bookingMin.select(language)}',
+                              value:
+                                  '$timeLabel · ${a.minutes} ${AppStrings.bookingMin.select(language)}',
                             ),
                           ),
                         ],
@@ -145,11 +176,15 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                   ],
                 ),
               ),
-              if (_calendarSaving || _calendarResult != CalendarSaveResult.unavailable) ...[
+              if (_calendarSaving ||
+                  _calendarResult != CalendarSaveResult.unavailable) ...[
                 const SizedBox(height: 14),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 11,
+                  ),
                   decoration: _bookingCardDecoration(tokens),
                   child: Row(
                     children: [
@@ -164,20 +199,38 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                       Expanded(
                         child: Text(
                           _calendarSaving
-                              ? AppStrings.bookingAddingToCalendar.select(language)
+                              ? AppStrings.bookingAddingToCalendar.select(
+                                  language,
+                                )
                               : switch (_calendarResult) {
-                                  CalendarSaveResult.saved => AppStrings.bookingAddedToCalendarReminder1.select(language),
-                                  CalendarSaveResult.permissionDenied => AppStrings.bookingCalendarAccessIsNeeded.select(language),
-                                  _ => AppStrings.bookingCouldNotAddToCalendar.select(language),
+                                  CalendarSaveResult.saved =>
+                                    AppStrings.bookingAddedToCalendarReminder1
+                                        .select(language),
+                                  CalendarSaveResult.permissionDenied =>
+                                    AppStrings.bookingCalendarAccessIsNeeded
+                                        .select(language),
+                                  _ =>
+                                    AppStrings.bookingCouldNotAddToCalendar
+                                        .select(language),
                                 },
-                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textPrimary),
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: tokens.textPrimary,
+                          ),
                         ),
                       ),
-                      if (!_calendarSaving && _calendarResult != CalendarSaveResult.saved) ...[
-                        if (_calendarResult == CalendarSaveResult.permissionDenied)
+                      if (!_calendarSaving &&
+                          _calendarResult != CalendarSaveResult.saved) ...[
+                        if (_calendarResult ==
+                            CalendarSaveResult.permissionDenied)
                           TextButton(
-                            onPressed: () => context.read<ClientBookingsProvider>().openCalendarSettings(),
-                            child: Text(AppStrings.profileSettings.select(language)),
+                            onPressed: () => context
+                                .read<ClientBookingsProvider>()
+                                .openCalendarSettings(),
+                            child: Text(
+                              AppStrings.profileSettings.select(language),
+                            ),
                           ),
                         IconButton(
                           tooltip: AppStrings.bookingRetry.select(language),
@@ -219,9 +272,7 @@ class _BookingSuccessScreenState extends State<BookingSuccessScreen>
                   pageRoute(const ClientHome()),
                   (route) => false,
                 ),
-                child: Text(
-                  AppStrings.bookingBackToHome.select(language),
-                ),
+                child: Text(AppStrings.bookingBackToHome.select(language)),
               ),
             ],
           ),

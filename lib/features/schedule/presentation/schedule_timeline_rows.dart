@@ -8,52 +8,52 @@ Iterable<Widget> _scheduleTimelineRows({
   required VoidCallback onExpired,
 }) {
   return entries.map((entry) {
-              if (entry is _ApptEntry) {
-                final customer = entry.appointment.customerId == null
-                    ? null
-                    : _findCustomer(
-                        customerProvider.customers,
-                        entry.appointment.customerId!,
-                      );
-                return _AppointmentRow(
-                  appointment: entry.appointment,
-                  customer: customer,
-                  language: language,
-                  onTap: () => _openAppointmentActions(
-                    context,
-                    entry.appointment,
-                    customer,
-                    language,
-                  ),
-                );
-              }
-              if (entry is _ClosedEntry) {
-                return _ClosedTimeRow(
-                  closed: entry.closed,
-                  language: language,
-                  onTap: () => _reopenClosedTime(context, entry.closed),
-                );
-              }
-              final free = entry as _FreeEntry;
-              return _FreeSlotRow(
-                start: free.start,
-                end: free.end,
-                language: language,
-                onTap: () {
-                  if (!free.start.isAfter(DateTime.now())) {
-                    onExpired();
-                    AppToast.of(context).error(
-                      AppStrings.scheduleThisTimeIsNoLonger.select(language),
-                    );
-                    return;
-                  }
-                  _showFreeTimeActions(
-                    context,
-                    start: free.start,
-                    end: free.end,
-                    availableEnd: free.availableEnd,
-                  );
-                },
-              );
-            });
+    if (entry is _ApptEntry) {
+      final customer = entry.appointment.customerId == null
+          ? null
+          : _findCustomer(
+              customerProvider.customers,
+              entry.appointment.customerId!,
+            );
+      return _AppointmentRow(
+        appointment: entry.appointment,
+        customer: customer,
+        language: language,
+        onTap: () => _openAppointmentActions(
+          context,
+          entry.appointment,
+          customer,
+          language,
+        ),
+      );
+    }
+    if (entry is _ClosedEntry) {
+      return _ClosedTimeRow(
+        closed: entry.closed,
+        language: language,
+        onTap: () => _reopenClosedTime(context, entry.closed),
+      );
+    }
+    final free = entry as _FreeEntry;
+    return _FreeSlotRow(
+      start: free.start,
+      end: free.end,
+      language: language,
+      onTap: () {
+        if (!free.start.isAfter(DateTime.now())) {
+          onExpired();
+          AppToast.of(
+            context,
+          ).error(AppStrings.scheduleThisTimeIsNoLonger.select(language));
+          return;
+        }
+        _showFreeTimeActions(
+          context,
+          start: free.start,
+          end: free.end,
+          availableEnd: free.availableEnd,
+        );
+      },
+    );
+  });
 }

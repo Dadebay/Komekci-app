@@ -80,19 +80,27 @@ class _VacationScreenState extends State<VacationScreen> {
                 children: [
                   _InfoBanner(
                     icon: Icons.event_busy_outlined,
-                    text: AppStrings.cabinetDuringThisTimeYouWill.select(language),
+                    text: AppStrings.cabinetDuringThisTimeYouWill.select(
+                      language,
+                    ),
                   ),
                   if (vacations.isNotEmpty) ...[
                     const SizedBox(height: 22),
                     Text(
                       AppStrings.cabinetAddedPeriods.select(language),
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     for (final v in vacations)
                       Container(
                         margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 13,
+                        ),
                         decoration: BoxDecoration(
                           color: tokens.surfaceElevated,
                           borderRadius: BorderRadius.circular(14),
@@ -100,20 +108,33 @@ class _VacationScreenState extends State<VacationScreen> {
                         ),
                         child: Row(
                           children: [
-                            AppIcon(Icons.event_busy_outlined, color: tokens.accent, size: 18),
+                            AppIcon(
+                              Icons.event_busy_outlined,
+                              color: tokens.accent,
+                              size: 18,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 '${formatDate(v.start)} – ${formatDate(v.end)}',
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                             GestureDetector(
                               onTap: () => runApi(
                                 context,
-                                () => context.read<ScheduleProvider>().removeVacation(v.id),
+                                () => context
+                                    .read<ScheduleProvider>()
+                                    .removeVacation(v.id),
                               ),
-                              child: AppIcon(Icons.close, color: tokens.textSecondary, size: 18),
+                              child: AppIcon(
+                                Icons.close,
+                                color: tokens.textSecondary,
+                                size: 18,
+                              ),
                             ),
                           ],
                         ),
@@ -209,7 +230,10 @@ Future<bool?> _showAffectedAppointmentsDialog(
             ),
             const SizedBox(height: 8),
             Text(
-              AppStrings.cabinetThereAreBookingSFor(dateLabel, count).select(language),
+              AppStrings.cabinetThereAreBookingSFor(
+                dateLabel,
+                count,
+              ).select(language),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13.5,
@@ -226,9 +250,7 @@ Future<bool?> _showAffectedAppointmentsDialog(
                   side: BorderSide(color: tokens.border),
                 ),
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: Text(
-                  AppStrings.cabinetViewBookings.select(language),
-                ),
+                child: Text(AppStrings.cabinetViewBookings.select(language)),
               ),
             ),
             const SizedBox(height: 10),
@@ -240,9 +262,7 @@ Future<bool?> _showAffectedAppointmentsDialog(
                   backgroundColor: tokens.textPrimary,
                 ),
                 onPressed: () => Navigator.pop(dialogContext, true),
-                child: Text(
-                  AppStrings.cabinetCloseAnyway.select(language),
-                ),
+                child: Text(AppStrings.cabinetCloseAnyway.select(language)),
               ),
             ),
             const SizedBox(height: 6),

@@ -17,16 +17,30 @@ class _MainMasterCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(color: tokens.accent, borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: tokens.accent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    AppIcon(Icons.star_border, size: 13, color: tokens.accentOn),
+                    AppIcon(
+                      Icons.star_border,
+                      size: 13,
+                      color: tokens.accentOn,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       AppStrings.appointmentsMainMaster.select(language),
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: tokens.accentOn),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: tokens.accentOn,
+                      ),
                     ),
                   ],
                 ),
@@ -37,7 +51,10 @@ class _MainMasterCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           GestureDetector(
-            onTap: () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master))),
+            onTap: () => Navigator.push(
+              context,
+              pageRoute(MasterProfileScreen(master: master)),
+            ),
             child: Row(
               children: [
                 Container(
@@ -58,22 +75,39 @@ class _MainMasterCard extends StatelessWidget {
                         master.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, height: 1.15),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
+                        ),
                       ),
                       const SizedBox(height: 3),
-                      Text('@${master.nickname}', style: TextStyle(fontSize: 13.5, color: tokens.textSecondary)),
+                      Text(
+                        '@${master.nickname}',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          color: tokens.textSecondary,
+                        ),
+                      ),
                       if (master.address.isNotEmpty) ...[
                         const SizedBox(height: 7),
                         Row(
                           children: [
-                            AppIcon(Icons.location_on_outlined, size: 13, color: tokens.textSecondary),
+                            AppIcon(
+                              Icons.location_on_outlined,
+                              size: 13,
+                              color: tokens.textSecondary,
+                            ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
                                 master.address,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 12.5, color: tokens.textSecondary),
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: tokens.textSecondary,
+                                ),
                               ),
                             ),
                           ],
@@ -92,12 +126,26 @@ class _MainMasterCard extends StatelessWidget {
                 child: SizedBox(
                   height: 50,
                   child: FilledButton.icon(
-                    style: FilledButton.styleFrom(backgroundColor: tokens.textPrimary, shape: const StadiumBorder()),
-                    onPressed: () => Navigator.push(context, pageRoute(BookingPage(master: master))),
-                    icon: AppIcon(Icons.calendar_month_outlined, size: 18, color: tokens.surface),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: tokens.textPrimary,
+                      shape: const StadiumBorder(),
+                    ),
+                    onPressed: () => Navigator.push(
+                      context,
+                      pageRoute(BookingPage(master: master)),
+                    ),
+                    icon: AppIcon(
+                      Icons.calendar_month_outlined,
+                      size: 18,
+                      color: tokens.surface,
+                    ),
                     label: Text(
                       AppStrings.appointmentsBook.select(language),
-                      style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: tokens.surface),
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: tokens.surface,
+                      ),
                     ),
                   ),
                 ),
@@ -107,14 +155,23 @@ class _MainMasterCard extends StatelessWidget {
                 height: 50,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: tokens.textPrimary.withValues(alpha: .25)),
+                    side: BorderSide(
+                      color: tokens.textPrimary.withValues(alpha: .25),
+                    ),
                     shape: const StadiumBorder(),
                     padding: const EdgeInsets.symmetric(horizontal: 22),
                   ),
-                  onPressed: () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master))),
+                  onPressed: () => Navigator.push(
+                    context,
+                    pageRoute(MasterProfileScreen(master: master)),
+                  ),
                   child: Text(
                     AppStrings.profileProfile.select(language),
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: tokens.textPrimary),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: tokens.textPrimary,
+                    ),
                   ),
                 ),
               ),
@@ -145,7 +202,12 @@ class _MyMasterCard extends StatelessWidget {
         children: [
           GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: connected ? () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master))) : null,
+            onTap: connected
+                ? () => Navigator.push(
+                    context,
+                    pageRoute(MasterProfileScreen(master: master)),
+                  )
+                : null,
             child: Row(
               children: [
                 Opacity(
@@ -161,27 +223,40 @@ class _MyMasterCard extends StatelessWidget {
                         master.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800),
+                        style: const TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         '@${master.nickname}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12.5, color: tokens.textSecondary),
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: tokens.textSecondary,
+                        ),
                       ),
                       if (master.address.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            AppIcon(Icons.location_on_outlined, size: 12, color: tokens.textSecondary),
+                            AppIcon(
+                              Icons.location_on_outlined,
+                              size: 12,
+                              color: tokens.textSecondary,
+                            ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
                                 master.address,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: tokens.textSecondary,
+                                ),
                               ),
                             ),
                           ],
@@ -206,10 +281,17 @@ class _MyMasterCard extends StatelessWidget {
                         side: BorderSide(color: tokens.border),
                         shape: const StadiumBorder(),
                       ),
-                      onPressed: () => Navigator.push(context, pageRoute(MasterProfileScreen(master: master))),
+                      onPressed: () => Navigator.push(
+                        context,
+                        pageRoute(MasterProfileScreen(master: master)),
+                      ),
                       child: Text(
                         AppStrings.profileProfile.select(language),
-                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: tokens.textPrimary),
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: tokens.textPrimary,
+                        ),
                       ),
                     ),
                   ),
@@ -219,11 +301,21 @@ class _MyMasterCard extends StatelessWidget {
                   child: SizedBox(
                     height: 44,
                     child: FilledButton(
-                      style: FilledButton.styleFrom(backgroundColor: tokens.textPrimary, shape: const StadiumBorder()),
-                      onPressed: () => Navigator.push(context, pageRoute(BookingPage(master: master))),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: tokens.textPrimary,
+                        shape: const StadiumBorder(),
+                      ),
+                      onPressed: () => Navigator.push(
+                        context,
+                        pageRoute(BookingPage(master: master)),
+                      ),
                       child: Text(
                         AppStrings.appointmentsBook.select(language),
-                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: tokens.surface),
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: tokens.surface,
+                        ),
                       ),
                     ),
                   ),
@@ -233,15 +325,28 @@ class _MyMasterCard extends StatelessWidget {
           else
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-              decoration: BoxDecoration(color: tokens.warning.withValues(alpha: .1), borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(
+                color: tokens.warning.withValues(alpha: .1),
+                borderRadius: BorderRadius.circular(14),
+              ),
               child: Row(
                 children: [
-                  AppIcon(Icons.hourglass_empty, size: 15, color: tokens.warning),
+                  AppIcon(
+                    Icons.hourglass_empty,
+                    size: 15,
+                    color: tokens.warning,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      AppStrings.appointmentsWaitingForTheMasterTo.select(language),
-                      style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.warning),
+                      AppStrings.appointmentsWaitingForTheMasterTo.select(
+                        language,
+                      ),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: tokens.warning,
+                      ),
                     ),
                   ),
                 ],

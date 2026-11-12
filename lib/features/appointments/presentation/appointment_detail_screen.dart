@@ -13,7 +13,8 @@ class AppointmentDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
 
     final provider = context.watch<ClientBookingsProvider>();
@@ -22,7 +23,9 @@ class AppointmentDetailScreen extends StatelessWidget {
       if (b.id == booking.id) current = b;
     }
     final isUpcoming = current.status == ClientBookingStatus.expected;
-    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(
+      language,
+    );
 
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -43,17 +46,32 @@ class AppointmentDetailScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: tokens.surface,
                         shape: BoxShape.circle,
-                        border: Border.all(color: tokens.border.withValues(alpha: .8)),
-                        boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .06), blurRadius: 10, offset: const Offset(0, 3))],
+                        border: Border.all(
+                          color: tokens.border.withValues(alpha: .8),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: tokens.textPrimary.withValues(alpha: .06),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                      child: AppIcon(Icons.arrow_back, size: 19, color: tokens.textPrimary),
+                      child: AppIcon(
+                        Icons.arrow_back,
+                        size: 19,
+                        color: tokens.textPrimary,
+                      ),
                     ),
                   ),
                   Expanded(
                     child: Text(
                       AppStrings.appointmentsBooking.select(language),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 44),
@@ -73,16 +91,29 @@ class AppointmentDetailScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: tokens.warning.withValues(alpha: .12),
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: tokens.warning.withValues(alpha: .3)),
+                        border: Border.all(
+                          color: tokens.warning.withValues(alpha: .3),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          AppIcon(Icons.timer_outlined, size: 18, color: tokens.warning),
+                          AppIcon(
+                            Icons.timer_outlined,
+                            size: 18,
+                            color: tokens.warning,
+                          ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              AppStrings.appointmentsYouSignalledYouLlBe(current.lateMinutes).select(language),
-                              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.warning, height: 1.35),
+                              AppStrings.appointmentsYouSignalledYouLlBe(
+                                current.lateMinutes,
+                              ).select(language),
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: tokens.warning,
+                                height: 1.35,
+                              ),
                             ),
                           ),
                         ],
@@ -96,25 +127,56 @@ class AppointmentDetailScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(AppStrings.appointmentsMaster.select(language), style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: tokens.textSecondary)),
+                        Text(
+                          AppStrings.appointmentsMaster.select(language),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: tokens.textSecondary,
+                          ),
+                        ),
                         const SizedBox(height: 10),
                         Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.all(2.5),
-                              decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: tokens.accent, width: 1.6)),
-                              child: MasterAvatar(url: current.masterPhotoUrl, radius: 24),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: tokens.accent,
+                                  width: 1.6,
+                                ),
+                              ),
+                              child: MasterAvatar(
+                                url: current.masterPhotoUrl,
+                                radius: 24,
+                              ),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
-                              child: Text(current.masterName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                              child: Text(
+                                current.masterName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
                         Container(height: 1, color: tokens.border),
                         const SizedBox(height: 16),
-                        Text(AppStrings.bookingService.select(language), style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: tokens.textSecondary)),
+                        Text(
+                          AppStrings.bookingService.select(language),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: tokens.textSecondary,
+                          ),
+                        ),
                         const SizedBox(height: 10),
                         Row(
                           children: [
@@ -122,27 +184,57 @@ class AppointmentDetailScreen extends StatelessWidget {
                               width: 46,
                               height: 46,
                               alignment: Alignment.center,
-                              decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .13), borderRadius: BorderRadius.circular(15)),
-                              child: AppIcon(Icons.content_cut, size: 20, color: tokens.accent),
+                              decoration: BoxDecoration(
+                                color: tokens.accent.withValues(alpha: .13),
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: AppIcon(
+                                Icons.content_cut,
+                                size: 20,
+                                color: tokens.accent,
+                              ),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(current.serviceName, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                                  Text(
+                                    current.serviceName,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                                   const SizedBox(height: 3),
                                   Row(
                                     children: [
-                                      AppIcon(Icons.hourglass_empty, size: 12, color: tokens.textSecondary),
+                                      AppIcon(
+                                        Icons.hourglass_empty,
+                                        size: 12,
+                                        color: tokens.textSecondary,
+                                      ),
                                       const SizedBox(width: 4),
-                                      Text('${current.minutes} ${AppStrings.bookingMin.select(language)}', style: TextStyle(fontSize: 12.5, color: tokens.textSecondary)),
+                                      Text(
+                                        '${current.minutes} ${AppStrings.bookingMin.select(language)}',
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          color: tokens.textSecondary,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ],
                               ),
                             ),
-                            Text('${current.price.toStringAsFixed(0)} $currency', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: tokens.accent)),
+                            Text(
+                              '${current.price.toStringAsFixed(0)} $currency',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: tokens.accent,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -159,13 +251,30 @@ class AppointmentDetailScreen extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              AppIcon(Icons.sticky_note_2_outlined, size: 16, color: tokens.accent),
+                              AppIcon(
+                                Icons.sticky_note_2_outlined,
+                                size: 16,
+                                color: tokens.accent,
+                              ),
                               const SizedBox(width: 6),
-                              Text(AppStrings.bookingNote.select(language), style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800)),
+                              Text(
+                                AppStrings.bookingNote.select(language),
+                                style: const TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 8),
-                          Text(current.note, style: TextStyle(fontSize: 13.5, color: tokens.textSecondary, height: 1.5)),
+                          Text(
+                            current.note,
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              color: tokens.textSecondary,
+                              height: 1.5,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -174,12 +283,21 @@ class AppointmentDetailScreen extends StatelessWidget {
                     const SizedBox(height: 14),
                     Row(
                       children: [
-                        AppIcon(Icons.notifications_none, size: 15, color: tokens.textSecondary),
+                        AppIcon(
+                          Icons.notifications_none,
+                          size: 15,
+                          color: tokens.textSecondary,
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            AppStrings.appointmentsWeLlTellYouIf.select(language),
-                            style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+                            AppStrings.appointmentsWeLlTellYouIf.select(
+                              language,
+                            ),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: tokens.textSecondary,
+                            ),
                           ),
                         ),
                       ],
@@ -193,16 +311,29 @@ class AppointmentDetailScreen extends StatelessWidget {
                         final result = await provider.saveToCalendar(current);
                         switch (result) {
                           case CalendarSaveResult.saved:
-                            toast.success(AppStrings.appointmentsAddedToCalendarWithA.select(language));
+                            toast.success(
+                              AppStrings.appointmentsAddedToCalendarWithA
+                                  .select(language),
+                            );
                           case CalendarSaveResult.permissionDenied:
-                            toast.error(AppStrings.appointmentsAllowCalendarAccessInPhone.select(language));
+                            toast.error(
+                              AppStrings.appointmentsAllowCalendarAccessInPhone
+                                  .select(language),
+                            );
                           case CalendarSaveResult.unavailable:
                           case CalendarSaveResult.failed:
-                            toast.error(AppStrings.appointmentsCouldNotAddToCalendar.select(language));
+                            toast.error(
+                              AppStrings.appointmentsCouldNotAddToCalendar
+                                  .select(language),
+                            );
                         }
                       },
                       icon: const Icon(Icons.calendar_month_outlined),
-                      label: Text(AppStrings.appointmentsAddToPhoneCalendar.select(language)),
+                      label: Text(
+                        AppStrings.appointmentsAddToPhoneCalendar.select(
+                          language,
+                        ),
+                      ),
                     ),
                   ],
                 ],
@@ -215,7 +346,13 @@ class AppointmentDetailScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: tokens.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
-          boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .08), blurRadius: 22, offset: const Offset(0, -6))],
+          boxShadow: [
+            BoxShadow(
+              color: tokens.textPrimary.withValues(alpha: .08),
+              blurRadius: 22,
+              offset: const Offset(0, -6),
+            ),
+          ],
         ),
         child: SafeArea(
           top: false,
@@ -234,9 +371,23 @@ class AppointmentDetailScreen extends StatelessWidget {
                                 side: BorderSide(color: tokens.border),
                                 shape: const StadiumBorder(),
                               ),
-                              onPressed: () => _showLateSheet(context, current, t),
-                              icon: AppIcon(Icons.timer_outlined, size: 17, color: tokens.textPrimary),
-                              label: Text(AppStrings.appointmentsRunningLate.select(language), style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: tokens.textPrimary)),
+                              onPressed: () =>
+                                  _showLateSheet(context, current, t),
+                              icon: AppIcon(
+                                Icons.timer_outlined,
+                                size: 17,
+                                color: tokens.textPrimary,
+                              ),
+                              label: Text(
+                                AppStrings.appointmentsRunningLate.select(
+                                  language,
+                                ),
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: tokens.textPrimary,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -247,9 +398,23 @@ class AppointmentDetailScreen extends StatelessWidget {
                                 backgroundColor: tokens.textPrimary,
                                 shape: const StadiumBorder(),
                               ),
-                              onPressed: () => Navigator.push(context, pageRoute(RescheduleScreen(booking: current))),
-                              icon: AppIcon(Icons.edit_outlined, size: 17, color: tokens.surface),
-                              label: Text(AppStrings.profileChange.select(language), style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: tokens.surface)),
+                              onPressed: () => Navigator.push(
+                                context,
+                                pageRoute(RescheduleScreen(booking: current)),
+                              ),
+                              icon: AppIcon(
+                                Icons.edit_outlined,
+                                size: 17,
+                                color: tokens.surface,
+                              ),
+                              label: Text(
+                                AppStrings.profileChange.select(language),
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: tokens.surface,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -258,8 +423,13 @@ class AppointmentDetailScreen extends StatelessWidget {
                       TextButton(
                         onPressed: () => _confirmCancel(context, current, t),
                         child: Text(
-                          AppStrings.appointmentsCancelAppointment.select(language),
-                          style: TextStyle(color: tokens.danger, fontWeight: FontWeight.w700),
+                          AppStrings.appointmentsCancelAppointment.select(
+                            language,
+                          ),
+                          style: TextStyle(
+                            color: tokens.danger,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ],

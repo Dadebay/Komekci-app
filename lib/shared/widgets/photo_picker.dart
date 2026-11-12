@@ -18,13 +18,18 @@ import 'app_toast.dart';
 const _pickedImageQuality = 70;
 const _pickedImageMaxEdge = 1440.0;
 
-Future<File?> pickCompressedImage(BuildContext context, {AppLanguage language = AppLanguage.tk}) async {
+Future<File?> pickCompressedImage(
+  BuildContext context, {
+  AppLanguage language = AppLanguage.tk,
+}) async {
   final tokens = context.appTokens;
   final toast = AppToast.of(context);
   final source = await showModalBottomSheet<ImageSource>(
     context: context,
     backgroundColor: tokens.surface,
-    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
     builder: (sheetContext) => SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -33,16 +38,27 @@ Future<File?> pickCompressedImage(BuildContext context, {AppLanguage language = 
           Container(
             width: 42,
             height: 4,
-            decoration: BoxDecoration(color: tokens.border, borderRadius: BorderRadius.circular(2)),
+            decoration: BoxDecoration(
+              color: tokens.border,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           const SizedBox(height: 14),
           ListTile(
-            leading: AppIcon(Icons.photo_camera_outlined, color: tokens.textPrimary, size: 21),
+            leading: AppIcon(
+              Icons.photo_camera_outlined,
+              color: tokens.textPrimary,
+              size: 21,
+            ),
             title: Text(AppStrings.sharedTakeAPhoto.select(language)),
             onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
           ),
           ListTile(
-            leading: AppIcon(Icons.image_outlined, color: tokens.textPrimary, size: 21),
+            leading: AppIcon(
+              Icons.image_outlined,
+              color: tokens.textPrimary,
+              size: 21,
+            ),
             title: Text(AppStrings.sharedChooseFromGallery.select(language)),
             onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
           ),
@@ -52,16 +68,19 @@ Future<File?> pickCompressedImage(BuildContext context, {AppLanguage language = 
     ),
   );
   if (source == null) return null;
-  final picked = await ImagePicker().pickImage(source: source, imageQuality: _pickedImageQuality, maxWidth: _pickedImageMaxEdge, maxHeight: _pickedImageMaxEdge);
+  final picked = await ImagePicker().pickImage(
+    source: source,
+    imageQuality: _pickedImageQuality,
+    maxWidth: _pickedImageMaxEdge,
+    maxHeight: _pickedImageMaxEdge,
+  );
   if (picked == null) return null;
   // The picker already downsizes; this guarantees the upload fits in 1 MB.
   final file = await compressImageUnder(File(picked.path));
   if (await file.length() > uploadLimitBytes) {
     // Could not be decoded, so it could not be shrunk: do not hand a big
     // file on to an upload that the server will turn down.
-    toast.error(
-      AppStrings.sharedThePhotoIsTooLarge.select(language),
-    );
+    toast.error(AppStrings.sharedThePhotoIsTooLarge.select(language));
     return null;
   }
   return file;
@@ -71,7 +90,14 @@ Future<File?> pickCompressedImage(BuildContext context, {AppLanguage language = 
 /// with neither — or when the download fails (a missing file on the server
 /// answers 500) — it shows a placeholder icon instead of throwing.
 class RoundPhoto extends StatelessWidget {
-  const RoundPhoto({super.key, this.file, this.url, this.radius = 24, this.placeholder = Icons.person_outline, this.backgroundColor});
+  const RoundPhoto({
+    super.key,
+    this.file,
+    this.url,
+    this.radius = 24,
+    this.placeholder = Icons.person_outline,
+    this.backgroundColor,
+  });
 
   final File? file;
   final String? url;
@@ -83,13 +109,27 @@ class RoundPhoto extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     Widget icon() => Center(
-      child: AppIcon(placeholder, size: radius * .85, color: tokens.textPrimary),
+      child: AppIcon(
+        placeholder,
+        size: radius * .85,
+        color: tokens.textPrimary,
+      ),
     );
     final Widget content;
     if (file != null) {
-      content = Image.file(file!, fit: BoxFit.cover, errorBuilder: (_, _, _) => icon());
+      content = Image.file(
+        file!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => icon(),
+      );
     } else if (url != null) {
-      content = Image.network(url!, fit: BoxFit.cover, errorBuilder: (_, _, _) => icon(), frameBuilder: (_, child, frame, sync) => sync || frame != null ? child : icon());
+      content = Image.network(
+        url!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => icon(),
+        frameBuilder: (_, child, frame, sync) =>
+            sync || frame != null ? child : icon(),
+      );
     } else {
       content = icon();
     }
@@ -97,7 +137,10 @@ class RoundPhoto extends StatelessWidget {
       width: radius * 2,
       height: radius * 2,
       child: ClipOval(
-        child: ColoredBox(color: backgroundColor ?? tokens.accent.withValues(alpha: .18), child: content),
+        child: ColoredBox(
+          color: backgroundColor ?? tokens.accent.withValues(alpha: .18),
+          child: content,
+        ),
       ),
     );
   }
@@ -105,7 +148,13 @@ class RoundPhoto extends StatelessWidget {
 
 /// Round avatar with a camera badge, used on profile screens.
 class AvatarPicker extends StatelessWidget {
-  const AvatarPicker({super.key, required this.file, required this.onPicked, this.radius = 44, this.networkUrl});
+  const AvatarPicker({
+    super.key,
+    required this.file,
+    required this.onPicked,
+    this.radius = 44,
+    this.networkUrl,
+  });
 
   final File? file;
   final ValueChanged<File> onPicked;
@@ -119,7 +168,10 @@ class AvatarPicker extends StatelessWidget {
     final tokens = context.appTokens;
     return GestureDetector(
       onTap: () async {
-        final picked = await pickCompressedImage(context, language: context.read<LanguageProvider>().language);
+        final picked = await pickCompressedImage(
+          context,
+          language: context.read<LanguageProvider>().language,
+        );
         if (picked != null) onPicked(picked);
       },
       child: Stack(
@@ -137,7 +189,11 @@ class AvatarPicker extends StatelessWidget {
                 color: tokens.accent,
                 border: Border.all(color: tokens.surface, width: 2.5),
               ),
-              child: AppIcon(Icons.photo_camera_outlined, color: tokens.accentOn, size: 14),
+              child: AppIcon(
+                Icons.photo_camera_outlined,
+                color: tokens.accentOn,
+                size: 14,
+              ),
             ),
           ),
         ],
@@ -148,7 +204,16 @@ class AvatarPicker extends StatelessWidget {
 
 /// Dashed-looking upload box used by the registration and service forms.
 class PhotoUploadBox extends StatelessWidget {
-  const PhotoUploadBox({super.key, required this.file, required this.onPicked, required this.title, this.hint, this.height = 150, this.radius = 18, this.networkUrl});
+  const PhotoUploadBox({
+    super.key,
+    required this.file,
+    required this.onPicked,
+    required this.title,
+    this.hint,
+    this.height = 150,
+    this.radius = 18,
+    this.networkUrl,
+  });
 
   final File? file;
   final ValueChanged<File> onPicked;
@@ -167,7 +232,10 @@ class PhotoUploadBox extends StatelessWidget {
     final tokens = context.appTokens;
     return GestureDetector(
       onTap: () async {
-        final picked = await pickCompressedImage(context, language: context.read<LanguageProvider>().language);
+        final picked = await pickCompressedImage(
+          context,
+          language: context.read<LanguageProvider>().language,
+        );
         if (picked != null) onPicked(picked);
       },
       child: AnimatedContainer(
@@ -178,7 +246,10 @@ class PhotoUploadBox extends StatelessWidget {
         decoration: BoxDecoration(
           color: tokens.surfaceElevated,
           borderRadius: BorderRadius.circular(radius),
-          border: Border.all(color: _hasImage ? tokens.accent : tokens.border, width: _hasImage ? 1.5 : 1),
+          border: Border.all(
+            color: _hasImage ? tokens.accent : tokens.border,
+            width: _hasImage ? 1.5 : 1,
+          ),
         ),
         child: _hasImage
             ? Stack(
@@ -189,15 +260,31 @@ class PhotoUploadBox extends StatelessWidget {
                       : Image.network(
                           networkUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => Center(child: AppIcon(Icons.image_outlined, color: tokens.textSecondary, size: 28)),
+                          errorBuilder: (_, _, _) => Center(
+                            child: AppIcon(
+                              Icons.image_outlined,
+                              color: tokens.textSecondary,
+                              size: 28,
+                            ),
+                          ),
                         ),
                   Positioned(
                     right: 10,
                     bottom: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                      decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
-                      child: const AppIcon(Icons.edit_outlined, color: Colors.white, size: 15),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const AppIcon(
+                        Icons.edit_outlined,
+                        color: Colors.white,
+                        size: 15,
+                      ),
                     ),
                   ),
                 ],
@@ -205,10 +292,29 @@ class PhotoUploadBox extends StatelessWidget {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  AppIcon(Icons.photo_camera_outlined, color: tokens.textPrimary, size: 28),
+                  AppIcon(
+                    Icons.photo_camera_outlined,
+                    color: tokens.textPrimary,
+                    size: 28,
+                  ),
                   const SizedBox(height: 10),
-                  Text(title, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700)),
-                  if (hint != null) ...[const SizedBox(height: 5), Text(hint!, style: TextStyle(fontSize: 11.5, color: tokens.textSecondary))],
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  if (hint != null) ...[
+                    const SizedBox(height: 5),
+                    Text(
+                      hint!,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: tokens.textSecondary,
+                      ),
+                    ),
+                  ],
                 ],
               ),
       ),

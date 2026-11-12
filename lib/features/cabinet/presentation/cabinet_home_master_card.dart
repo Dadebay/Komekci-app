@@ -122,7 +122,9 @@ class _MasterCard extends StatelessWidget {
                 GestureDetector(
                   onTap: () => Navigator.push(
                     context,
-                    pageRoute(const MasterSubscriptionScreen(onboarding: false)),
+                    pageRoute(
+                      const MasterSubscriptionScreen(onboarding: false),
+                    ),
                   ),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -165,7 +167,10 @@ class _MetaLine extends StatelessWidget {
       Expanded(
         child: Text(
           text,
-          style: TextStyle(fontSize: 12.5, color: context.appTokens.textSecondary),
+          style: TextStyle(
+            fontSize: 12.5,
+            color: context.appTokens.textSecondary,
+          ),
           overflow: TextOverflow.ellipsis,
         ),
       ),
@@ -233,7 +238,11 @@ class _CabinetRow extends StatelessWidget {
                 ),
                 child: Text(
                   badgeCount > 99 ? '99+' : '$badgeCount',
-                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -261,9 +270,7 @@ class _HelpCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: tokens.surface,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: tokens.border,
-          ),
+          border: Border.all(color: tokens.border),
         ),
         child: Row(
           children: [

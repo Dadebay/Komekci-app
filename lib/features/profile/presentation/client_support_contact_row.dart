@@ -69,7 +69,11 @@ class _ContactRow extends StatelessWidget {
                   ),
                 ),
                 if (onTap != null)
-                  AppIcon(Icons.arrow_outward, size: 15, color: tokens.disabled),
+                  AppIcon(
+                    Icons.arrow_outward,
+                    size: 15,
+                    color: tokens.disabled,
+                  ),
               ],
             ),
           ),

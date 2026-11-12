@@ -17,9 +17,21 @@ class _ClientProfileCard extends StatelessWidget {
     Widget stat(String value, String label) => Expanded(
       child: Column(
         children: [
-          Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, height: 1.1)),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              height: 1.1,
+            ),
+          ),
           const SizedBox(height: 3),
-          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11.5, color: tokens.textSecondary)),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
+          ),
         ],
       ),
     );
@@ -28,7 +40,9 @@ class _ClientProfileCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
-        decoration: _bookingCardDecoration(tokens).copyWith(borderRadius: BorderRadius.circular(28)),
+        decoration: _bookingCardDecoration(
+          tokens,
+        ).copyWith(borderRadius: BorderRadius.circular(28)),
         child: Column(
           children: [
             Stack(
@@ -41,7 +55,11 @@ class _ClientProfileCard extends StatelessWidget {
                     color: tokens.surface,
                     border: Border.all(color: tokens.accent, width: 2),
                   ),
-                  child: RoundPhoto(file: profile.avatar, url: profile.avatarUrl, radius: 44),
+                  child: RoundPhoto(
+                    file: profile.avatar,
+                    url: profile.avatarUrl,
+                    radius: 44,
+                  ),
                 ),
                 Positioned(
                   right: 0,
@@ -55,7 +73,11 @@ class _ClientProfileCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: tokens.surface, width: 2.5),
                     ),
-                    child: AppIcon(Icons.edit_outlined, size: 13, color: tokens.accentOn),
+                    child: AppIcon(
+                      Icons.edit_outlined,
+                      size: 13,
+                      color: tokens.accentOn,
+                    ),
                   ),
                 ),
               ],
@@ -71,13 +93,27 @@ class _ClientProfileCard extends StatelessWidget {
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: tokens.surfaceElevated, borderRadius: BorderRadius.circular(20)),
+              decoration: BoxDecoration(
+                color: tokens.surfaceElevated,
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  AppIcon(Icons.phone_outlined, size: 13, color: tokens.textSecondary),
+                  AppIcon(
+                    Icons.phone_outlined,
+                    size: 13,
+                    color: tokens.textSecondary,
+                  ),
                   const SizedBox(width: 6),
-                  Text(displayPhone(profile.phone), style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary)),
+                  Text(
+                    displayPhone(profile.phone),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: tokens.textSecondary,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -86,11 +122,26 @@ class _ClientProfileCard extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                stat('${bookings.length}', AppStrings.profileBookings.select(context.read<LanguageProvider>().language)),
+                stat(
+                  '${bookings.length}',
+                  AppStrings.profileBookings.select(
+                    context.read<LanguageProvider>().language,
+                  ),
+                ),
                 Container(width: 1, height: 32, color: tokens.border),
-                stat('$upcoming', AppStrings.profileUpcoming.select(context.read<LanguageProvider>().language)),
+                stat(
+                  '$upcoming',
+                  AppStrings.profileUpcoming.select(
+                    context.read<LanguageProvider>().language,
+                  ),
+                ),
                 Container(width: 1, height: 32, color: tokens.border),
-                stat('$masters', AppStrings.profileMasters.select(context.read<LanguageProvider>().language)),
+                stat(
+                  '$masters',
+                  AppStrings.profileMasters.select(
+                    context.read<LanguageProvider>().language,
+                  ),
+                ),
               ],
             ),
           ],
@@ -114,7 +165,14 @@ class _ClientProfileGroup extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(6, 0, 0, 10),
-          child: Text(title, style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: tokens.textSecondary)),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: tokens.textSecondary,
+            ),
+          ),
         ),
         Container(
           clipBehavior: Clip.antiAlias,
@@ -125,7 +183,13 @@ class _ClientProfileGroup extends StatelessWidget {
               children: [
                 for (var i = 0; i < children.length; i++) ...[
                   children[i],
-                  if (i != children.length - 1) Divider(height: 1, thickness: 1, indent: 64, color: tokens.border.withValues(alpha: .7)),
+                  if (i != children.length - 1)
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: 64,
+                      color: tokens.border.withValues(alpha: .7),
+                    ),
                 ],
               ],
             ),
@@ -163,11 +227,22 @@ class _ClientProfileMenuRow extends StatelessWidget {
               width: 38,
               height: 38,
               alignment: Alignment.center,
-              decoration: BoxDecoration(color: tokens.accent.withValues(alpha: .13), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                color: tokens.accent.withValues(alpha: .13),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: AppIcon(icon, color: tokens.accent, size: 18),
             ),
             const SizedBox(width: 14),
-            Expanded(child: Text(title, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700))),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
             const SizedBox(width: 8),
             // Not flexible: the title's Expanded pushes the value and chevron
             // to the right edge, the value capped so a long one can't squeeze
@@ -196,22 +271,38 @@ class _ClientProfileMenuRow extends StatelessWidget {
 /// "back" into the previous session's screens.
 class _ClientLogoutButton extends StatelessWidget {
   const _ClientLogoutButton({required this.t});
-  final String Function({required String tk, required String ru, required String en}) t;
+  final String Function({
+    required String tk,
+    required String ru,
+    required String en,
+  })
+  t;
 
   Future<void> _confirmAndLogout(BuildContext context) async {
     final confirmed = await _showConfirmDialog(
       context,
       icon: Icons.logout,
-      title: AppStrings.profileSignOut.select(context.read<LanguageProvider>().language),
-      message: AppStrings.profileYouLlNeedToVerify.select(context.read<LanguageProvider>().language),
-      confirmLabel: AppStrings.profileSignOut2.select(context.read<LanguageProvider>().language),
-      cancelLabel: AppStrings.servicesCancel.select(context.read<LanguageProvider>().language),
+      title: AppStrings.profileSignOut.select(
+        context.read<LanguageProvider>().language,
+      ),
+      message: AppStrings.profileYouLlNeedToVerify.select(
+        context.read<LanguageProvider>().language,
+      ),
+      confirmLabel: AppStrings.profileSignOut2.select(
+        context.read<LanguageProvider>().language,
+      ),
+      cancelLabel: AppStrings.servicesCancel.select(
+        context.read<LanguageProvider>().language,
+      ),
       danger: true,
     );
     if (!confirmed || !context.mounted) return;
     final navigator = Navigator.of(context);
     await context.read<AuthProvider>().signOut();
-    navigator.pushAndRemoveUntil(pageRoute(const RoleScreen()), (route) => false);
+    navigator.pushAndRemoveUntil(
+      pageRoute(const RoleScreen()),
+      (route) => false,
+    );
   }
 
   @override
@@ -228,13 +319,22 @@ class _ClientLogoutButton extends StatelessWidget {
               width: 38,
               height: 38,
               alignment: Alignment.center,
-              decoration: BoxDecoration(color: tokens.danger.withValues(alpha: .12), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                color: tokens.danger.withValues(alpha: .12),
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: AppIcon(Icons.logout, size: 18, color: tokens.danger),
             ),
             const SizedBox(width: 14),
             Text(
-              AppStrings.profileSignOut3.select(context.read<LanguageProvider>().language),
-              style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: tokens.danger),
+              AppStrings.profileSignOut3.select(
+                context.read<LanguageProvider>().language,
+              ),
+              style: TextStyle(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w700,
+                color: tokens.danger,
+              ),
             ),
           ],
         ),

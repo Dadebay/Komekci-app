@@ -197,9 +197,7 @@ class _PaymentResultPanel extends StatelessWidget {
           ),
           if (!isSuccess) ...[
             const SizedBox(height: 6),
-            _DialogCancelButton(
-              label: AppStrings.authClose.select(language),
-            ),
+            _DialogCancelButton(label: AppStrings.authClose.select(language)),
           ],
         ],
       ),
@@ -223,7 +221,9 @@ class _PromoCard extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 16),
         child: _InfoBanner(
           icon: Icons.card_giftcard_outlined,
-          text: AppStrings.authFreeMonthIsActiveDays(promo.daysLeft).select(language),
+          text: AppStrings.authFreeMonthIsActiveDays(
+            promo.daysLeft,
+          ).select(language),
         ),
       );
     }

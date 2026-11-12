@@ -5,21 +5,29 @@ extension _SendMessageChannels on _SendMessageScreenState {
   /// at a time. Nothing is sent from here, so the app needs no SMS permission,
   /// and clients never see each other's numbers (a single group message
   /// would show them).
-  Future<void> _sendSmsViaApp(AppLanguage language, List<Customer> customers) async {
+  Future<void> _sendSmsViaApp(
+    AppLanguage language,
+    List<Customer> customers,
+  ) async {
     final message = _messageController.text.trim();
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
+    String t({required String tk, required String ru, required String en}) =>
+        pickTr(language, tk: tk, ru: ru, en: en);
     final opened = <String>{};
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: tokens.surface,
       isScrollControlled: true,
       showDragHandle: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
       builder: (sheetContext) => StatefulBuilder(
         builder: (context, setSheetState) => SafeArea(
           child: ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * .8),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * .8,
+            ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
               child: Column(
@@ -28,7 +36,10 @@ extension _SendMessageChannels on _SendMessageScreenState {
                 children: [
                   Text(
                     t(tk: 'SMS ibermek', ru: 'Отправка SMS', en: 'Send SMS'),
-                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -37,7 +48,11 @@ extension _SendMessageChannels on _SendMessageScreenState {
                       ru: 'Для каждого клиента откроется приложение SMS с готовым текстом. Остаётся нажать «Отправить».',
                       en: 'The messaging app opens for each client with the text ready. Just tap send there.',
                     ),
-                    style: TextStyle(fontSize: 13, height: 1.4, color: tokens.textSecondary),
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.4,
+                      color: tokens.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 14),
                   Flexible(
@@ -53,7 +68,9 @@ extension _SendMessageChannels on _SendMessageScreenState {
                           decoration: BoxDecoration(
                             color: tokens.surface,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: done ? tokens.success : tokens.border),
+                            border: Border.all(
+                              color: done ? tokens.success : tokens.border,
+                            ),
                           ),
                           child: Row(
                             children: [
@@ -63,26 +80,67 @@ extension _SendMessageChannels on _SendMessageScreenState {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(customer.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                                    Text(customer.phone, style: TextStyle(fontSize: 12, color: tokens.textSecondary)),
+                                    Text(
+                                      customer.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    Text(
+                                      customer.phone,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: tokens.textSecondary,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
                               TextButton.icon(
                                 onPressed: () async {
-                                  final ok = await _openSmsApp(customer.phone, message);
+                                  final ok = await _openSmsApp(
+                                    customer.phone,
+                                    message,
+                                  );
                                   if (ok) {
-                                    setSheetState(() => opened.add(customer.id));
+                                    setSheetState(
+                                      () => opened.add(customer.id),
+                                    );
                                   } else if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(AppStrings.cabinetCouldNotSendTheSms.select(language))),
+                                      SnackBar(
+                                        content: Text(
+                                          AppStrings.cabinetCouldNotSendTheSms
+                                              .select(language),
+                                        ),
+                                      ),
                                     );
                                   }
                                 },
-                                icon: AppIcon(done ? Icons.check_circle : Icons.sms_outlined, size: 18, color: done ? tokens.success : tokens.accent),
+                                icon: AppIcon(
+                                  done
+                                      ? Icons.check_circle
+                                      : Icons.sms_outlined,
+                                  size: 18,
+                                  color: done ? tokens.success : tokens.accent,
+                                ),
                                 label: Text(
-                                  done ? t(tk: 'Täzeden', ru: 'Ещё раз', en: 'Again') : t(tk: 'Aç', ru: 'Открыть', en: 'Open'),
-                                  style: TextStyle(fontWeight: FontWeight.w700, color: done ? tokens.success : tokens.accent),
+                                  done
+                                      ? t(
+                                          tk: 'Täzeden',
+                                          ru: 'Ещё раз',
+                                          en: 'Again',
+                                        )
+                                      : t(tk: 'Aç', ru: 'Открыть', en: 'Open'),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: done
+                                        ? tokens.success
+                                        : tokens.accent,
+                                  ),
                                 ),
                               ),
                             ],
@@ -106,7 +164,9 @@ extension _SendMessageChannels on _SendMessageScreenState {
   Future<bool> _openSmsApp(String phone, String message) async {
     final number = phone.replaceAll(RegExp(r'[^\d+]'), '');
     final body = Uri.encodeComponent(message);
-    final uri = Uri.parse(Platform.isIOS ? 'sms:$number&body=$body' : 'sms:$number?body=$body');
+    final uri = Uri.parse(
+      Platform.isIOS ? 'sms:$number&body=$body' : 'sms:$number?body=$body',
+    );
     try {
       return await launchUrl(uri);
     } catch (_) {
@@ -114,7 +174,10 @@ extension _SendMessageChannels on _SendMessageScreenState {
     }
   }
 
-  Future<void> _pickChannel(AppLanguage language, {required StateSetter update}) async {
+  Future<void> _pickChannel(
+    AppLanguage language, {
+    required StateSetter update,
+  }) async {
     final tokens = context.appTokens;
     final picked = await showModalBottomSheet<bool>(
       context: context,
@@ -183,5 +246,4 @@ extension _SendMessageChannels on _SendMessageScreenState {
     );
     if (picked != null) update(() => _pushChannel = picked);
   }
-
 }

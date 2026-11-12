@@ -278,4 +278,3 @@ class _WeekStrip extends StatelessWidget {
     );
   }
 }
-

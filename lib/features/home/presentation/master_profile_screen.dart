@@ -163,7 +163,9 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                     if (_error != null) ...[
                       const SizedBox(height: 20),
                       RetryErrorState(
-                        title: AppStrings.requestsSomethingWentWrong.select(language),
+                        title: AppStrings.requestsSomethingWentWrong.select(
+                          language,
+                        ),
                         text: apiErrorMessage(_error!, language),
                         retryLabel: AppStrings.profileTryAgain.select(language),
                         onRetry: _load,
@@ -205,9 +207,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                     ],
                     if ((profile?.description ?? '').isNotEmpty) ...[
                       const SizedBox(height: 28),
-                      sectionTitle(
-                        AppStrings.homeAbout.select(language),
-                      ),
+                      sectionTitle(AppStrings.homeAbout.select(language)),
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),

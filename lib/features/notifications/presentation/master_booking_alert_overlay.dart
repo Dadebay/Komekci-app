@@ -18,7 +18,8 @@ class MasterBookingAlertOverlay extends StatefulWidget {
   final Widget child;
 
   @override
-  State<MasterBookingAlertOverlay> createState() => _MasterBookingAlertOverlayState();
+  State<MasterBookingAlertOverlay> createState() =>
+      _MasterBookingAlertOverlayState();
 }
 
 class _MasterBookingAlertOverlayState extends State<MasterBookingAlertOverlay> {
@@ -61,7 +62,9 @@ class _MasterBookingAlertOverlayState extends State<MasterBookingAlertOverlay> {
           TweenAnimationBuilder<double>(
             key: ValueKey(alert.id),
             tween: Tween(begin: 0, end: 1),
-            duration: reduceMotion ? Duration.zero : const Duration(milliseconds: 320),
+            duration: reduceMotion
+                ? Duration.zero
+                : const Duration(milliseconds: 320),
             curve: Curves.easeOutCubic,
             builder: (context, t, card) => Stack(
               children: [
@@ -86,7 +89,11 @@ class _MasterBookingAlertOverlayState extends State<MasterBookingAlertOverlay> {
                 ),
               ],
             ),
-            child: _BookingAlertCard(alert: alert, duration: _displayDuration, onDismiss: () => controller.dismiss(alert.id)),
+            child: _BookingAlertCard(
+              alert: alert,
+              duration: _displayDuration,
+              onDismiss: () => controller.dismiss(alert.id),
+            ),
           ),
       ],
     );
@@ -94,7 +101,11 @@ class _MasterBookingAlertOverlayState extends State<MasterBookingAlertOverlay> {
 }
 
 class _BookingAlertCard extends StatelessWidget {
-  const _BookingAlertCard({required this.alert, required this.duration, required this.onDismiss});
+  const _BookingAlertCard({
+    required this.alert,
+    required this.duration,
+    required this.onDismiss,
+  });
 
   final MasterBookingAlert alert;
   final Duration duration;
@@ -108,7 +119,10 @@ class _BookingAlertCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 380, maxHeight: MediaQuery.sizeOf(context).height * .75),
+          constraints: BoxConstraints(
+            maxWidth: 380,
+            maxHeight: MediaQuery.sizeOf(context).height * .75,
+          ),
           child: Semantics(
             liveRegion: true,
             label: '${alert.title}. ${alert.body}',
@@ -131,7 +145,14 @@ class _BookingAlertCard extends StatelessWidget {
                     height: 140,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [tokens.accent.withValues(alpha: .14), tokens.accent.withValues(alpha: 0)]),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            tokens.accent.withValues(alpha: .14),
+                            tokens.accent.withValues(alpha: 0),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -145,35 +166,67 @@ class _BookingAlertCard extends StatelessWidget {
                         Text(
                           alert.title,
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontFamily: 'Gilroy', fontSize: 22, height: 1.15, fontWeight: FontWeight.w700, color: tokens.textPrimary),
+                          style: TextStyle(
+                            fontFamily: 'Gilroy',
+                            fontSize: 22,
+                            height: 1.15,
+                            fontWeight: FontWeight.w700,
+                            color: tokens.textPrimary,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          AppStrings.notificationsAClientJustBookedYou.select(language),
+                          AppStrings.notificationsAClientJustBookedYou.select(
+                            language,
+                          ),
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 13.5, color: tokens.textSecondary),
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            color: tokens.textSecondary,
+                          ),
                         ),
                         const SizedBox(height: 18),
                         Flexible(
                           child: SingleChildScrollView(
                             child: Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                14,
+                                16,
+                                14,
+                              ),
                               decoration: BoxDecoration(
-                                color: Color.alphaBlend(tokens.accent.withValues(alpha: .06), tokens.surfaceElevated),
+                                color: Color.alphaBlend(
+                                  tokens.accent.withValues(alpha: .06),
+                                  tokens.surfaceElevated,
+                                ),
                                 borderRadius: BorderRadius.circular(18),
-                                border: Border.all(color: tokens.accent.withValues(alpha: .18)),
+                                border: Border.all(
+                                  color: tokens.accent.withValues(alpha: .18),
+                                ),
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Padding(
                                     padding: const EdgeInsets.only(top: 1),
-                                    child: AppIcon(Icons.event_available_outlined, size: 18, color: tokens.accent),
+                                    child: AppIcon(
+                                      Icons.event_available_outlined,
+                                      size: 18,
+                                      color: tokens.accent,
+                                    ),
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(
-                                    child: Text(alert.body, style: TextStyle(fontSize: 14.5, height: 1.45, color: tokens.textPrimary)),
+                                    child: Text(
+                                      alert.body,
+                                      style: TextStyle(
+                                        fontSize: 14.5,
+                                        height: 1.45,
+                                        color: tokens.textPrimary,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -196,7 +249,11 @@ class _BookingAlertCard extends StatelessWidget {
                       label: AppStrings.notificationsClose.select(language),
                       child: IconButton(
                         onPressed: onDismiss,
-                        icon: AppIcon(Icons.close, color: tokens.textSecondary, size: 20),
+                        icon: AppIcon(
+                          Icons.close,
+                          color: tokens.textSecondary,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),

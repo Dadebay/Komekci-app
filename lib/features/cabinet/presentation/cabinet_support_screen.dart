@@ -18,9 +18,7 @@ class SupportScreen extends StatelessWidget {
     ];
     return Scaffold(
       backgroundColor: tokens.surface,
-      appBar: CabinetAppBar(
-        title: AppStrings.profileHelp.select(language),
-      ),
+      appBar: CabinetAppBar(title: AppStrings.profileHelp.select(language)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -63,7 +61,9 @@ class SupportScreen extends StatelessWidget {
                   Text(
                     AppStrings.cabinetFindAnAnswerOrReach.select(language),
                     style: TextStyle(
-                      color: dark ? tokens.textSecondary : tokens.surface.withValues(alpha: .72),
+                      color: dark
+                          ? tokens.textSecondary
+                          : tokens.surface.withValues(alpha: .72),
                       fontSize: 13,
                       height: 1.5,
                     ),
@@ -103,7 +103,9 @@ class SupportScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        AppStrings.cabinetContactDetailsAreNotAvailable.select(language),
+                        AppStrings.cabinetContactDetailsAreNotAvailable.select(
+                          language,
+                        ),
                         style: TextStyle(
                           color: tokens.textSecondary,
                           fontSize: 13,

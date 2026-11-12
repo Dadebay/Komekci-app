@@ -11,9 +11,9 @@ Future<void> _showBlockTimeSheet(
   if (!start.isAfter(DateTime.now()) ||
       !end.isAfter(start) ||
       end.difference(start) > const Duration(hours: 24)) {
-    AppToast.of(context).error(
-      AppStrings.scheduleThisTimeCannotBeBlocked.select(language),
-    );
+    AppToast.of(
+      context,
+    ).error(AppStrings.scheduleThisTimeCannotBeBlocked.select(language));
     return;
   }
   final noteController = TextEditingController();
@@ -70,7 +70,9 @@ Future<void> _showBlockTimeSheet(
                     if (!candidate.isAfter(start) ||
                         candidate.isAfter(availableEnd)) {
                       AppToast.of(sheetContext).error(
-                        AppStrings.scheduleChooseAnEndTimeWithin.select(language),
+                        AppStrings.scheduleChooseAnEndTimeWithin.select(
+                          language,
+                        ),
                       );
                       return;
                     }
@@ -88,7 +90,9 @@ Future<void> _showBlockTimeSheet(
                 maxLength: 500,
                 maxLines: 2,
                 decoration: InputDecoration(
-                  labelText: AppStrings.schedulePrivateNoteOptional.select(language),
+                  labelText: AppStrings.schedulePrivateNoteOptional.select(
+                    language,
+                  ),
                   border: const OutlineInputBorder(),
                 ),
               ),
@@ -123,4 +127,3 @@ Future<void> _showBlockTimeSheet(
     );
   }
 }
-

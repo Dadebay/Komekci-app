@@ -100,7 +100,11 @@ class _ClientListTile extends StatelessWidget {
             const SizedBox(width: 8),
             enabled
                 ? _CheckboxDot(checked: checked)
-                : AppIcon(Icons.info_outline, color: tokens.textSecondary, size: 19),
+                : AppIcon(
+                    Icons.info_outline,
+                    color: tokens.textSecondary,
+                    size: 19,
+                  ),
           ],
         ),
       ),
@@ -136,7 +140,10 @@ class _SubscriptionDateRow extends StatelessWidget {
       Expanded(
         child: Text(
           label,
-          style: TextStyle(fontSize: 13, color: context.appTokens.textSecondary),
+          style: TextStyle(
+            fontSize: 13,
+            color: context.appTokens.textSecondary,
+          ),
         ),
       ),
       Text(

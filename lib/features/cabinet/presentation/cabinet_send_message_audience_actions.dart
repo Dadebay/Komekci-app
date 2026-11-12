@@ -4,15 +4,21 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
   String _audienceSubtitle(AppLanguage language, int index) {
     switch (index) {
       case 0:
-        return AppStrings.cabinetWillBeSentToAll(_eligibleClients.length).select(language);
+        return AppStrings.cabinetWillBeSentToAll(
+          _eligibleClients.length,
+        ).select(language);
       case 1:
         return _selectedIds.isEmpty
             ? AppStrings.cabinetChooseClientsToSendTo2.select(language)
-            : AppStrings.cabinetClientsSelected(_selectedIds.length).select(language);
+            : AppStrings.cabinetClientsSelected(
+                _selectedIds.length,
+              ).select(language);
       default:
         return _recentIds.isEmpty
             ? AppStrings.cabinetClientsWithinASpecificTime.select(language)
-            : AppStrings.cabinetClientsSelected(_recentIds.length).select(language);
+            : AppStrings.cabinetClientsSelected(
+                _recentIds.length,
+              ).select(language);
     }
   }
 
@@ -20,7 +26,12 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
     if (index == 1) {
       final result = await Navigator.push<List<String>>(
         context,
-        pageRoute(SelectedClientsScreen(initialSelection: _selectedIds, forPush: _pushChannel)),
+        pageRoute(
+          SelectedClientsScreen(
+            initialSelection: _selectedIds,
+            forPush: _pushChannel,
+          ),
+        ),
       );
       if (result == null) return;
       update(() {
@@ -32,7 +43,12 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
     if (index == 2) {
       final result = await Navigator.push<List<String>>(
         context,
-        pageRoute(RecentClientsScreen(initialSelection: _recentIds, forPush: _pushChannel)),
+        pageRoute(
+          RecentClientsScreen(
+            initialSelection: _recentIds,
+            forPush: _pushChannel,
+          ),
+        ),
       );
       if (result == null) return;
       update(() {
@@ -45,9 +61,14 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
   }
 
   /// Shows who the message will actually reach and asks for a final confirmation before sending.
-  Future<void> _confirmAndSend(AppLanguage language, {required StateSetter update}) async {
+  Future<void> _confirmAndSend(
+    AppLanguage language, {
+    required StateSetter update,
+  }) async {
     final recipients = _recipients;
-    if (_sending || recipients.isEmpty || recipients.length > 50 ||
+    if (_sending ||
+        recipients.isEmpty ||
+        recipients.length > 50 ||
         _messageController.text.trim().isEmpty ||
         (_pushChannel && _titleController.text.trim().isEmpty)) {
       return;
@@ -66,7 +87,9 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
         recipientLabel = AppStrings.cabinetToSelectedClients.select(language);
       default:
         recipientCount = recipients.length;
-        recipientLabel = AppStrings.cabinetToClientsFromTheRecent.select(language);
+        recipientLabel = AppStrings.cabinetToClientsFromTheRecent.select(
+          language,
+        );
     }
     final tokens = context.appTokens;
     final confirmed = await showModalBottomSheet<bool>(
@@ -93,7 +116,11 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  AppStrings.cabinetWillBeSentPeopleContinue(methodLabel, recipientLabel, recipientCount).select(language),
+                  AppStrings.cabinetWillBeSentPeopleContinue(
+                    methodLabel,
+                    recipientLabel,
+                    recipientCount,
+                  ).select(language),
                   style: TextStyle(
                     fontSize: 13,
                     color: tokens.textSecondary,
@@ -163,29 +190,46 @@ extension _SendMessageAudienceActions on _SendMessageScreenState {
     }
     update(() => _sending = true);
     try {
-      final response = await context.read<MeRepository>().sendClientNotification(
-        title: _titleController.text.trim(),
-        body: _messageController.text.trim(),
-        accountIds: recipients.map((c) => c.accountId!).toSet().toList(),
-      );
+      final response = await context
+          .read<MeRepository>()
+          .sendClientNotification(
+            title: _titleController.text.trim(),
+            body: _messageController.text.trim(),
+            accountIds: recipients.map((c) => c.accountId!).toSet().toList(),
+          );
       if (!mounted) return;
       final inbox = (response['sent'] as List? ?? const []).length;
       final skipped = (response['skipped'] as List? ?? const []).length;
       final push = response['success_count'] as int? ?? 0;
       final failed = response['failure_count'] as int? ?? 0;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppStrings.cabinetInboxPushConfirmedFailedSkipped(inbox, push, failed, skipped).select(language))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppStrings.cabinetInboxPushConfirmedFailedSkipped(
+              inbox,
+              push,
+              failed,
+              skipped,
+            ).select(language),
+          ),
+        ),
+      );
       Navigator.pop(context);
     } catch (error) {
       if (!mounted) return;
-      final rejected = error is ApiException && error.code == ApiErrors.forbidden
+      final rejected =
+          error is ApiException && error.code == ApiErrors.forbidden
           ? error.details['rejected'] as List?
           : null;
       final message = rejected != null && rejected.isNotEmpty
-          ? AppStrings.cabinetNothingWasSentUnavailableAccounts(rejected.join(', ')).select(language)
+          ? AppStrings.cabinetNothingWasSentUnavailableAccounts(
+              rejected.join(', '),
+            ).select(language)
           : apiErrorMessage(error, language);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
       update(() => _sending = false);
     }
   }
-
 }

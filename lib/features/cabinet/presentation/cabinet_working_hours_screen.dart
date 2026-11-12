@@ -80,9 +80,7 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
     if (!mounted) return;
     setState(() => _saving = false);
     if (!ok) return;
-    toast.success(
-      AppStrings.cabinetWorkingHoursSaved.select(language),
-    );
+    toast.success(AppStrings.cabinetWorkingHoursSaved.select(language));
     navigator.pop();
   }
 
@@ -156,7 +154,10 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                 children: [
                   if (!schedule.loaded)
-                    _WorkingHoursLoadCard(language: language, schedule: schedule)
+                    _WorkingHoursLoadCard(
+                      language: language,
+                      schedule: schedule,
+                    )
                   else ...[
                     ..._weeklyOverview(language: language),
                     Wrap(
@@ -166,7 +167,9 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                       runSpacing: 2,
                       children: [
                         Text(
-                          AppStrings.cabinetWorkingDaysOfTheWeek.select(language),
+                          AppStrings.cabinetWorkingDaysOfTheWeek.select(
+                            language,
+                          ),
                           style: TextStyle(
                             color: tokens.textPrimary,
                             fontSize: 15,
@@ -186,7 +189,11 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    ..._workingDayRows(language: language, names: names, update: setState),
+                    ..._workingDayRows(
+                      language: language,
+                      names: names,
+                      update: setState,
+                    ),
                     ..._breakSettings(language: language, update: setState),
                     _SettingRow(
                       icon: Icons.event_busy_outlined,
@@ -204,7 +211,8 @@ class _WorkingHoursScreenState extends State<WorkingHoursScreen> {
                     _SettingRow(
                       icon: Icons.event_busy_outlined,
                       title: AppStrings.cabinetSpecialDays.select(language),
-                      subtitle: AppStrings.cabinetMarkAdditionalDaysOrChanges.select(language),
+                      subtitle: AppStrings.cabinetMarkAdditionalDaysOrChanges
+                          .select(language),
                       value:
                           '${schedule.overrides.length} ${AppStrings.cabinetDays.select(language)}',
                       showChevron: true,

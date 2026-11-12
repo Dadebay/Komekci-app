@@ -29,7 +29,8 @@ extension _SplashFirebaseSetup on _SplashScreenState {
           );
           if (auth.isMaster) {
             final alert = MasterBookingAlert.fromPush(
-              id: message.messageId ??
+              id:
+                  message.messageId ??
                   '${message.data['notification_id'] ?? message.data['appointment_id'] ?? DateTime.now().microsecondsSinceEpoch}',
               title: notification.title ?? '',
               body: notification.body ?? '',
@@ -49,5 +50,4 @@ extension _SplashFirebaseSetup on _SplashScreenState {
       debugPrint('Firebase bootstrap failed: $error');
     }
   }
-
 }

@@ -26,14 +26,20 @@ Future<void> showNewConnectionRequestDialog(
       );
       return FadeTransition(
         opacity: animation,
-        child: ScaleTransition(scale: Tween(begin: .9, end: 1.0).animate(curved), child: child),
+        child: ScaleTransition(
+          scale: Tween(begin: .9, end: 1.0).animate(curved),
+          child: child,
+        ),
       );
     },
   );
 }
 
 class _NewConnectionRequestDialog extends StatefulWidget {
-  const _NewConnectionRequestDialog({required this.request, required this.others});
+  const _NewConnectionRequestDialog({
+    required this.request,
+    required this.others,
+  });
   final ConnectionRequest request;
   final int others;
 
@@ -101,7 +107,11 @@ class _NewConnectionRequestDialogState
                       color: tokens.accent,
                       border: Border.all(color: tokens.surface, width: 3),
                     ),
-                    child: const Icon(Icons.person_add_alt_1_rounded, size: 14, color: Colors.white),
+                    child: const Icon(
+                      Icons.person_add_alt_1_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -110,7 +120,11 @@ class _NewConnectionRequestDialogState
             Text(
               AppStrings.requestsNewConnectionRequest.select(language),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.accent),
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: tokens.accent,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
@@ -120,13 +134,20 @@ class _NewConnectionRequestDialogState
             ),
             if (nickname.isNotEmpty) ...[
               const SizedBox(height: 2),
-              Text('@$nickname', style: TextStyle(fontSize: 13.5, color: tokens.textSecondary)),
+              Text(
+                '@$nickname',
+                style: TextStyle(fontSize: 13.5, color: tokens.textSecondary),
+              ),
             ],
             const SizedBox(height: 10),
             Text(
               AppStrings.requestsFoundYouAndWantsTo.select(language),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12.5, height: 1.45, color: tokens.textSecondary),
+              style: TextStyle(
+                fontSize: 12.5,
+                height: 1.45,
+                color: tokens.textSecondary,
+              ),
             ),
             const SizedBox(height: 20),
             MasterActionButton(
@@ -167,9 +188,14 @@ class _NewConnectionRequestDialogState
                     },
               child: Text(
                 widget.others > 0
-                    ? AppStrings.requestsSeeAllRequests(widget.others).select(language)
+                    ? AppStrings.requestsSeeAllRequests(
+                        widget.others,
+                      ).select(language)
                     : AppStrings.requestsLater.select(language),
-                style: TextStyle(color: tokens.textSecondary, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: tokens.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],

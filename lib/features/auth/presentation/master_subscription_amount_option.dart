@@ -146,7 +146,12 @@ class _HowBalanceWorks extends StatelessWidget {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                AppStrings.authMoneyYouAddIsKept(fee, cur, example, left).select(language),
+                AppStrings.authMoneyYouAddIsKept(
+                  fee,
+                  cur,
+                  example,
+                  left,
+                ).select(language),
                 style: TextStyle(
                   color: tokens.textSecondary,
                   fontSize: 12.5,

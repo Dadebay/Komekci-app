@@ -25,13 +25,21 @@ class _ScheduleHeader extends StatelessWidget {
     final tokens = context.appTokens;
     final canPop = Navigator.of(context).canPop();
     final isToday = _sameDay(selected, appToday());
-    final month = _byLang(language, _monthsFullTk, _monthsFullRu, _monthsFullEn)[selected.month - 1];
+    final month = _byLang(
+      language,
+      _monthsFullTk,
+      _monthsFullRu,
+      _monthsFullEn,
+    )[selected.month - 1];
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
       child: Row(
         children: [
           if (canPop) ...[
-            _HeaderCircleButton(icon: Icons.arrow_back, onTap: () => Navigator.maybePop(context)),
+            _HeaderCircleButton(
+              icon: Icons.arrow_back,
+              onTap: () => Navigator.maybePop(context),
+            ),
             const SizedBox(width: 12),
           ],
           Expanded(
@@ -42,12 +50,21 @@ class _ScheduleHeader extends StatelessWidget {
                   AppStrings.scheduleSchedule.select(language),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: -.5, height: 1.1),
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -.5,
+                    height: 1.1,
+                  ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   '$month ${selected.year}',
-                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: tokens.textSecondary),
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: tokens.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -65,7 +82,11 @@ class _ScheduleHeader extends StatelessWidget {
                 ),
                 child: Text(
                   AppStrings.scheduleToday.select(language),
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: tokens.accent),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: tokens.accent,
+                  ),
                 ),
               ),
             ),
@@ -76,13 +97,17 @@ class _ScheduleHeader extends StatelessWidget {
             tooltip: AppStrings.scheduleWeekView.select(language),
             onTap: () => Navigator.push(
               context,
-              pageRoute(WeekOverviewScreen(weekStart: weekStart, onSelectDay: onSelect)),
+              pageRoute(
+                WeekOverviewScreen(weekStart: weekStart, onSelectDay: onSelect),
+              ),
             ),
           ),
           const SizedBox(width: 8),
           _HeaderCircleButton(
             icon: searching ? Icons.close : Icons.search,
-            tooltip: searching ? AppStrings.scheduleCloseSearch.select(language) : AppStrings.scheduleSearch.select(language),
+            tooltip: searching
+                ? AppStrings.scheduleCloseSearch.select(language)
+                : AppStrings.scheduleSearch.select(language),
             active: searching,
             onTap: onToggleSearch,
           ),
@@ -93,7 +118,12 @@ class _ScheduleHeader extends StatelessWidget {
 }
 
 class _HeaderCircleButton extends StatelessWidget {
-  const _HeaderCircleButton({required this.icon, required this.onTap, this.tooltip, this.active = false});
+  const _HeaderCircleButton({
+    required this.icon,
+    required this.onTap,
+    this.tooltip,
+    this.active = false,
+  });
   final IconData icon;
   final VoidCallback onTap;
   final String? tooltip;
@@ -112,9 +142,15 @@ class _HeaderCircleButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: active ? tokens.textPrimary : tokens.surfaceElevated,
-          border: Border.all(color: active ? tokens.textPrimary : tokens.border),
+          border: Border.all(
+            color: active ? tokens.textPrimary : tokens.border,
+          ),
         ),
-        child: AppIcon(icon, size: 19, color: active ? tokens.surface : tokens.textPrimary),
+        child: AppIcon(
+          icon,
+          size: 19,
+          color: active ? tokens.surface : tokens.textPrimary,
+        ),
       ),
     );
     return tooltip == null ? button : Tooltip(message: tooltip!, child: button);

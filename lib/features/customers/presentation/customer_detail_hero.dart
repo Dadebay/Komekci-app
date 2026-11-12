@@ -10,7 +10,9 @@ class _CustomerDetailHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final statusColor = _statusColor(customer.status, tokens);
-    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(
+      language,
+    );
     return Container(
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
@@ -193,7 +195,10 @@ class _HeroStatCard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             child: Text(
               value,
-              style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w800),
+              style: const TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
           const SizedBox(height: 2),

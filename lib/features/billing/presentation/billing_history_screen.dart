@@ -3,7 +3,9 @@ part of '../../../app/komekci_app.dart';
 String _ledgerTypeLabel(LedgerType type, AppLanguage language) =>
     switch (type) {
       LedgerType.topup => AppStrings.billingBalanceTopUp.select(language),
-      LedgerType.charge => AppStrings.billingSubscriptionPayment.select(language),
+      LedgerType.charge => AppStrings.billingSubscriptionPayment.select(
+        language,
+      ),
       LedgerType.refund => AppStrings.billingRefund.select(language),
     };
 

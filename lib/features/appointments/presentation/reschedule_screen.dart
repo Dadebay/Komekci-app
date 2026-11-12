@@ -61,8 +61,15 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
     final raw = _availability?.dates[formatApiDate(day)] ?? const <String>[];
     return [
       for (final s in raw)
-        if (RegExp(r'^\d{1,2}:\d{2}').hasMatch(s) && int.parse(s.split(':')[1]) % 30 == 0)
-          DateTime(day.year, day.month, day.day, int.parse(s.split(':')[0]), int.parse(s.split(':')[1])),
+        if (RegExp(r'^\d{1,2}:\d{2}').hasMatch(s) &&
+            int.parse(s.split(':')[1]) % 30 == 0)
+          DateTime(
+            day.year,
+            day.month,
+            day.day,
+            int.parse(s.split(':')[0]),
+            int.parse(s.split(':')[1]),
+          ),
     ];
   }
 
@@ -85,9 +92,9 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
         _saving = false;
         _saveError = apiErrorMessage(error, language);
         if (error is ApiException && error.code == ApiErrors.slotTaken) {
-          _suggestions = [for (final s in error.suggestedSlots) ?parseApiTime(s)]
-              .where((slot) => slot.minute % 30 == 0)
-              .toList();
+          _suggestions = [
+            for (final s in error.suggestedSlots) ?parseApiTime(s),
+          ].where((slot) => slot.minute % 30 == 0).toList();
         }
       });
       return;
@@ -104,7 +111,10 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
       AppLanguage.ru => _weekdaysRu,
       AppLanguage.en => weekdaysEn,
     };
-    final days = List.generate(_horizonDays, (i) => _today.add(Duration(days: i)));
+    final days = List.generate(
+      _horizonDays,
+      (i) => _today.add(Duration(days: i)),
+    );
     final availability = _availability;
     final slots = _slotsFor(_selectedDate);
 
@@ -119,11 +129,17 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
               children: [
                 Text(
                   AppStrings.appointmentsNewDate.select(language),
-                  style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
-                  height: max(100.0, MediaQuery.textScalerOf(context).scale(100)),
+                  height: max(
+                    100.0,
+                    MediaQuery.textScalerOf(context).scale(100),
+                  ),
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: days.length,
@@ -131,7 +147,10 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
                     itemBuilder: (_, index) {
                       final day = days[index];
                       final open = _slotsFor(day).isNotEmpty;
-                      final selected = day.year == _selectedDate.year && day.month == _selectedDate.month && day.day == _selectedDate.day;
+                      final selected =
+                          day.year == _selectedDate.year &&
+                          day.month == _selectedDate.month &&
+                          day.day == _selectedDate.day;
                       return _DateChip(
                         weekday: weekdayLabels[day.weekday - 1],
                         dayNumber: day.day,
@@ -150,12 +169,17 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
                 const SizedBox(height: 20),
                 Text(
                   AppStrings.appointmentsNewTime.select(language),
-                  style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 if (_error != null)
                   RetryErrorState(
-                    title: AppStrings.requestsSomethingWentWrong.select(language),
+                    title: AppStrings.requestsSomethingWentWrong.select(
+                      language,
+                    ),
                     text: apiErrorMessage(_error!, language),
                     retryLabel: AppStrings.profileTryAgain.select(language),
                     onRetry: _load,
@@ -169,7 +193,11 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
                   EmptyState(
                     icon: Icons.schedule_outlined,
                     title: AppStrings.bookingNoFreeSlots.select(language),
-                    text: availability.message ?? AppStrings.appointmentsPleasePickAnotherDay.select(language),
+                    text:
+                        availability.message ??
+                        AppStrings.appointmentsPleasePickAnotherDay.select(
+                          language,
+                        ),
                   )
                 else
                   Wrap(
@@ -181,15 +209,30 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
                         onTap: () => setState(() => _selectedSlot = slot),
                         borderRadius: BorderRadius.circular(14),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
-                            color: selected ? tokens.textPrimary : tokens.surface,
+                            color: selected
+                                ? tokens.textPrimary
+                                : tokens.surface,
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: selected ? tokens.textPrimary : tokens.border),
+                            border: Border.all(
+                              color: selected
+                                  ? tokens.textPrimary
+                                  : tokens.border,
+                            ),
                           ),
                           child: Text(
                             '${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}',
-                            style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: selected ? tokens.surface : tokens.textPrimary),
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: selected
+                                  ? tokens.surface
+                                  : tokens.textPrimary,
+                            ),
                           ),
                         ),
                       );
@@ -206,9 +249,15 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
                       children: [
                         for (final slot in _suggestions)
                           ActionChip(
-                            label: Text('${formatDate(slot)} · ${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}'),
+                            label: Text(
+                              '${formatDate(slot)} · ${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}',
+                            ),
                             onPressed: () => setState(() {
-                              _selectedDate = DateTime(slot.year, slot.month, slot.day);
+                              _selectedDate = DateTime(
+                                slot.year,
+                                slot.month,
+                                slot.day,
+                              );
                               _selectedSlot = slot;
                               _saveError = null;
                               _suggestions = const [];

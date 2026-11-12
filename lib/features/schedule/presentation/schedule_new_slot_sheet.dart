@@ -109,16 +109,16 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
       context.read<ScheduleProvider>().schedule?.minLeadMin ?? 30,
     )) {
       final language = context.read<LanguageProvider>().language;
-      AppToast.of(sheetContext).error(
-        AppStrings.scheduleThisTimeIsNoLonger.select(language),
-      );
+      AppToast.of(
+        sheetContext,
+      ).error(AppStrings.scheduleThisTimeIsNoLonger.select(language));
       return;
     }
     if (!_serviceFits(_selectedService!)) {
       final language = context.read<LanguageProvider>().language;
-      AppToast.of(sheetContext).error(
-        AppStrings.scheduleThisServiceDoesNotFit.select(language),
-      );
+      AppToast.of(
+        sheetContext,
+      ).error(AppStrings.scheduleThisServiceDoesNotFit.select(language));
       return;
     }
     final customers = context.read<CustomerProvider>();
@@ -185,13 +185,25 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
                       child: ListView(
                         padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
                         children: [
-                          _NewSlotTimeCard(start: widget.start, selectedEnd: selectedEnd, language: language),
+                          _NewSlotTimeCard(
+                            start: widget.start,
+                            selectedEnd: selectedEnd,
+                            language: language,
+                          ),
                           const SizedBox(height: 24),
-                          ..._customerFields(language: language, update: setState),
-                          ..._serviceFields(language: language, services: services),
+                          ..._customerFields(
+                            language: language,
+                            update: setState,
+                          ),
+                          ..._serviceFields(
+                            language: language,
+                            services: services,
+                          ),
                           _NewBookingSectionTitle(
                             number: 3,
-                            title: AppStrings.scheduleNoteOptional.select(language),
+                            title: AppStrings.scheduleNoteOptional.select(
+                              language,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           _FormField(
@@ -212,7 +224,9 @@ class _NewSlotAppointmentSheetState extends State<_NewSlotAppointmentSheet> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
                         child: MasterActionButton(
-                          label: AppStrings.scheduleSaveBooking.select(language),
+                          label: AppStrings.scheduleSaveBooking.select(
+                            language,
+                          ),
                           enabled:
                               _complete &&
                               !_saving &&

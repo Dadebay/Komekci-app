@@ -131,7 +131,9 @@ class ClientNotifyScreen extends StatelessWidget {
                   const SizedBox(width: 13),
                   Expanded(
                     child: Text(
-                      AppStrings.cabinetBookingRemindersAreSentTo.select(language),
+                      AppStrings.cabinetBookingRemindersAreSentTo.select(
+                        language,
+                      ),
                       style: TextStyle(
                         color: tokens.textSecondary,
                         fontSize: 13,

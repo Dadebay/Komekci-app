@@ -28,9 +28,7 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Field(
-            label: AppStrings.appointmentsContactOrNote.select(language),
-          ),
+          Field(label: AppStrings.appointmentsContactOrNote.select(language)),
         ],
       ),
     );

@@ -9,13 +9,19 @@ Future<void> _openSupportContact(String contact) {
     return launchUrl(Uri.parse(value), mode: LaunchMode.externalApplication);
   }
   if (value.startsWith('t.me/')) {
-    return launchUrl(Uri.parse('https://$value'), mode: LaunchMode.externalApplication);
+    return launchUrl(
+      Uri.parse('https://$value'),
+      mode: LaunchMode.externalApplication,
+    );
   }
   if (value.contains('@') && !value.startsWith('@') && !value.contains(' ')) {
     return launchUrl(Uri(scheme: 'mailto', path: value));
   }
   if (value.startsWith('@')) {
-    return launchUrl(Uri.parse('https://t.me/${value.substring(1)}'), mode: LaunchMode.externalApplication);
+    return launchUrl(
+      Uri.parse('https://t.me/${value.substring(1)}'),
+      mode: LaunchMode.externalApplication,
+    );
   }
   return launchUrl(Uri(scheme: 'tel', path: value.replaceAll(' ', '')));
 }
@@ -55,9 +61,18 @@ List<Widget> _configuredContactRows(BuildContext context, AppContact contact) {
         onTap: () async {
           await Clipboard.setData(ClipboardData(text: imo));
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppStrings.profileImoContactCopied.select(language))));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  AppStrings.profileImoContactCopied.select(language),
+                ),
+              ),
+            );
           }
-          await launchUrl(Uri.parse('https://imo.im/'), mode: LaunchMode.externalApplication);
+          await launchUrl(
+            Uri.parse('https://imo.im/'),
+            mode: LaunchMode.externalApplication,
+          );
         },
       ),
     if (contact.address case final address?)
@@ -104,9 +119,7 @@ class ClientSupportScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: tokens.surface,
-      appBar: CabinetAppBar(
-        title: AppStrings.profileSupport.select(language),
-      ),
+      appBar: CabinetAppBar(title: AppStrings.profileSupport.select(language)),
       body: SafeArea(
         bottom: false,
         child: ListView(
@@ -137,7 +150,8 @@ class ClientSupportScreen extends StatelessWidget {
               icon: Icons.info_outline,
               title: AppStrings.profileAboutUs.select(language),
               value: '',
-              onTap: () => Navigator.push(context, pageRoute(const AboutScreen())),
+              onTap: () =>
+                  Navigator.push(context, pageRoute(const AboutScreen())),
             ),
           ],
         ),
@@ -166,27 +180,30 @@ class _FaqTile extends StatelessWidget {
         child: Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
           child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 14),
-          childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-          iconColor: tokens.accent,
-          collapsedIconColor: tokens.textSecondary,
-          title: Text(
-            question,
-            style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
-          ),
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                answer,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  color: tokens.textSecondary,
-                  height: 1.5,
-                ),
+            tilePadding: const EdgeInsets.symmetric(horizontal: 14),
+            childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+            iconColor: tokens.accent,
+            collapsedIconColor: tokens.textSecondary,
+            title: Text(
+              question,
+              style: const TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ],
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  answer,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: tokens.textSecondary,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

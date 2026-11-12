@@ -16,11 +16,17 @@ extension _ScheduleWorkingHoursAction on _ScheduleScreenState {
       context,
       language: language,
       title: AppStrings.scheduleWorkingHoursForThisDay.select(language),
-      start: windows.isEmpty ? '10:00' : formatTime(TimeOfDay.fromDateTime(windows.first.start)),
-      end: windows.isEmpty ? '16:00' : formatTime(TimeOfDay.fromDateTime(windows.last.end)),
+      start: windows.isEmpty
+          ? '10:00'
+          : formatTime(TimeOfDay.fromDateTime(windows.first.start)),
+      end: windows.isEmpty
+          ? '16:00'
+          : formatTime(TimeOfDay.fromDateTime(windows.last.end)),
     );
     if (range == null || !mounted) return;
-    await runApi(context, () => scheduleProvider.addCustomHours(_selected, range.$1, range.$2));
+    await runApi(
+      context,
+      () => scheduleProvider.addCustomHours(_selected, range.$1, range.$2),
+    );
   }
-
 }

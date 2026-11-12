@@ -58,7 +58,9 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                 _NotificationPrefRow(
                   icon: Icons.calendar_month_outlined,
                   title: AppStrings.profileBookingReminders.select(language),
-                  subtitle: AppStrings.profileRemindMeOneHourBefore.select(language),
+                  subtitle: AppStrings.profileRemindMeOneHourBefore.select(
+                    language,
+                  ),
                   value: pref('reminders'),
                   onChanged: (value) =>
                       _setPref(context, prefs, 'reminders', value),
@@ -66,7 +68,9 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                 _NotificationPrefRow(
                   icon: Icons.schedule_outlined,
                   title: AppStrings.profileEarlierSlots.select(language),
-                  subtitle: AppStrings.profileTellMeWhenAnEarlier.select(language),
+                  subtitle: AppStrings.profileTellMeWhenAnEarlier.select(
+                    language,
+                  ),
                   value: pref('earlier_slot'),
                   onChanged: (value) =>
                       _setPref(context, prefs, 'earlier_slot', value),
@@ -74,7 +78,9 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                 _NotificationPrefRow(
                   icon: Icons.chat_bubble_outline,
                   title: AppStrings.profileMasterMessages.select(language),
-                  subtitle: AppStrings.profileMessagesFromYourMasters.select(language),
+                  subtitle: AppStrings.profileMessagesFromYourMasters.select(
+                    language,
+                  ),
                   value: pref('master_messages'),
                   onChanged: (value) =>
                       _setPref(context, prefs, 'master_messages', value),
@@ -123,15 +129,20 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                       )
                     : notifications.error != null
                     ? RetryErrorState(
-                        title: AppStrings.profileCouldNotLoadNotifications.select(language),
-                        text: AppStrings.profileCheckYourConnectionAndTry.select(language),
+                        title: AppStrings.profileCouldNotLoadNotifications
+                            .select(language),
+                        text: AppStrings.profileCheckYourConnectionAndTry
+                            .select(language),
                         retryLabel: AppStrings.profileTryAgain.select(language),
                         onRetry: notifications.load,
                       )
                     : EmptyState(
                         icon: Icons.notifications_none,
-                        title: AppStrings.profileNoNotificationsYet.select(language),
-                        text: AppStrings.profileNewNotificationsWillAppearHere.select(language),
+                        title: AppStrings.profileNoNotificationsYet.select(
+                          language,
+                        ),
+                        text: AppStrings.profileNewNotificationsWillAppearHere
+                            .select(language),
                       )
               else ...[
                 ...notifications.items.map(

@@ -14,20 +14,11 @@ class _SubscriptionStatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final (label, color) = promo?.active == true
-        ? (
-            AppStrings.cabinetFreeMonth.select(language),
-            tokens.success,
-          )
+        ? (AppStrings.cabinetFreeMonth.select(language), tokens.success)
         : promo?.isAvailable == true
-        ? (
-            AppStrings.cabinetFreeMonthAvailable.select(language),
-            tokens.accent,
-          )
+        ? (AppStrings.cabinetFreeMonthAvailable.select(language), tokens.accent)
         : promo?.paidAccess == true
-        ? (
-            AppStrings.cabinetActive.select(language),
-            tokens.success,
-          )
+        ? (AppStrings.cabinetActive.select(language), tokens.success)
         : switch (status) {
             SubscriptionStatus.active => (
               AppStrings.cabinetActive.select(language),

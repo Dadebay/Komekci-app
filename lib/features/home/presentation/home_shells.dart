@@ -357,7 +357,9 @@ class _MasterHomeState extends State<MasterHome> with WidgetsBindingObserver {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        AppStrings.homeShowingSavedDataInternetIs.select(language),
+                        AppStrings.homeShowingSavedDataInternetIs.select(
+                          language,
+                        ),
                         style: TextStyle(
                           fontSize: 11.5,
                           color: tokens.textPrimary,

@@ -228,7 +228,9 @@ class RequestPendingScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      AppStrings.authWillBeNotifiedAboutYour(master.name).select(language),
+                      AppStrings.authWillBeNotifiedAboutYour(
+                        master.name,
+                      ).select(language),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,

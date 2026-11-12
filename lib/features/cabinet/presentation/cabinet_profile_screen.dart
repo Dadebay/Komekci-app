@@ -57,13 +57,19 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
     super.dispose();
   }
 
-  String get _enteredNickname => _controllers[_nicknameIndex].text.trim().toLowerCase().replaceFirst('@', '');
+  String get _enteredNickname => _controllers[_nicknameIndex].text
+      .trim()
+      .toLowerCase()
+      .replaceFirst('@', '');
 
   /// Format first, then (after a short pause) ask the server whether the
   /// nickname is free — unless it's the master's own.
   void _checkNickname() {
     _nicknameDebounce?.cancel();
-    final current = context.read<MasterProfileProvider>().nickname.toLowerCase();
+    final current = context
+        .read<MasterProfileProvider>()
+        .nickname
+        .toLowerCase();
     final value = _enteredNickname;
     final invalid = !nicknamePattern.hasMatch(value);
     final needsCheck = !invalid && value != current;
@@ -98,7 +104,10 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
   Future<void> _changeAvatar(File file) => _uploadAvatar(context, file);
 
   Future<void> _pickBanner() async {
-    final picked = await pickCompressedImage(context, language: context.read<LanguageProvider>().language);
+    final picked = await pickCompressedImage(
+      context,
+      language: context.read<LanguageProvider>().language,
+    );
     if (picked != null && mounted) setState(() => _banner = picked);
   }
 
@@ -119,8 +128,19 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
         nickname: _enteredNickname,
         address: _controllers[_addressIndex].text.trim(),
         about: _controllers[_aboutIndex].text.trim(),
-        instagramUrl: socialUrl(_controllers[_instagramIndex].text, host: 'instagram.com') ?? '',
-        tiktokUrl: socialUrl(_controllers[_tiktokIndex].text, host: 'tiktok.com', atPrefix: true) ?? '',
+        instagramUrl:
+            socialUrl(
+              _controllers[_instagramIndex].text,
+              host: 'instagram.com',
+            ) ??
+            '',
+        tiktokUrl:
+            socialUrl(
+              _controllers[_tiktokIndex].text,
+              host: 'tiktok.com',
+              atPrefix: true,
+            ) ??
+            '',
         banner: _banner,
       );
     } catch (error) {
@@ -150,15 +170,14 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
 
     return Scaffold(
       backgroundColor: tokens.surface,
-      appBar: CabinetAppBar(
-        title: AppStrings.profileProfile.select(language),
-      ),
+      appBar: CabinetAppBar(title: AppStrings.profileProfile.select(language)),
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: ListView(
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
                 children: [
                   _ProfileHero(
@@ -173,7 +192,9 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                     bannerLabel: _banner != null || profile.bannerUrl != null
                         ? AppStrings.cabinetChangeBanner.select(language)
                         : AppStrings.cabinetAddBanner.select(language),
-                    bannerHint: AppStrings.cabinetShownAtTheTopOf.select(language),
+                    bannerHint: AppStrings.cabinetShownAtTheTopOf.select(
+                      language,
+                    ),
                   ),
                   const SizedBox(height: 18),
                   _ProfileSection(
@@ -185,7 +206,9 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                         label: AppStrings.profileName.select(language),
                         icon: Icons.person_outline,
                         textInputAction: TextInputAction.next,
-                        inputFormatters: [LengthLimitingTextInputFormatter(_nameMax)],
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(_nameMax),
+                        ],
                       ),
                       _ProfileField(
                         controller: _controllers[_nicknameIndex],
@@ -197,15 +220,34 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                         errorText: !nicknameError
                             ? null
                             : _nicknameTaken
-                            ? AppStrings.cabinetThisNicknameIsAlreadyTaken.select(language)
-                            : AppStrings.cabinet320CharsLowercaseLetters.select(language),
-                        helperText: nicknameError || _nicknameChecking || _nicknameAvailable
+                            ? AppStrings.cabinetThisNicknameIsAlreadyTaken
+                                  .select(language)
+                            : AppStrings.cabinet320CharsLowercaseLetters.select(
+                                language,
+                              ),
+                        helperText:
+                            nicknameError ||
+                                _nicknameChecking ||
+                                _nicknameAvailable
                             ? null
-                            : AppStrings.cabinetClientsFindYouByThis.select(language),
+                            : AppStrings.cabinetClientsFindYouByThis.select(
+                                language,
+                              ),
                         statusIcon: _nicknameChecking
-                            ? SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: tokens.accent))
+                            ? SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: tokens.accent,
+                                ),
+                              )
                             : _nicknameAvailable
-                            ? AppIcon(Icons.check_circle, size: 18, color: tokens.success)
+                            ? AppIcon(
+                                Icons.check_circle,
+                                size: 18,
+                                color: tokens.success,
+                              )
                             : null,
                         footer: _NicknameSuggestionChips(
                           suggestions: _nicknameSuggestions,
@@ -233,7 +275,9 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                         label: AppStrings.cabinetAddress.select(language),
                         icon: Icons.location_on_outlined,
                         textInputAction: TextInputAction.next,
-                        inputFormatters: [LengthLimitingTextInputFormatter(_addressMax)],
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(_addressMax),
+                        ],
                       ),
                       _ProfileField(
                         controller: _controllers[_aboutIndex],
@@ -282,7 +326,9 @@ class _CabinetProfileScreenState extends State<CabinetProfileScreen> {
                 saving: _saving,
                 canSave: _dirty && !nicknameError && !_saving,
                 previewLabel: AppStrings.cabinetPreview2.select(language),
-                saveLabel: _saving ? AppStrings.servicesSaving.select(language) : AppStrings.servicesSave.select(language),
+                saveLabel: _saving
+                    ? AppStrings.servicesSaving.select(language)
+                    : AppStrings.servicesSave.select(language),
                 onPreview: () => _openPreview(profile),
                 onSave: _save,
               ),

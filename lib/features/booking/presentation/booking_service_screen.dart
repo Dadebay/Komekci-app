@@ -3,7 +3,11 @@ part of '../../../app/komekci_app.dart';
 // ── Step 1 — service selection ──────────────────────────────────────────────
 
 class BookingPage extends StatefulWidget {
-  const BookingPage({super.key, required this.master, this.preselectedServiceId});
+  const BookingPage({
+    super.key,
+    required this.master,
+    this.preselectedServiceId,
+  });
 
   /// The connected master being booked.
   final MasterBrief master;
@@ -31,7 +35,9 @@ class _BookingPageState extends State<BookingPage> {
       _error = null;
     });
     try {
-      final result = await context.read<ClientRepository>().masterServices(widget.master.id);
+      final result = await context.read<ClientRepository>().masterServices(
+        widget.master.id,
+      );
       if (!mounted) return;
       setState(() {
         _services = [
@@ -80,12 +86,16 @@ class _BookingPageState extends State<BookingPage> {
                     title: AppStrings.bookingSelectAService.select(language),
                     subtitle: services == null || services.isEmpty
                         ? null
-                        : AppStrings.bookingServicesAvailable(services.length).select(language),
+                        : AppStrings.bookingServicesAvailable(
+                            services.length,
+                          ).select(language),
                   ),
                   const SizedBox(height: 18),
                   if (_error != null)
                     RetryErrorState(
-                      title: AppStrings.requestsSomethingWentWrong.select(language),
+                      title: AppStrings.requestsSomethingWentWrong.select(
+                        language,
+                      ),
                       text: apiErrorMessage(_error!, language),
                       retryLabel: AppStrings.profileTryAgain.select(language),
                       onRetry: _load,
@@ -98,14 +108,20 @@ class _BookingPageState extends State<BookingPage> {
                   else if (!_acceptingBookings)
                     EmptyState(
                       icon: Icons.event_busy_outlined,
-                      title: AppStrings.bookingBookingsArePaused.select(language),
-                      text: AppStrings.bookingThisMasterIsNotAccepting.select(language),
+                      title: AppStrings.bookingBookingsArePaused.select(
+                        language,
+                      ),
+                      text: AppStrings.bookingThisMasterIsNotAccepting.select(
+                        language,
+                      ),
                     )
                   else if (services.isEmpty)
                     EmptyState(
                       icon: Icons.content_cut,
                       title: AppStrings.bookingNoServices.select(language),
-                      text: AppStrings.bookingThisMasterHasnTAdded.select(language),
+                      text: AppStrings.bookingThisMasterHasnTAdded.select(
+                        language,
+                      ),
                     )
                   else
                     ...services.map(
@@ -134,7 +150,12 @@ class _BookingPageState extends State<BookingPage> {
             ? null
             : () => Navigator.push(
                 context,
-                pageRoute(BookingDateTimeScreen(service: selected!, master: widget.master)),
+                pageRoute(
+                  BookingDateTimeScreen(
+                    service: selected!,
+                    master: widget.master,
+                  ),
+                ),
               ),
       ),
     );
@@ -157,7 +178,9 @@ class _ServiceOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
-    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(
+      language,
+    );
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -183,7 +206,11 @@ class _ServiceOption extends StatelessWidget {
                       Expanded(
                         child: Text(
                           service.name,
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, height: 1.2),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            height: 1.2,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -204,23 +231,41 @@ class _ServiceOption extends StatelessWidget {
                       service.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: t.textSecondary, height: 1.3),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: t.textSecondary,
+                        height: 1.3,
+                      ),
                     ),
                   ],
                   const SizedBox(height: 10),
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                        decoration: BoxDecoration(color: t.surfaceElevated, borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: t.surfaceElevated,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            AppIcon(Icons.schedule_outlined, size: 12, color: t.textSecondary),
+                            AppIcon(
+                              Icons.schedule_outlined,
+                              size: 12,
+                              color: t.textSecondary,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${service.minutes} ${AppStrings.bookingMin.select(language)}',
-                              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: t.textSecondary),
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: t.textSecondary,
+                              ),
                             ),
                           ],
                         ),
@@ -228,7 +273,11 @@ class _ServiceOption extends StatelessWidget {
                       const Spacer(),
                       Text(
                         '${service.price} $currency',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: t.accent),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: t.accent,
+                        ),
                       ),
                     ],
                   ),

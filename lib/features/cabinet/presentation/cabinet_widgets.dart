@@ -56,7 +56,6 @@ class _BalanceChip extends StatelessWidget {
   }
 }
 
-
 /// Rounded info banner: icon badge on the left, explanatory copy on the right.
 class _InfoBanner extends StatelessWidget {
   const _InfoBanner({required this.icon, required this.text});
@@ -109,7 +108,8 @@ class _SettingRow extends StatelessWidget {
     this.value,
     this.showChevron = false,
     this.onTap,
-  }) : switchValue = null, onSwitchChanged = null;
+  }) : switchValue = null,
+       onSwitchChanged = null;
 
   final IconData icon;
   final String title;
@@ -260,7 +260,11 @@ class _PickerField extends StatelessWidget {
                   ),
                 ),
               ),
-              AppIcon(trailingIcon, color: context.appTokens.textSecondary, size: 18),
+              AppIcon(
+                trailingIcon,
+                color: context.appTokens.textSecondary,
+                size: 18,
+              ),
             ],
           ),
         ),
@@ -268,6 +272,5 @@ class _PickerField extends StatelessWidget {
     ),
   );
 }
-
 
 /// Rounded checkbox indicator used in the client-picker lists.

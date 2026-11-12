@@ -39,7 +39,11 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
     if (!mounted) return;
     final affected = bookings
         .onDay(picked)
-        .where((a) => a.status == AppointmentStatus.expected || a.status == AppointmentStatus.arrived)
+        .where(
+          (a) =>
+              a.status == AppointmentStatus.expected ||
+              a.status == AppointmentStatus.arrived,
+        )
         .toList();
     if (affected.isNotEmpty) {
       final proceed = await _showAffectedAppointmentsDialog(
@@ -83,7 +87,10 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
     if (range == null || !mounted) return;
     final schedule = context.read<ScheduleProvider>();
     setState(() => _busy = true);
-    await runApi(context, () => schedule.addCustomHours(picked, range.$1, range.$2));
+    await runApi(
+      context,
+      () => schedule.addCustomHours(picked, range.$1, range.$2),
+    );
     if (mounted) setState(() => _busy = false);
   }
 
@@ -110,7 +117,9 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
                 children: [
                   _InfoBanner(
                     icon: Icons.event_busy_outlined,
-                    text: AppStrings.cabinetBookingsAreNotAcceptedOn.select(language),
+                    text: AppStrings.cabinetBookingsAreNotAcceptedOn.select(
+                      language,
+                    ),
                   ),
                   const SizedBox(height: 18),
                   if (daysOff.isEmpty)
@@ -118,7 +127,9 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 30),
                       child: Center(
                         child: Text(
-                          AppStrings.cabinetNoSpecialDaysAddedYet.select(language),
+                          AppStrings.cabinetNoSpecialDaysAddedYet.select(
+                            language,
+                          ),
                           style: TextStyle(
                             color: tokens.textSecondary,
                             fontSize: 13,
@@ -163,7 +174,9 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
                             GestureDetector(
                               onTap: () => runApi(
                                 context,
-                                () => context.read<ScheduleProvider>().removeOverride(o.id),
+                                () => context
+                                    .read<ScheduleProvider>()
+                                    .removeOverride(o.id),
                               ),
                               child: AppIcon(
                                 Icons.close,
@@ -189,11 +202,18 @@ class _SpecialDaysScreenState extends State<SpecialDaysScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          AppIcon(Icons.schedule_outlined, color: tokens.textPrimary, size: 18),
+                          AppIcon(
+                            Icons.schedule_outlined,
+                            color: tokens.textPrimary,
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             AppStrings.cabinetAddSpecialHours.select(language),
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),

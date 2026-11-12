@@ -82,19 +82,29 @@ class _CustomersScreenState extends State<CustomersScreen>
                         child: EmptyState(
                           icon: Icons.people_outline,
                           backgroundColor: tokens.surface,
-                          title: AppStrings.scheduleNoCustomersFound.select(language),
-                          text: AppStrings.customersTryADifferentSearchOr.select(language),
+                          title: AppStrings.scheduleNoCustomersFound.select(
+                            language,
+                          ),
+                          text: AppStrings.customersTryADifferentSearchOr
+                              .select(language),
                         ),
                       ),
                     )
                   else
                     SliverPadding(
                       // Clears the floating bottom nav bar when this is a tab root.
-                      padding: EdgeInsets.fromLTRB(20, 4, 20, canPop ? 16 : 110),
+                      padding: EdgeInsets.fromLTRB(
+                        20,
+                        4,
+                        20,
+                        canPop ? 16 : 110,
+                      ),
                       sliver: SliverList.builder(
                         itemCount: results.length,
-                        itemBuilder: (_, index) =>
-                            _CustomerCard(customer: results[index], language: language),
+                        itemBuilder: (_, index) => _CustomerCard(
+                          customer: results[index],
+                          language: language,
+                        ),
                       ),
                     ),
                 ],
@@ -134,7 +144,11 @@ class _CustomersScreenState extends State<CustomersScreen>
               ),
               const SizedBox(height: 8),
               ...[
-                (CustomerFilter.all, AppStrings.homeAll.select(language), Icons.people_outline),
+                (
+                  CustomerFilter.all,
+                  AppStrings.homeAll.select(language),
+                  Icons.people_outline,
+                ),
                 (CustomerFilter.vip, 'VIP', Icons.emoji_events_outlined),
                 (
                   CustomerFilter.regular,

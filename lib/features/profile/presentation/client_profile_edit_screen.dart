@@ -27,7 +27,11 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
   Future<void> _save() async {
     final name = _nameController.text.trim();
     if (name.length < 2 || name.length > 50) {
-      setState(() => _error = AppStrings.profileNameMustBe250.select(context.read<LanguageProvider>().language));
+      setState(
+        () => _error = AppStrings.profileNameMustBe250.select(
+          context.read<LanguageProvider>().language,
+        ),
+      );
       return;
     }
     final language = context.read<LanguageProvider>().language;
@@ -48,7 +52,7 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
       });
       return;
     }
-    toast.success(AppStrings.profileProfileSaved.select(language),);
+    toast.success(AppStrings.profileProfileSaved.select(language));
     navigator.pop();
   }
 
@@ -66,7 +70,7 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
     final language = context.read<LanguageProvider>().language;
     final toast = AppToast.of(context);
     if (await showChangePhoneDialog(context)) {
-      toast.success(AppStrings.profilePhoneNumberUpdated.select(language),);
+      toast.success(AppStrings.profilePhoneNumberUpdated.select(language));
     }
   }
 
@@ -92,10 +96,13 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        boxShadow: profile.avatar != null || profile.avatarUrl != null
+                        boxShadow:
+                            profile.avatar != null || profile.avatarUrl != null
                             ? [
                                 BoxShadow(
-                                  color: tokens.textPrimary.withValues(alpha: .16),
+                                  color: tokens.textPrimary.withValues(
+                                    alpha: .16,
+                                  ),
                                   blurRadius: 20,
                                   offset: const Offset(0, 8),
                                 ),
@@ -119,7 +126,10 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
                   const SizedBox(height: 14),
                   Text(
                     AppStrings.profilePhoneNumber.select(language),
-                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 7),
                   InkWell(
@@ -135,17 +145,28 @@ class _ClientEditProfileScreenState extends State<ClientEditProfileScreen> {
                       ),
                       child: Row(
                         children: [
-                          AppIcon(Icons.phone_outlined, color: tokens.textPrimary, size: 18),
+                          AppIcon(
+                            Icons.phone_outlined,
+                            color: tokens.textPrimary,
+                            size: 18,
+                          ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Text(
                               displayPhone(profile.phone),
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                           Text(
                             AppStrings.profileChange.select(language),
-                            style: TextStyle(color: tokens.accent, fontWeight: FontWeight.w600, fontSize: 13),
+                            style: TextStyle(
+                              color: tokens.accent,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),

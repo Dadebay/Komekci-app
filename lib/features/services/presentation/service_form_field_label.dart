@@ -1,7 +1,11 @@
 part of '../../../app/komekci_app.dart';
 
 class _FieldLabel extends StatelessWidget {
-  const _FieldLabel({required this.text, this.required = false, this.optionalLabel});
+  const _FieldLabel({
+    required this.text,
+    this.required = false,
+    this.optionalLabel,
+  });
   final String text;
   final bool required;
   final String? optionalLabel;
@@ -9,19 +13,32 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+      Text(
+        text,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+      ),
       if (required)
         const Padding(
           padding: EdgeInsets.only(left: 4),
           child: Text(
             '*',
-            style: TextStyle(fontSize: 14, color: Color(0xffC0392B), fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 14,
+              color: Color(0xffC0392B),
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       if (optionalLabel != null)
         Padding(
           padding: const EdgeInsets.only(left: 5),
-          child: Text(optionalLabel!, style: TextStyle(fontSize: 12.5, color: context.appTokens.textSecondary)),
+          child: Text(
+            optionalLabel!,
+            style: TextStyle(
+              fontSize: 12.5,
+              color: context.appTokens.textSecondary,
+            ),
+          ),
         ),
     ],
   );
@@ -34,12 +51,29 @@ class _ErrorText extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: 7, left: 4),
-    child: Text(AppStrings.servicesRequiredField.select(language), style: const TextStyle(fontSize: 11.5, color: Color(0xffC0392B))),
+    child: Text(
+      AppStrings.servicesRequiredField.select(language),
+      style: const TextStyle(fontSize: 11.5, color: Color(0xffC0392B)),
+    ),
   );
 }
 
 class _FormField extends StatelessWidget {
-  const _FormField({required this.controller, required this.hint, required this.onChanged, this.maxLines = 1, this.maxLength, this.keyboardType, this.textInputAction, this.onSubmitted, this.inputFormatters, this.prefixIcon, this.invalid = false, this.enabled = true, this.fillColor});
+  const _FormField({
+    required this.controller,
+    required this.hint,
+    required this.onChanged,
+    this.maxLines = 1,
+    this.maxLength,
+    this.keyboardType,
+    this.textInputAction,
+    this.onSubmitted,
+    this.inputFormatters,
+    this.prefixIcon,
+    this.invalid = false,
+    this.enabled = true,
+    this.fillColor,
+  });
 
   final TextEditingController controller;
   final String hint;
@@ -73,14 +107,25 @@ class _FormField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: hint,
         prefixIcon: prefixIcon,
-        prefixIconConstraints: prefixIcon == null ? null : phonePrefixConstraints,
-        hintStyle: TextStyle(color: tokens.textSecondary, fontSize: 14, fontWeight: FontWeight.w400),
-        errorText: invalid ? AppStrings.servicesThisFieldIsRequired.select(language) : null,
+        prefixIconConstraints: prefixIcon == null
+            ? null
+            : phonePrefixConstraints,
+        hintStyle: TextStyle(
+          color: tokens.textSecondary,
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+        ),
+        errorText: invalid
+            ? AppStrings.servicesThisFieldIsRequired.select(language)
+            : null,
         errorStyle: const TextStyle(fontSize: 11.5),
         counterStyle: TextStyle(fontSize: 11, color: tokens.textSecondary),
         filled: true,
         fillColor: fillColor ?? tokens.surfaceElevated,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: tokens.border),

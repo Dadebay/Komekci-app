@@ -11,9 +11,7 @@ class CabinetSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: tokens.surface,
-      appBar: CabinetAppBar(
-        title: AppStrings.profileSettings.select(language),
-      ),
+      appBar: CabinetAppBar(title: AppStrings.profileSettings.select(language)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
@@ -34,11 +32,7 @@ class CabinetSettingsScreen extends StatelessWidget {
                     trailing: LanguageFlag(language: language, size: 22),
                     onTap: () => _showLanguageSheet(context),
                   ),
-                  Divider(
-                    height: 1,
-                    indent: 70,
-                    color: _softLine(tokens),
-                  ),
+                  Divider(height: 1, indent: 70, color: _softLine(tokens)),
                   _CabinetPreferenceTile(
                     icon: Icons.palette_outlined,
                     title: AppStrings.profileAppearance.select(language),

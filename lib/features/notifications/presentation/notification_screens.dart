@@ -18,9 +18,7 @@ class _NotificationCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(
-            color: unread
-                ? tokens.accent.withValues(alpha: .3)
-                : tokens.border,
+            color: unread ? tokens.accent.withValues(alpha: .3) : tokens.border,
           ),
         ),
         clipBehavior: Clip.antiAlias,
@@ -123,7 +121,9 @@ class _NotificationCard extends StatelessWidget {
                                     .acceptWaitlistOffer(offerId),
                               ),
                               child: Text(
-                                AppStrings.notificationsAccept.select(context.read<LanguageProvider>().language),
+                                AppStrings.notificationsAccept.select(
+                                  context.read<LanguageProvider>().language,
+                                ),
                               ),
                             ),
                             OutlinedButton(
@@ -138,7 +138,9 @@ class _NotificationCard extends StatelessWidget {
                                     .declineWaitlistOffer(offerId),
                               ),
                               child: Text(
-                                AppStrings.notificationsDecline.select(context.read<LanguageProvider>().language),
+                                AppStrings.notificationsDecline.select(
+                                  context.read<LanguageProvider>().language,
+                                ),
                               ),
                             ),
                           ],

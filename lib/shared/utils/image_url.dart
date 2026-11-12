@@ -11,7 +11,9 @@ String? withImageRevision(String? url, int revision) {
   if (url == null || url.isEmpty || revision == 0) return url;
   final uri = Uri.tryParse(url);
   if (uri == null) return url;
-  return uri.replace(queryParameters: {...uri.queryParameters, 'v': '$revision'}).toString();
+  return uri
+      .replace(queryParameters: {...uri.queryParameters, 'v': '$revision'})
+      .toString();
 }
 
 /// A revision for a picture that was just uploaded.

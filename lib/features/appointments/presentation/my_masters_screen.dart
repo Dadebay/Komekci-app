@@ -34,17 +34,30 @@ class ClientMastersScreen extends StatelessWidget {
           Container(
             width: 4,
             height: 16,
-            decoration: BoxDecoration(color: tokens.accent, borderRadius: BorderRadius.circular(2)),
+            decoration: BoxDecoration(
+              color: tokens.accent,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
           const SizedBox(width: 8),
-          Text(text, style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800)),
+          Text(
+            text,
+            style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w800),
+          ),
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(color: tokens.surfaceElevated, borderRadius: BorderRadius.circular(9)),
+            decoration: BoxDecoration(
+              color: tokens.surfaceElevated,
+              borderRadius: BorderRadius.circular(9),
+            ),
             child: Text(
               '$count',
-              style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: tokens.textSecondary),
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: tokens.textSecondary,
+              ),
             ),
           ),
         ],
@@ -66,8 +79,12 @@ class ClientMastersScreen extends StatelessWidget {
               child: Center(child: CircularProgressIndicator()),
             )
           : _MastersEmpty(
-              title: AppStrings.appointmentsNoConnectedMastersYet.select(language),
-              text: AppStrings.appointmentsEnterYourMasterSNickname.select(language),
+              title: AppStrings.appointmentsNoConnectedMastersYet.select(
+                language,
+              ),
+              text: AppStrings.appointmentsEnterYourMasterSNickname.select(
+                language,
+              ),
               button: AppStrings.authAddMaster.select(language),
             );
     } else {
@@ -77,12 +94,20 @@ class ClientMastersScreen extends StatelessWidget {
           if (main != null) ...[_MainMasterCard(connection: main)],
           if (others.isNotEmpty) ...[
             sectionTitle(
-              main == null ? AppStrings.appointmentsConnectedMasters.select(language) : AppStrings.appointmentsOtherMasters.select(language),
+              main == null
+                  ? AppStrings.appointmentsConnectedMasters.select(language)
+                  : AppStrings.appointmentsOtherMasters.select(language),
               others.length,
             ),
             for (final c in others) _MyMasterCard(connection: c),
           ],
-          if (pending.isNotEmpty) ...[sectionTitle(AppStrings.appointmentsPendingRequests.select(language), pending.length), for (final c in pending) _MyMasterCard(connection: c)],
+          if (pending.isNotEmpty) ...[
+            sectionTitle(
+              AppStrings.appointmentsPendingRequests.select(language),
+              pending.length,
+            ),
+            for (final c in pending) _MyMasterCard(connection: c),
+          ],
         ],
       );
     }
@@ -108,10 +133,22 @@ class ClientMastersScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: tokens.surface,
                           shape: BoxShape.circle,
-                          border: Border.all(color: tokens.border.withValues(alpha: .8)),
-                          boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .06), blurRadius: 10, offset: const Offset(0, 3))],
+                          border: Border.all(
+                            color: tokens.border.withValues(alpha: .8),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: tokens.textPrimary.withValues(alpha: .06),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                        child: AppIcon(Icons.arrow_back, size: 19, color: tokens.textPrimary),
+                        child: AppIcon(
+                          Icons.arrow_back,
+                          size: 19,
+                          color: tokens.textPrimary,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -122,27 +159,48 @@ class ClientMastersScreen extends StatelessWidget {
                       children: [
                         Text(
                           AppStrings.profileMyMasters.select(language),
-                          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, height: 1.1),
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                            height: 1.1,
+                          ),
                         ),
                         const SizedBox(height: 3),
                         Text(
                           total == 0
-                              ? AppStrings.appointmentsNoMastersYet.select(language)
-                              : AppStrings.appointmentsMessage(total, total == 1 ? 'master' : 'masters').select(language),
-                          style: TextStyle(fontSize: 13, color: tokens.textSecondary),
+                              ? AppStrings.appointmentsNoMastersYet.select(
+                                  language,
+                                )
+                              : AppStrings.appointmentsMessage(
+                                  total,
+                                  total == 1 ? 'master' : 'masters',
+                                ).select(language),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: tokens.textSecondary,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => Navigator.push(context, pageRoute(const ConnectMasterScreen())),
+                    onTap: () => Navigator.push(
+                      context,
+                      pageRoute(const ConnectMasterScreen()),
+                    ),
                     child: Container(
                       height: 44,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
                         color: tokens.textPrimary,
                         borderRadius: BorderRadius.circular(22),
-                        boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .22), blurRadius: 14, offset: const Offset(0, 6))],
+                        boxShadow: [
+                          BoxShadow(
+                            color: tokens.textPrimary.withValues(alpha: .22),
+                            blurRadius: 14,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -151,7 +209,11 @@ class ClientMastersScreen extends StatelessWidget {
                           const SizedBox(width: 6),
                           Text(
                             AppStrings.appointmentsAdd.select(language),
-                            style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: tokens.surface),
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: tokens.surface,
+                            ),
                           ),
                         ],
                       ),

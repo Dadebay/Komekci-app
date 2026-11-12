@@ -19,7 +19,8 @@ enum ToastKind { success, error, info }
 class AppToast {
   AppToast._(this._messenger, this._tokens);
 
-  factory AppToast.of(BuildContext context) => AppToast._(ScaffoldMessenger.of(context), context.appTokens);
+  factory AppToast.of(BuildContext context) =>
+      AppToast._(ScaffoldMessenger.of(context), context.appTokens);
 
   final ScaffoldMessengerState _messenger;
   final AppThemeTokens _tokens;
@@ -58,14 +59,19 @@ class AppToast {
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
           duration: const Duration(milliseconds: 3200),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
           content: Row(
             children: [
               Container(
                 width: 34,
                 height: 34,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(color: tone.withValues(alpha: .28), borderRadius: BorderRadius.circular(11)),
+                decoration: BoxDecoration(
+                  color: tone.withValues(alpha: .28),
+                  borderRadius: BorderRadius.circular(11),
+                ),
                 child: AppIcon(icon, size: 19, color: iconColor),
               ),
               const SizedBox(width: 12),
@@ -74,7 +80,13 @@ class AppToast {
                   message,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontFamily: appFontFamily, fontSize: 13.5, fontWeight: FontWeight.w600, height: 1.3, color: onBackground),
+                  style: TextStyle(
+                    fontFamily: appFontFamily,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                    color: onBackground,
+                  ),
                 ),
               ),
             ],

@@ -1,7 +1,10 @@
 part of '../../../app/komekci_app.dart';
 
 extension _NewSlotServicePicker on _NewSlotAppointmentSheetState {
-  Future<void> _showServicePicker(List<SalonService> services, {required StateSetter update}) async {
+  Future<void> _showServicePicker(
+    List<SalonService> services, {
+    required StateSetter update,
+  }) async {
     final language = context.read<LanguageProvider>().language;
     final tokens = context.appTokens;
     final picked = await showModalBottomSheet<SalonService>(
@@ -59,7 +62,9 @@ extension _NewSlotServicePicker on _NewSlotAppointmentSheetState {
                     subtitle: Text(
                       fits
                           ? '${s.minutes} ${AppStrings.bookingMin2.select(language)} · ${s.price} ${context.read<AppSettingsProvider>().currencyLabel(language)}'
-                          : AppStrings.scheduleNotEnoughTimeForThis.select(language),
+                          : AppStrings.scheduleNotEnoughTimeForThis.select(
+                              language,
+                            ),
                       style: TextStyle(
                         fontSize: 12,
                         color: fits ? tokens.textSecondary : tokens.danger,
@@ -78,5 +83,4 @@ extension _NewSlotServicePicker on _NewSlotAppointmentSheetState {
     );
     if (picked != null) update(() => _selectedService = picked);
   }
-
 }

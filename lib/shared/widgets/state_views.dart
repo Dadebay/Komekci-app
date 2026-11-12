@@ -7,7 +7,14 @@ import 'app_icon.dart';
 /// an optional action. Used for empty search results, empty lists, and (via
 /// [RetryErrorState] / [OfflineState]) for retryable and offline states too.
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.icon, required this.title, required this.text, this.action, this.backgroundColor});
+  const EmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.text,
+    this.action,
+    this.backgroundColor,
+  });
   final IconData icon;
   final String title;
   final String text;
@@ -37,13 +44,21 @@ class EmptyState extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: t.textPrimary),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: t.textPrimary,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             text,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12.5, color: t.textSecondary, height: 1.4),
+            style: TextStyle(
+              fontSize: 12.5,
+              color: t.textSecondary,
+              height: 1.4,
+            ),
           ),
           if (action != null) ...[const SizedBox(height: 16), action!],
         ],
@@ -55,7 +70,13 @@ class EmptyState extends StatelessWidget {
 /// Empty appointment day, with the calendar illustration used on the master's
 /// home dashboard and schedule.
 class BookingsEmptyState extends StatelessWidget {
-  const BookingsEmptyState({super.key, required this.title, required this.text, this.framed = true, this.compact = false});
+  const BookingsEmptyState({
+    super.key,
+    required this.title,
+    required this.text,
+    this.framed = true,
+    this.compact = false,
+  });
 
   final String title;
   final String text;
@@ -67,7 +88,9 @@ class BookingsEmptyState extends StatelessWidget {
     final tokens = context.appTokens;
     return Container(
       width: double.infinity,
-      padding: compact ? const EdgeInsets.fromLTRB(16, 8, 16, 14) : const EdgeInsets.fromLTRB(20, 20, 20, 26),
+      padding: compact
+          ? const EdgeInsets.fromLTRB(16, 8, 16, 14)
+          : const EdgeInsets.fromLTRB(20, 20, 20, 26),
       decoration: framed
           ? BoxDecoration(
               color: tokens.surfaceElevated,
@@ -77,18 +100,32 @@ class BookingsEmptyState extends StatelessWidget {
           : null,
       child: Column(
         children: [
-          Image.asset('assets/images/empty_bookings_3d.png', width: compact ? 92 : 168, height: compact ? 92 : 168, fit: BoxFit.contain, excludeFromSemantics: true),
+          Image.asset(
+            'assets/images/empty_bookings_3d.png',
+            width: compact ? 92 : 168,
+            height: compact ? 92 : 168,
+            fit: BoxFit.contain,
+            excludeFromSemantics: true,
+          ),
           SizedBox(height: compact ? 4 : 8),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: tokens.textPrimary),
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: tokens.textPrimary,
+            ),
           ),
           SizedBox(height: compact ? 4 : 8),
           Text(
             text,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, height: 1.4, color: tokens.textSecondary),
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.4,
+              color: tokens.textSecondary,
+            ),
           ),
         ],
       ),
@@ -98,7 +135,13 @@ class BookingsEmptyState extends StatelessWidget {
 
 /// A failed load with a retry action — for real API errors, not empty results.
 class RetryErrorState extends StatelessWidget {
-  const RetryErrorState({super.key, required this.title, required this.text, required this.onRetry, this.retryLabel = 'Retry'});
+  const RetryErrorState({
+    super.key,
+    required this.title,
+    required this.text,
+    required this.onRetry,
+    this.retryLabel = 'Retry',
+  });
   final String title;
   final String text;
   final String retryLabel;
@@ -131,7 +174,8 @@ class OfflineState extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => EmptyState(icon: Icons.wifi_off_rounded, title: title, text: text);
+  Widget build(BuildContext context) =>
+      EmptyState(icon: Icons.wifi_off_rounded, title: title, text: text);
 }
 
 /// A single pulsing placeholder block for skeleton loading rows. Plain
@@ -146,8 +190,12 @@ class LoadingSkeleton extends StatefulWidget {
   State<LoadingSkeleton> createState() => _LoadingSkeletonState();
 }
 
-class _LoadingSkeletonState extends State<LoadingSkeleton> with SingleTickerProviderStateMixin {
-  late final _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat(reverse: true);
+class _LoadingSkeletonState extends State<LoadingSkeleton>
+    with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
 
   @override
   void dispose() {

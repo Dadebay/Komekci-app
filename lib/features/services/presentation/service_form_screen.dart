@@ -18,28 +18,40 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
   static const _minMinutes = 5;
   static const _maxMinutes = 480;
 
-  late final _nameController = TextEditingController(text: widget.service?.name ?? '');
-  late final _descriptionController = TextEditingController(text: widget.service?.description ?? '');
-  late final _priceController = TextEditingController(text: widget.service?.price.toString() ?? '');
+  late final _nameController = TextEditingController(
+    text: widget.service?.name ?? '',
+  );
+  late final _descriptionController = TextEditingController(
+    text: widget.service?.description ?? '',
+  );
+  late final _priceController = TextEditingController(
+    text: widget.service?.price.toString() ?? '',
+  );
   late int? _minutes = widget.service?.minutes;
 
   /// A duration that is not one of the quick-pick chips is typed in.
-  late bool _customDuration = widget.service != null && !_serviceDurations.contains(widget.service!.minutes);
-  late final _customController = TextEditingController(text: _customDuration ? '${widget.service!.minutes}' : '');
+  late bool _customDuration =
+      widget.service != null &&
+      !_serviceDurations.contains(widget.service!.minutes);
+  late final _customController = TextEditingController(
+    text: _customDuration ? '${widget.service!.minutes}' : '',
+  );
   File? _photo;
   bool _showErrors = false;
   bool _saving = false;
   String? _error;
 
   bool get _isEditing => widget.service != null;
-  bool get _hasImage => _photo != null || (widget.service?.imagePath.isNotEmpty ?? false);
+  bool get _hasImage =>
+      _photo != null || (widget.service?.imagePath.isNotEmpty ?? false);
   bool get _nameOk => _nameController.text.trim().length >= 2;
   bool get _priceOk {
     final price = int.tryParse(_priceController.text.trim()) ?? 0;
     return price > 0 && price <= _priceMax;
   }
 
-  bool get _durationOk => _minutes != null && _minutes! >= _minMinutes && _minutes! <= _maxMinutes;
+  bool get _durationOk =>
+      _minutes != null && _minutes! >= _minMinutes && _minutes! <= _maxMinutes;
   bool get _complete => _hasImage && _nameOk && _priceOk && _durationOk;
 
   @override
@@ -78,7 +90,13 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
       if (_isEditing) {
         await provider.update(service, photoPath: _photo?.path);
       } else {
-        await provider.add(name: service.name, description: service.description, price: service.price, minutes: service.minutes, photoPath: _photo!.path);
+        await provider.add(
+          name: service.name,
+          description: service.description,
+          price: service.price,
+          minutes: service.minutes,
+          photoPath: _photo!.path,
+        );
       }
     } catch (error) {
       if (!mounted) return;
@@ -105,32 +123,42 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final tokens = context.appTokens;
-    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(
+      language,
+    );
     final required = AppStrings.servicesThisFieldIsRequired.select(language);
 
     String? nameError() {
       if (!_showErrors || _nameOk) return null;
-      return _nameController.text.trim().isEmpty ? required : AppStrings.servicesAtLeast2Characters.select(language);
+      return _nameController.text.trim().isEmpty
+          ? required
+          : AppStrings.servicesAtLeast2Characters.select(language);
     }
 
     String? durationError() {
       if (!_showErrors || _durationOk) return null;
       return _minutes == null
           ? AppStrings.servicesChooseADuration.select(language)
-          : AppStrings.servicesBetweenAndMinutes(_minMinutes, _maxMinutes).select(language);
+          : AppStrings.servicesBetweenAndMinutes(
+              _minMinutes,
+              _maxMinutes,
+            ).select(language);
     }
 
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: _isEditing ? AppStrings.servicesEditService.select(language) : AppStrings.servicesNewService.select(language),
+        title: _isEditing
+            ? AppStrings.servicesEditService.select(language)
+            : AppStrings.servicesNewService.select(language),
       ),
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: ListView(
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
                 children: [
                   _ServicePhotoBox(
@@ -139,7 +167,9 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                     invalid: _showErrors && !_hasImage,
                     title: AppStrings.servicesServicePhoto.select(language),
                     hint: AppStrings.servicesJpgOrPngThePhoto.select(language),
-                    changeLabel: AppStrings.servicesChangePhoto.select(language),
+                    changeLabel: AppStrings.servicesChangePhoto.select(
+                      language,
+                    ),
                     errorText: required,
                     onPicked: (file) => setState(() => _photo = file),
                   ),
@@ -153,17 +183,24 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                         controller: _nameController,
                         label: AppStrings.servicesServiceName.select(language),
                         icon: Icons.content_cut,
-                        hint: AppStrings.servicesExampleHaircut.select(language),
+                        hint: AppStrings.servicesExampleHaircut.select(
+                          language,
+                        ),
                         errorText: nameError(),
                         textInputAction: TextInputAction.next,
-                        inputFormatters: [LengthLimitingTextInputFormatter(_nameMax)],
+                        inputFormatters: [
+                          LengthLimitingTextInputFormatter(_nameMax),
+                        ],
                         onChanged: (_) => setState(() {}),
                       ),
                       _ProfileField(
                         controller: _descriptionController,
-                        label: AppStrings.servicesDescriptionOptional.select(language),
+                        label: AppStrings.servicesDescriptionOptional.select(
+                          language,
+                        ),
                         icon: Icons.sticky_note_2_outlined,
-                        hint: AppStrings.servicesBrieflyDescribeTheService.select(language),
+                        hint: AppStrings.servicesBrieflyDescribeTheService
+                            .select(language),
                         maxLines: 4,
                         minLines: 3,
                         keyboardType: TextInputType.multiline,
@@ -185,17 +222,25 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                         errorText: _showErrors && !_priceOk ? required : null,
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.done,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(6),
+                        ],
                         statusIcon: Text(
                           currency,
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: tokens.textSecondary),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: tokens.textSecondary,
+                          ),
                         ),
                         onChanged: (_) => setState(() {}),
                       ),
                       _DurationPicker(
                         label: AppStrings.servicesDurationMin.select(language),
                         otherLabel: AppStrings.servicesOther.select(language),
-                        customFieldLabel: AppStrings.servicesCustomDurationMin.select(language),
+                        customFieldLabel: AppStrings.servicesCustomDurationMin
+                            .select(language),
                         customHint: '$_minMinutes–$_maxMinutes',
                         selected: _customDuration ? null : _minutes,
                         custom: _customDuration,
@@ -203,7 +248,9 @@ class _ServiceFormScreenState extends State<ServiceFormScreen> {
                         errorText: durationError(),
                         onPreset: _pickPreset,
                         onCustom: _chooseCustom,
-                        onCustomChanged: (value) => setState(() => _minutes = int.tryParse(value.trim())),
+                        onCustomChanged: (value) => setState(
+                          () => _minutes = int.tryParse(value.trim()),
+                        ),
                       ),
                     ],
                   ),

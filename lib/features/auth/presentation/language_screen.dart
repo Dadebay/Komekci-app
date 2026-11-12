@@ -70,7 +70,9 @@ class LanguageScreen extends StatelessWidget {
                   height: 40,
                   child: Center(
                     child: Text(
-                      AppStrings.authChooseYourPreferredLanguageFor.select(language.language),
+                      AppStrings.authChooseYourPreferredLanguageFor.select(
+                        language.language,
+                      ),
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       style: TextStyle(
@@ -167,9 +169,7 @@ class LanguageOptionCard extends StatelessWidget {
             SizedBox(
               width: 34,
               height: 34,
-              child: Center(
-                child: LanguageFlag(language: language, size: 30),
-              ),
+              child: Center(child: LanguageFlag(language: language, size: 30)),
             ),
             const SizedBox(width: 12),
             Expanded(

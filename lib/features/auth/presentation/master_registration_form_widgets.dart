@@ -113,7 +113,9 @@ extension _MasterRegistrationFormWidgets on _MasterRegistrationScreenState {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  AppStrings.authAddABanner.select(context.read<LanguageProvider>().language),
+                                  AppStrings.authAddABanner.select(
+                                    context.read<LanguageProvider>().language,
+                                  ),
                                   style: TextStyle(
                                     fontSize: 13.5,
                                     fontWeight: FontWeight.w700,
@@ -124,7 +126,9 @@ extension _MasterRegistrationFormWidgets on _MasterRegistrationScreenState {
                                 ),
                                 const SizedBox(height: 3),
                                 Text(
-                                  AppStrings.authShownAtTheTopOf.select(context.read<LanguageProvider>().language),
+                                  AppStrings.authShownAtTheTopOf.select(
+                                    context.read<LanguageProvider>().language,
+                                  ),
                                   style: TextStyle(
                                     fontSize: 11.5,
                                     color: tokens.textSecondary,
@@ -185,8 +189,12 @@ extension _MasterRegistrationFormWidgets on _MasterRegistrationScreenState {
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 24),
             child: Text(
               _photo == null
-                  ? AppStrings.authAddAProfilePhoto.select(context.read<LanguageProvider>().language)
-                  : AppStrings.authTapToChangeThePhoto.select(context.read<LanguageProvider>().language),
+                  ? AppStrings.authAddAProfilePhoto.select(
+                      context.read<LanguageProvider>().language,
+                    )
+                  : AppStrings.authTapToChangeThePhoto.select(
+                      context.read<LanguageProvider>().language,
+                    ),
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
@@ -223,7 +231,9 @@ extension _MasterRegistrationFormWidgets on _MasterRegistrationScreenState {
     final message =
         serverError ??
         (missing
-            ? AppStrings.servicesThisFieldIsRequired.select(context.read<LanguageProvider>().language)
+            ? AppStrings.servicesThisFieldIsRequired.select(
+                context.read<LanguageProvider>().language,
+              )
             : null);
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),

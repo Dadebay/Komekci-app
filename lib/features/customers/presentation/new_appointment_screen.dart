@@ -68,7 +68,9 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
       service.minutes,
     )) {
       AppToast.of(context).error(
-        AppStrings.customersThisServiceDoesNotFit.select(context.read<LanguageProvider>().language),
+        AppStrings.customersThisServiceDoesNotFit.select(
+          context.read<LanguageProvider>().language,
+        ),
       );
       return;
     }
@@ -93,7 +95,11 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
     await _finish(language, service, startsAt);
   }
 
-  Future<void> _finish(AppLanguage language, SalonService service, DateTime startsAt) async {
+  Future<void> _finish(
+    AppLanguage language,
+    SalonService service,
+    DateTime startsAt,
+  ) async {
     await _showInfoDialog(
       context,
       icon: Icons.check,
@@ -116,7 +122,9 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
 
     return Scaffold(
       backgroundColor: tokens.surface,
-      appBar: CabinetAppBar(title: AppStrings.customersNewBooking2.select(language)),
+      appBar: CabinetAppBar(
+        title: AppStrings.customersNewBooking2.select(language),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -168,7 +176,9 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
                     EmptyState(
                       icon: Icons.content_cut,
                       title: AppStrings.bookingNoServices.select(language),
-                      text: AppStrings.scheduleAddAServiceFirst.select(language),
+                      text: AppStrings.scheduleAddAServiceFirst.select(
+                        language,
+                      ),
                     )
                   else
                     ...services.asMap().entries.map((entry) {
@@ -185,7 +195,9 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
                             vertical: 13,
                           ),
                           decoration: BoxDecoration(
-                            color: rowSelected && tokens.surfaceElevated != tokens.surface
+                            color:
+                                rowSelected &&
+                                    tokens.surfaceElevated != tokens.surface
                                 ? tokens.accent.withValues(alpha: .08)
                                 : tokens.surfaceElevated,
                             borderRadius: BorderRadius.circular(14),
@@ -227,7 +239,8 @@ class _NewAppointmentScreenState extends State<NewAppointmentScreen> {
                         ),
                       );
                     }),
-                  if (_showErrors && _serviceIndex == null) _ErrorText(language: language),
+                  if (_showErrors && _serviceIndex == null)
+                    _ErrorText(language: language),
                   const SizedBox(height: 22),
                   _PickerField(
                     label: AppStrings.customersDateAndTime.select(language),

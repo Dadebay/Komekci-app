@@ -75,7 +75,11 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
   Future<void> _sendCode() async {
     final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
     if (digits.length != 8) {
-      setState(() => _error = AppStrings.profileEnterTheFullNumber8.select(context.read<LanguageProvider>().language));
+      setState(
+        () => _error = AppStrings.profileEnterTheFullNumber8.select(
+          context.read<LanguageProvider>().language,
+        ),
+      );
       return;
     }
     final phone = toApiPhone(digits);
@@ -150,9 +154,15 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
         children: [
           Text(
             awaitingCode
-                ? AppStrings.profileEnterThe6DigitCode(displayPhone(_newPhone!)).select(language)
+                ? AppStrings.profileEnterThe6DigitCode(
+                    displayPhone(_newPhone!),
+                  ).select(language)
                 : AppStrings.profileEnterYourNewNumberWe.select(language),
-            style: TextStyle(color: tokens.textSecondary, fontSize: 13, height: 1.4),
+            style: TextStyle(
+              color: tokens.textSecondary,
+              fontSize: 13,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 14),
           if (awaitingCode)
@@ -166,8 +176,15 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
               },
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 22, letterSpacing: 6, fontWeight: FontWeight.w700),
-              decoration: const InputDecoration(counterText: '', hintText: '000000'),
+              style: const TextStyle(
+                fontSize: 22,
+                letterSpacing: 6,
+                fontWeight: FontWeight.w700,
+              ),
+              decoration: const InputDecoration(
+                counterText: '',
+                hintText: '000000',
+              ),
             )
           else
             TextField(
@@ -189,13 +206,17 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
                 children: [
                   TextButton(
                     onPressed: _busy ? null : _editNumber,
-                    child: Text(AppStrings.profileChangeNumber.select(language)),
+                    child: Text(
+                      AppStrings.profileChangeNumber.select(language),
+                    ),
                   ),
                   TextButton(
                     onPressed: _busy || _secondsLeft > 0 ? null : _resend,
-                    child: Text(_secondsLeft > 0
-                        ? '${AppStrings.profileResendCode.select(language)} ($_secondsLeft s)'
-                        : AppStrings.profileResendCode.select(language)),
+                    child: Text(
+                      _secondsLeft > 0
+                          ? '${AppStrings.profileResendCode.select(language)} ($_secondsLeft s)'
+                          : AppStrings.profileResendCode.select(language),
+                    ),
                   ),
                 ],
               ),
@@ -210,10 +231,16 @@ class _ChangePhoneDialogState extends State<_ChangePhoneDialog> {
         FilledButton(
           onPressed: _busy ? null : (awaitingCode ? _confirm : _sendCode),
           child: _busy
-              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-              : Text(awaitingCode
-                    ? AppStrings.profileConfirm.select(language)
-                    : AppStrings.profileSendCode.select(language)),
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(
+                  awaitingCode
+                      ? AppStrings.profileConfirm.select(language)
+                      : AppStrings.profileSendCode.select(language),
+                ),
         ),
       ],
     );

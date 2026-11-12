@@ -102,7 +102,10 @@ class _PhonePaymentDialogState extends State<_PhonePaymentDialog> {
         final min = formatMoney(_topup?.phoneMinAmount ?? 20);
         final cur = context.read<AppSettingsProvider>().currencyLabel(language);
         setState(
-          () => _pendingMessage = AppStrings.authYourTransferArrivedButA(min, cur).select(language),
+          () => _pendingMessage = AppStrings.authYourTransferArrivedButA(
+            min,
+            cur,
+          ).select(language),
         );
       } else if (!silent) {
         setState(() => _pendingMessage = null);
@@ -159,7 +162,9 @@ class _PhonePaymentDialogState extends State<_PhonePaymentDialog> {
       (
         Icons.phone_android_outlined,
         AppStrings.authFromWhichNumber.select(language),
-        AppStrings.authSendItFromYourRegistered(displayPhone(context.read<MasterProfileProvider>().phone)).select(language),
+        AppStrings.authSendItFromYourRegistered(
+          displayPhone(context.read<MasterProfileProvider>().phone),
+        ).select(language),
       ),
       (
         Icons.atm_outlined,
@@ -218,7 +223,10 @@ class _PhonePaymentDialogState extends State<_PhonePaymentDialog> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  AppStrings.authWillBeDeductedFromYour(amount, cur).select(language),
+                  AppStrings.authWillBeDeductedFromYour(
+                    amount,
+                    cur,
+                  ).select(language),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: tokens.textSecondary,

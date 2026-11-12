@@ -56,7 +56,8 @@ class ClientBooking {
 
   /// Still to come (or under way). A booking the server still marks
   /// `expected` but whose time has passed belongs with the past ones.
-  bool get isUpcoming => status == ClientBookingStatus.expected && endsAt.isAfter(DateTime.now());
+  bool get isUpcoming =>
+      status == ClientBookingStatus.expected && endsAt.isAfter(DateTime.now());
 
   CalendarBookingDetails get calendarDetails {
     // Calculate in Ashgabat wall time, independent of the phone's DST rules.

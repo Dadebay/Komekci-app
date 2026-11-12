@@ -1,7 +1,11 @@
 part of '../../../app/komekci_app.dart';
 
 class SelectedClientsScreen extends StatefulWidget {
-  const SelectedClientsScreen({super.key, this.initialSelection = const [], this.forPush = true});
+  const SelectedClientsScreen({
+    super.key,
+    this.initialSelection = const [],
+    this.forPush = true,
+  });
   final List<String> initialSelection;
   final bool forPush;
 
@@ -25,9 +29,16 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
     final query = _searchController.text.trim().toLowerCase();
     final provider = context.watch<CustomerProvider>();
     final clients = provider.customers
-        .where((c) => query.isEmpty || c.name.toLowerCase().contains(query) || c.phone.contains(query))
+        .where(
+          (c) =>
+              query.isEmpty ||
+              c.name.toLowerCase().contains(query) ||
+              c.phone.contains(query),
+        )
         .toList();
-    final eligible = clients.where((c) => _canMessageCustomer(c, forPush: widget.forPush)).toList();
+    final eligible = clients
+        .where((c) => _canMessageCustomer(c, forPush: widget.forPush))
+        .toList();
     final eligibleIds = provider.customers
         .where((c) => _canMessageCustomer(c, forPush: widget.forPush))
         .map((c) => c.id)
@@ -54,7 +65,9 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                 children: [
                   _InfoBanner(
                     icon: Icons.groups_outlined,
-                    text: AppStrings.cabinetChooseClientsToSendTo.select(language),
+                    text: AppStrings.cabinetChooseClientsToSendTo.select(
+                      language,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -96,7 +109,9 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                     const Center(child: CircularProgressIndicator()),
                   if (provider.error != null && provider.customers.isEmpty)
                     RetryErrorState(
-                      title: AppStrings.cabinetCouldNotLoadClients.select(language),
+                      title: AppStrings.cabinetCouldNotLoadClients.select(
+                        language,
+                      ),
                       text: AppStrings.cabinetPleaseTryAgain.select(language),
                       retryLabel: AppStrings.profileTryAgain.select(language),
                       onRetry: provider.load,
@@ -104,7 +119,9 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                   Row(
                     children: [
                       Text(
-                        AppStrings.cabinetSelected(selected.length).select(language),
+                        AppStrings.cabinetSelected(
+                          selected.length,
+                        ).select(language),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -141,18 +158,25 @@ class _SelectedClientsScreenState extends State<SelectedClientsScreen> {
                   ),
                   const SizedBox(height: 10),
                   ...clients.map((c) {
-                    final canSend = _canMessageCustomer(c, forPush: widget.forPush);
+                    final canSend = _canMessageCustomer(
+                      c,
+                      forPush: widget.forPush,
+                    );
                     final checked = canSend && selected.contains(c.id);
                     return _ClientListTile(
                       name: c.name,
                       phone: c.phone,
                       subtitle: !canSend
                           ? widget.forPush
-                              ? AppStrings.cabinetPushUnavailable.select(language)
-                              : AppStrings.cabinetNoPhoneNumber.select(language)
+                                ? AppStrings.cabinetPushUnavailable.select(
+                                    language,
+                                  )
+                                : AppStrings.cabinetNoPhoneNumber.select(
+                                    language,
+                                  )
                           : c.lastVisit == null
-                              ? ''
-                              : '${AppStrings.cabinetLastVisit.select(language)}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
+                          ? ''
+                          : '${AppStrings.cabinetLastVisit.select(language)}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
                       checked: checked,
                       enabled: canSend,
                       onTap: canSend

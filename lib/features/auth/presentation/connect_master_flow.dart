@@ -195,7 +195,9 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                 children: [
                   _ConnectHero(
                     title: AppStrings.authConnectToYourMaster.select(language),
-                    subtitle: AppStrings.authEnterYourMasterSNickname.select(language),
+                    subtitle: AppStrings.authEnterYourMasterSNickname.select(
+                      language,
+                    ),
                   ),
                   const SizedBox(height: 22),
                   _SearchBox(
@@ -237,7 +239,9 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                   else if (_notFound)
                     _NotFoundNote(
                       title: AppStrings.authNoMasterFound.select(language),
-                      text: AppStrings.authCheckThatTheNicknameOr.select(language),
+                      text: AppStrings.authCheckThatTheNicknameOr.select(
+                        language,
+                      ),
                     )
                   else if (!_searching)
                     _HowItWorks(

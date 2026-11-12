@@ -13,9 +13,11 @@ class AppIcon extends StatelessWidget {
   Widget build(BuildContext context) => HugeIcon(
     icon: switch (material) {
       Icons.content_cut => HugeIcons.strokeRoundedScissor,
-      Icons.calendar_month_outlined || Icons.calendar_today_outlined => HugeIcons.strokeRoundedCalendar01,
+      Icons.calendar_month_outlined ||
+      Icons.calendar_today_outlined => HugeIcons.strokeRoundedCalendar01,
       Icons.home_outlined => HugeIcons.strokeRoundedHome01,
-      Icons.person_outline || Icons.face_2_outlined => HugeIcons.strokeRoundedUser,
+      Icons.person_outline ||
+      Icons.face_2_outlined => HugeIcons.strokeRoundedUser,
       Icons.account_box_outlined => HugeIcons.strokeRoundedUserAccount,
       Icons.people_outline => HugeIcons.strokeRoundedUserGroup,
       Icons.workspace_premium_outlined => HugeIcons.strokeRoundedUserGroup,
@@ -53,7 +55,8 @@ class AppIcon extends StatelessWidget {
       Icons.lock_outline => HugeIcons.strokeRoundedSquareLock01,
       Icons.verified_user_outlined => HugeIcons.strokeRoundedSecurityCheck,
       Icons.link_outlined => HugeIcons.strokeRoundedLink01,
-      Icons.person_add_alt || Icons.person_add_alt_1 => HugeIcons.strokeRoundedUserAdd01,
+      Icons.person_add_alt ||
+      Icons.person_add_alt_1 => HugeIcons.strokeRoundedUserAdd01,
       Icons.emoji_events_outlined => HugeIcons.strokeRoundedCrown,
       Icons.star_border => HugeIcons.strokeRoundedStar,
       Icons.filter_list => HugeIcons.strokeRoundedFilter,
@@ -61,7 +64,8 @@ class AppIcon extends StatelessWidget {
       Icons.more_vert => HugeIcons.strokeRoundedMoreVertical,
       Icons.sticky_note_2_outlined => HugeIcons.strokeRoundedStickyNote01,
       Icons.bar_chart_outlined => HugeIcons.strokeRoundedChartBarBig,
-      Icons.notifications_none || Icons.notifications_active_outlined => HugeIcons.strokeRoundedNotification01,
+      Icons.notifications_none || Icons.notifications_active_outlined =>
+        HugeIcons.strokeRoundedNotification01,
       Icons.arrow_forward => HugeIcons.strokeRoundedArrowRight01,
       Icons.arrow_back => HugeIcons.strokeRoundedArrowLeft01,
       Icons.arrow_outward => HugeIcons.strokeRoundedArrowUpRight01,
@@ -70,7 +74,9 @@ class AppIcon extends StatelessWidget {
       Icons.expand_less => HugeIcons.strokeRoundedArrowUp01,
       Icons.add || Icons.add_circle_outline => HugeIcons.strokeRoundedAdd01,
       Icons.close => HugeIcons.strokeRoundedCancel01,
-      Icons.check || Icons.check_circle || Icons.check_circle_outline => HugeIcons.strokeRoundedCheckmarkCircle01,
+      Icons.check ||
+      Icons.check_circle ||
+      Icons.check_circle_outline => HugeIcons.strokeRoundedCheckmarkCircle01,
       Icons.wifi_rounded => HugeIcons.strokeRoundedWifi01,
       Icons.wifi_off_rounded => HugeIcons.strokeRoundedWifiOff01,
       Icons.language => HugeIcons.strokeRoundedLanguageCircle,
@@ -78,7 +84,8 @@ class AppIcon extends StatelessWidget {
       Icons.switch_account_outlined => HugeIcons.strokeRoundedUserSwitch,
       Icons.swap_horiz => HugeIcons.strokeRoundedArrowLeftRight,
       Icons.shield_outlined => HugeIcons.strokeRoundedShield01,
-      Icons.favorite_border || Icons.favorite => HugeIcons.strokeRoundedFavourite,
+      Icons.favorite_border ||
+      Icons.favorite => HugeIcons.strokeRoundedFavourite,
       Icons.brush_outlined => HugeIcons.strokeRoundedPaintBrush01,
       Icons.face_retouching_natural => HugeIcons.strokeRoundedBlushBrush01,
       Icons.remove_red_eye_outlined => HugeIcons.strokeRoundedEye,
@@ -87,7 +94,8 @@ class AppIcon extends StatelessWidget {
       Icons.person_search_outlined => HugeIcons.strokeRoundedUserSearch01,
       Icons.person_off_outlined => HugeIcons.strokeRoundedUserRemove01,
       Icons.task_alt_outlined => HugeIcons.strokeRoundedTaskDone01,
-      Icons.bookmark_border || Icons.bookmark => HugeIcons.strokeRoundedBookmark02,
+      Icons.bookmark_border ||
+      Icons.bookmark => HugeIcons.strokeRoundedBookmark02,
       Icons.sms_outlined => HugeIcons.strokeRoundedSmsCode,
       Icons.refresh => HugeIcons.strokeRoundedRefresh,
       Icons.error_outline => HugeIcons.strokeRoundedAlertCircle,
@@ -105,9 +113,12 @@ class AppIcon extends StatelessWidget {
       Icons.receipt_long_outlined => HugeIcons.strokeRoundedInvoice01,
       Icons.star_outline => HugeIcons.strokeRoundedStar,
       Icons.support_agent_outlined => HugeIcons.strokeRoundedCustomerSupport,
-      Icons.hourglass_empty || Icons.hourglass_top_outlined || Icons.hourglass_top_rounded => HugeIcons.strokeRoundedHourglass,
+      Icons.hourglass_empty ||
+      Icons.hourglass_top_outlined ||
+      Icons.hourglass_top_rounded => HugeIcons.strokeRoundedHourglass,
       Icons.auto_awesome_outlined => HugeIcons.strokeRoundedSparkles,
-      Icons.format_list_numbered => HugeIcons.strokeRoundedLeftToRightListNumber,
+      Icons.format_list_numbered =>
+        HugeIcons.strokeRoundedLeftToRightListNumber,
       _ => HugeIcons.strokeRoundedCircle,
     },
     color: color,

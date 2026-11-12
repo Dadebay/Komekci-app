@@ -5,7 +5,8 @@ class _MasterNotificationToggle extends StatefulWidget {
   final Map<String, bool> prefs;
 
   @override
-  State<_MasterNotificationToggle> createState() => _MasterNotificationToggleState();
+  State<_MasterNotificationToggle> createState() =>
+      _MasterNotificationToggleState();
 }
 
 class _MasterNotificationToggleState extends State<_MasterNotificationToggle> {
@@ -21,10 +22,7 @@ class _MasterNotificationToggleState extends State<_MasterNotificationToggle> {
       _pendingValue = value;
       _saving = true;
     });
-    final updated = {
-      ...widget.prefs,
-      for (final code in _codes) code: value,
-    };
+    final updated = {...widget.prefs, for (final code in _codes) code: value};
     await runApi(
       context,
       () => context.read<AuthProvider>().updateNotificationPrefs(updated),
@@ -43,7 +41,8 @@ class _MasterNotificationToggleState extends State<_MasterNotificationToggle> {
       icon: Icons.notifications_active_outlined,
       title: AppStrings.profileAllNotificationTypes.select(language),
       subtitle: AppStrings.profileTurnEveryTypeOnOr.select(language),
-      value: _pendingValue ?? _codes.every((code) => widget.prefs[code] ?? true),
+      value:
+          _pendingValue ?? _codes.every((code) => widget.prefs[code] ?? true),
       onChanged: _saving ? null : _setAll,
     );
   }

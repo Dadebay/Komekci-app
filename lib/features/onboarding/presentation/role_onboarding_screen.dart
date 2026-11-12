@@ -41,7 +41,9 @@ class _RoleOnboardingScreenState extends State<RoleOnboardingScreen>
             ),
             (
               AppStrings.onboardingNeverMissABooking2.select(language),
-              AppStrings.onboardingSmartRemindersAndNotificationsKeep.select(language),
+              AppStrings.onboardingSmartRemindersAndNotificationsKeep.select(
+                language,
+              ),
               Icons.notifications_active_outlined,
               'assets/images/onboarding_03.png',
             ),

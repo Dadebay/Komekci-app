@@ -1,6 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-
 Color _statusColor(CustomerStatus status, [AppThemeTokens? tokens]) {
   if (tokens?.brightness == Brightness.dark) {
     return switch (status) {
@@ -36,11 +35,12 @@ IconData _statusIcon(CustomerStatus status) => switch (status) {
   CustomerStatus.newClient => Icons.person_add_alt_1,
 };
 
-String _statusLabel(CustomerStatus status, AppLanguage language) => switch (status) {
-  CustomerStatus.vip => 'VIP',
-  CustomerStatus.regular => AppStrings.scheduleRegular.select(language),
-  CustomerStatus.newClient => AppStrings.customersNew2.select(language),
-};
+String _statusLabel(CustomerStatus status, AppLanguage language) =>
+    switch (status) {
+      CustomerStatus.vip => 'VIP',
+      CustomerStatus.regular => AppStrings.scheduleRegular.select(language),
+      CustomerStatus.newClient => AppStrings.customersNew2.select(language),
+    };
 
 /// Shared "are you sure" dialog: icon badge, centred copy, a cancel outline
 /// button and a filled confirm button. Used for every destructive or
@@ -75,8 +75,9 @@ Future<bool> _showConfirmDialog(
               height: 56,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: (danger ? tokens.danger : tokens.accent)
-                    .withValues(alpha: .14),
+                color: (danger ? tokens.danger : tokens.accent).withValues(
+                  alpha: .14,
+                ),
                 shape: BoxShape.circle,
               ),
               child: AppIcon(
@@ -252,4 +253,3 @@ class _CustomerAvatar extends StatelessWidget {
   Widget build(BuildContext context) =>
       RoundPhoto(url: customer.photoUrl, radius: radius);
 }
-

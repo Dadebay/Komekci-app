@@ -5,7 +5,15 @@ import 'app_theme_tokens.dart';
 /// The seven colour fields returned by `GET /settings/public` for one theme.
 /// Invalid or missing fields fall back to the app's bundled palette.
 class BackendThemeColors {
-  const BackendThemeColors({this.primary, this.secondary, this.background, this.text, this.button, this.buttonText, this.accent});
+  const BackendThemeColors({
+    this.primary,
+    this.secondary,
+    this.background,
+    this.text,
+    this.button,
+    this.buttonText,
+    this.accent,
+  });
 
   final Color? primary;
   final Color? secondary;
@@ -41,7 +49,8 @@ class BackendThemeColors {
     final highlight = accent ?? fallback.accent;
     final buttonColor = button ?? fallback.button;
     final isDark = surface.computeLuminance() < .5;
-    Color contrastingText(Color color) => color.computeLuminance() > .45 ? Colors.black : Colors.white;
+    Color contrastingText(Color color) =>
+        color.computeLuminance() > .45 ? Colors.black : Colors.white;
 
     return fallback.copyWith(
       brightness: background == null
@@ -53,16 +62,24 @@ class BackendThemeColors {
       surfaceElevated: elevated,
       primary: primary,
       textPrimary: foreground,
-      textSecondary: text == null && background == null ? fallback.textSecondary : Color.lerp(foreground, surface, .4),
-      border: secondary == null && accent == null ? fallback.border : Color.alphaBlend(highlight.withValues(alpha: .16), elevated),
+      textSecondary: text == null && background == null
+          ? fallback.textSecondary
+          : Color.lerp(foreground, surface, .4),
+      border: secondary == null && accent == null
+          ? fallback.border
+          : Color.alphaBlend(highlight.withValues(alpha: .16), elevated),
       accent: highlight,
       accentOn: accent == null ? fallback.accentOn : contrastingText(highlight),
       button: buttonColor,
-      buttonText: buttonText ?? (button == null ? fallback.buttonText : contrastingText(buttonColor)),
+      buttonText:
+          buttonText ??
+          (button == null ? fallback.buttonText : contrastingText(buttonColor)),
       success: isDark ? const Color(0xff5FBE85) : fallback.success,
       warning: isDark ? const Color(0xffE0B75B) : fallback.warning,
       danger: isDark ? const Color(0xffE5766B) : fallback.danger,
-      disabled: text == null && background == null ? fallback.disabled : Color.lerp(foreground, surface, .6),
+      disabled: text == null && background == null
+          ? fallback.disabled
+          : Color.lerp(foreground, surface, .6),
       scrim: isDark ? Colors.black87 : fallback.scrim,
     );
   }

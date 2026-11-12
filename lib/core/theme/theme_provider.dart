@@ -13,7 +13,10 @@ KomekciThemeStyle themeStyleFor(KomekciTheme theme) => switch (theme) {
 };
 
 /// Use a new API code when enabled; otherwise save an enabled legacy code.
-KomekciTheme? enabledThemeForStyle(Iterable<KomekciTheme> enabled, KomekciThemeStyle style) {
+KomekciTheme? enabledThemeForStyle(
+  Iterable<KomekciTheme> enabled,
+  KomekciThemeStyle style,
+) {
   final canonical = switch (style) {
     KomekciThemeStyle.gold => KomekciTheme.ivory,
     KomekciThemeStyle.blue => KomekciTheme.onyx,

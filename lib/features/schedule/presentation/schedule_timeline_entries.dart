@@ -58,10 +58,7 @@ List<_TimelineEntry> _buildTimeline(
         continue;
       }
       if (start.isAfter(cursor)) {
-        addFreeChunks(
-          cursor,
-          start.isBefore(window.end) ? start : window.end,
-        );
+        addFreeChunks(cursor, start.isBefore(window.end) ? start : window.end);
       }
       if (end.isAfter(cursor)) cursor = end;
     }

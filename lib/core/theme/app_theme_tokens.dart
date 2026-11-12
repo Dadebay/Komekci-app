@@ -232,8 +232,14 @@ ThemeData buildThemeData(AppThemeTokens t) {
     dividerColor: t.border,
     iconTheme: IconThemeData(color: t.textPrimary),
     textTheme: TextTheme(
-      displaySmall: TextStyle(fontWeight: FontWeight.w700, color: t.textPrimary),
-      headlineSmall: TextStyle(fontWeight: FontWeight.w700, color: t.textPrimary),
+      displaySmall: TextStyle(
+        fontWeight: FontWeight.w700,
+        color: t.textPrimary,
+      ),
+      headlineSmall: TextStyle(
+        fontWeight: FontWeight.w700,
+        color: t.textPrimary,
+      ),
       titleLarge: TextStyle(fontWeight: FontWeight.w600, color: t.textPrimary),
       titleMedium: TextStyle(fontWeight: FontWeight.w600, color: t.textPrimary),
       titleSmall: TextStyle(fontWeight: FontWeight.w600, color: t.textPrimary),
@@ -244,11 +250,21 @@ ThemeData buildThemeData(AppThemeTokens t) {
       bodyMedium: TextStyle(fontWeight: FontWeight.w400, color: t.textPrimary),
       labelLarge: TextStyle(fontWeight: FontWeight.w600, color: t.textPrimary),
     ),
-    appBarTheme: AppBarTheme(backgroundColor: t.surface, surfaceTintColor: t.surface, foregroundColor: t.textPrimary, elevation: 0),
-    filledButtonTheme: FilledButtonThemeData(
-      style: FilledButton.styleFrom(backgroundColor: t.button, foregroundColor: t.buttonText),
+    appBarTheme: AppBarTheme(
+      backgroundColor: t.surface,
+      surfaceTintColor: t.surface,
+      foregroundColor: t.textPrimary,
+      elevation: 0,
     ),
-    textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: t.accent)),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: t.button,
+        foregroundColor: t.buttonText,
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(foregroundColor: t.accent),
+    ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: t.textPrimary,
@@ -276,7 +292,13 @@ ThemeData buildThemeData(AppThemeTokens t) {
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
       backgroundColor: t.textPrimary,
-      contentTextStyle: TextStyle(fontFamily: appFontFamily, fontSize: 13.5, fontWeight: FontWeight.w600, height: 1.3, color: t.surface),
+      contentTextStyle: TextStyle(
+        fontFamily: appFontFamily,
+        fontSize: 13.5,
+        fontWeight: FontWeight.w600,
+        height: 1.3,
+        color: t.surface,
+      ),
       actionTextColor: t.accent,
       elevation: 6,
       insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -290,5 +312,6 @@ ThemeData buildThemeData(AppThemeTokens t) {
 }
 
 extension AppThemeContext on BuildContext {
-  AppThemeTokens get appTokens => Theme.of(this).extension<AppThemeTokens>() ?? goldTokens;
+  AppThemeTokens get appTokens =>
+      Theme.of(this).extension<AppThemeTokens>() ?? goldTokens;
 }

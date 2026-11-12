@@ -29,7 +29,9 @@ class SmsCodeListener {
   Future<String?> listen() async {
     if (kIsWeb || !Platform.isAndroid) return null;
     try {
-      final result = await SmartAuth.instance.getSmsWithUserConsentApi(matcher: _sixDigits);
+      final result = await SmartAuth.instance.getSmsWithUserConsentApi(
+        matcher: _sixDigits,
+      );
       final code = result.data?.code;
       return code != null && code.length == 6 ? code : null;
     } catch (error) {

@@ -154,11 +154,15 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 runSpacing: 8,
                 children: [
                   _ServicesPill(
-                    label: AppStrings.servicesServices2(services.length).select(language),
+                    label: AppStrings.servicesServices2(
+                      services.length,
+                    ).select(language),
                     color: tokens.accent,
                   ),
                   _ServicesPill(
-                    label: AppStrings.servicesVisible(services.length - hidden).select(language),
+                    label: AppStrings.servicesVisible(
+                      services.length - hidden,
+                    ).select(language),
                     color: tokens.success,
                   ),
                   if (hidden > 0)

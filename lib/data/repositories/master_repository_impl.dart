@@ -307,7 +307,9 @@ class MasterRepository {
   Future<ClientSummary> setClientStatus(String id, String status) async =>
       ClientSummary.fromJson(
         asMap(
-          unwrapData(await _api.patch('/me/clients/$id', json: {'status': status})),
+          unwrapData(
+            await _api.patch('/me/clients/$id', json: {'status': status}),
+          ),
         ),
       );
 

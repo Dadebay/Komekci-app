@@ -46,9 +46,11 @@ Future<TimeOfDay?> showClearTimePicker(
               ),
               const SizedBox(height: 16),
               Text(
-                title ??
-                    AppStrings.cabinetSelectTime.select(language),
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                title ?? AppStrings.cabinetSelectTime.select(language),
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 14),
               Container(
@@ -95,14 +97,18 @@ Future<TimeOfDay?> showClearTimePicker(
                         ),
                         const Text(
                           ':',
-                          style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                         Expanded(
                           child: _TimeWheel(
                             count: 12,
                             value: minute ~/ 5,
                             label: (i) => (i * 5).toString().padLeft(2, '0'),
-                            onChanged: (i) => setSheetState(() => minute = i * 5),
+                            onChanged: (i) =>
+                                setSheetState(() => minute = i * 5),
                           ),
                         ),
                       ],
@@ -180,7 +186,9 @@ class _TimeWheelState extends State<_TimeWheel> {
                 widget.label(i),
                 style: TextStyle(
                   fontSize: 24,
-                  fontWeight: i == widget.value ? FontWeight.w800 : FontWeight.w500,
+                  fontWeight: i == widget.value
+                      ? FontWeight.w800
+                      : FontWeight.w500,
                   color: i == widget.value
                       ? tokens.textPrimary
                       : tokens.textSecondary,

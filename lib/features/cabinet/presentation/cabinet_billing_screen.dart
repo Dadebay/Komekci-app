@@ -32,7 +32,8 @@ class BillingScreen extends StatelessWidget {
                         : Column(
                             children: [
                               Text(
-                                AppStrings.cabinetCouldNotLoadBillingDetails.select(language),
+                                AppStrings.cabinetCouldNotLoadBillingDetails
+                                    .select(language),
                               ),
                               TextButton(
                                 onPressed: billing.refresh,
@@ -90,7 +91,9 @@ class BillingScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              AppStrings.cabinetSubscriptionPrice.select(language),
+                              AppStrings.cabinetSubscriptionPrice.select(
+                                language,
+                              ),
                               style: TextStyle(
                                 fontSize: 13,
                                 color: tokens.textSecondary,
@@ -182,7 +185,9 @@ class BillingScreen extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            AppStrings.cabinetNoPaymentsYetTheyWill.select(language),
+                            AppStrings.cabinetNoPaymentsYetTheyWill.select(
+                              language,
+                            ),
                             style: TextStyle(
                               fontSize: 13,
                               color: tokens.textSecondary,
@@ -218,6 +223,9 @@ String _renewalText(BillingProvider billing, AppLanguage language) {
         return AppStrings.cabinetYourSubscriptionIsActive.select(language);
       }
       final days = next.difference(DateTime.now()).inDays;
-      return AppStrings.cabinetYourSubscriptionWillAutomaticallyRenew(days, formatDate(next)).select(language);
+      return AppStrings.cabinetYourSubscriptionWillAutomaticallyRenew(
+        days,
+        formatDate(next),
+      ).select(language);
   }
 }

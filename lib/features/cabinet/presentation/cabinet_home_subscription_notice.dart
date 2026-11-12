@@ -37,8 +37,12 @@ class _SubscriptionNotice extends StatelessWidget {
               Expanded(
                 child: Text(
                   suspended
-                      ? AppStrings.cabinetSubscriptionIsNotActiveNew.select(language)
-                      : AppStrings.cabinetYourSubscriptionPaymentIsDue.select(language),
+                      ? AppStrings.cabinetSubscriptionIsNotActiveNew.select(
+                          language,
+                        )
+                      : AppStrings.cabinetYourSubscriptionPaymentIsDue.select(
+                          language,
+                        ),
                   style: const TextStyle(fontSize: 12.5, height: 1.4),
                 ),
               ),

@@ -29,7 +29,11 @@ class _ClosedTimeRow extends StatelessWidget {
           ),
           child: Row(
             children: [
-              AppIcon(Icons.lock_clock_outlined, size: 20, color: tokens.warning),
+              AppIcon(
+                Icons.lock_clock_outlined,
+                size: 20,
+                color: tokens.warning,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -37,19 +41,30 @@ class _ClosedTimeRow extends StatelessWidget {
                   children: [
                     Text(
                       '${formatTime(TimeOfDay.fromDateTime(closed.startsAt))} – ${formatTime(TimeOfDay.fromDateTime(closed.endsAt))} · ${AppStrings.scheduleBlockedTime.select(language)}',
-                      style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: tokens.textPrimary),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: tokens.textPrimary,
+                      ),
                     ),
                     if (closed.note.isNotEmpty)
                       Text(
                         closed.note,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: tokens.textSecondary,
+                        ),
                       ),
                   ],
                 ),
               ),
-              AppIcon(Icons.lock_open_outlined, size: 18, color: tokens.warning),
+              AppIcon(
+                Icons.lock_open_outlined,
+                size: 18,
+                color: tokens.warning,
+              ),
             ],
           ),
         ),

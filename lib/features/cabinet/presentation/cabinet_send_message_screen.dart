@@ -83,7 +83,9 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                       customerProvider.customers.isEmpty) ...[
                     const SizedBox(height: 10),
                     RetryErrorState(
-                      title: AppStrings.cabinetCouldNotLoadClients.select(language),
+                      title: AppStrings.cabinetCouldNotLoadClients.select(
+                        language,
+                      ),
                       text: AppStrings.cabinetPleaseTryAgain.select(language),
                       retryLabel: AppStrings.profileTryAgain.select(language),
                       onRetry: customerProvider.load,
@@ -94,18 +96,27 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                       icon: Icons.info_outline,
                       text: customerProvider.customers.isEmpty
                           ? _pushChannel
-                                ? AppStrings.cabinetTheClientListIsEmpty.select(language)
-                                : AppStrings.cabinetTheClientListIsEmpty2.select(language)
+                                ? AppStrings.cabinetTheClientListIsEmpty.select(
+                                    language,
+                                  )
+                                : AppStrings.cabinetTheClientListIsEmpty2
+                                      .select(language)
                           : _pushChannel
-                          ? AppStrings.cabinetClientsAreListedButTheir.select(language)
-                          : AppStrings.cabinetTheseClientsHaveNoPhone.select(language),
+                          ? AppStrings.cabinetClientsAreListedButTheir.select(
+                              language,
+                            )
+                          : AppStrings.cabinetTheseClientsHaveNoPhone.select(
+                              language,
+                            ),
                     ),
                   ],
                   if (_recipients.length > 50) ...[
                     const SizedBox(height: 10),
                     _InfoBanner(
                       icon: Icons.info_outline,
-                      text: AppStrings.cabinetChooseUpTo50Clients.select(language),
+                      text: AppStrings.cabinetChooseUpTo50Clients.select(
+                        language,
+                      ),
                     ),
                   ],
                   _MessageAudienceOptions(
@@ -183,7 +194,8 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                               children: [
                                 Text(
                                   _pushChannel
-                                      ? AppStrings.cabinetPushNotification.select(language)
+                                      ? AppStrings.cabinetPushNotification
+                                            .select(language)
                                       : 'SMS',
                                   style: const TextStyle(
                                     fontSize: 14,

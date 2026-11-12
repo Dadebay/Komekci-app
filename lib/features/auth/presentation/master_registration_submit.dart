@@ -24,7 +24,8 @@ extension _MasterRegistrationSubmit on _MasterRegistrationScreenState {
     if (!nicknamePattern.hasMatch(nickname)) {
       update(() {
         _showErrors = true;
-        _serverErrors[_MasterRegistrationScreenState._nicknameIndex] = AppStrings.auth320CharsLowercaseLetters.select(language);
+        _serverErrors[_MasterRegistrationScreenState._nicknameIndex] =
+            AppStrings.auth320CharsLowercaseLetters.select(language);
       });
       return;
     }
@@ -64,7 +65,8 @@ extension _MasterRegistrationSubmit on _MasterRegistrationScreenState {
           _submitting = false;
           _nicknameSuggestions = check.suggestions;
           _nicknameState = _NicknameState.taken;
-          _serverErrors[_MasterRegistrationScreenState._nicknameIndex] = AppStrings.authThisNicknameIsTaken.select(language);
+          _serverErrors[_MasterRegistrationScreenState._nicknameIndex] =
+              AppStrings.authThisNicknameIsTaken.select(language);
         });
         return;
       }

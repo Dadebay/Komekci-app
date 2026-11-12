@@ -385,9 +385,7 @@ class _PhoneTakenNoticeState extends State<PhoneTakenNotice> {
                         color: tokens.surface,
                       ),
                     )
-                  : Text(
-                      AppStrings.authSignInWithThisNumber.select(language),
-                    ),
+                  : Text(AppStrings.authSignInWithThisNumber.select(language)),
             ),
           ),
           if (_message != null) _FieldError(_message!),

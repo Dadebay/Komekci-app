@@ -97,7 +97,9 @@ void _openAppointmentActions(
                 icon: Icons.person_off_outlined,
                 danger: true,
                 title: AppStrings.scheduleMarkAsNoShow.select(language),
-                subtitle: AppStrings.scheduleCustomerDidNotShowUp.select(language),
+                subtitle: AppStrings.scheduleCustomerDidNotShowUp.select(
+                  language,
+                ),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   runApi(
@@ -130,7 +132,9 @@ void _openAppointmentActions(
               _SheetAction(
                 icon: Icons.calendar_month_outlined,
                 title: AppStrings.scheduleChangeTime.select(language),
-                subtitle: AppStrings.scheduleMoveThisBookingToAnother.select(language),
+                subtitle: AppStrings.scheduleMoveThisBookingToAnother.select(
+                  language,
+                ),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _rescheduleAppointment(context, appointment);
@@ -151,7 +155,9 @@ void _openAppointmentActions(
               _SheetAction(
                 icon: Icons.person_outline,
                 title: AppStrings.scheduleGoToCustomerProfile.select(language),
-                subtitle: AppStrings.scheduleViewCustomerDetails.select(language),
+                subtitle: AppStrings.scheduleViewCustomerDetails.select(
+                  language,
+                ),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   Navigator.push(
@@ -176,4 +182,3 @@ void _openAppointmentActions(
     ),
   );
 }
-

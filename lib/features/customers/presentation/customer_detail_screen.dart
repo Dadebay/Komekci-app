@@ -58,7 +58,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         child: _InfoTile(
                           icon: Icons.content_cut,
                           accent: tokens.accent,
-                          label: AppStrings.customersLastService.select(language),
+                          label: AppStrings.customersLastService.select(
+                            language,
+                          ),
                           value: customer.lastCompletedVisit == null
                               ? '—'
                               : customer.lastCompletedVisit!.serviceName,
@@ -68,17 +70,20 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       Expanded(
                         child: _InfoTile(
                           icon: Icons.calendar_month_outlined,
-                          accent: _statusColor(CustomerStatus.newClient, tokens),
-                          label: AppStrings.customersNextBooking.select(language),
+                          accent: _statusColor(
+                            CustomerStatus.newClient,
+                            tokens,
+                          ),
+                          label: AppStrings.customersNextBooking.select(
+                            language,
+                          ),
                           value: customer.nextVisit == null
                               ? AppStrings.customersNone.select(language)
                               : '${formatDate(customer.nextVisit!)} • ${formatTime(TimeOfDay.fromDateTime(customer.nextVisit!))}',
                           chevron: true,
                           onTap: () => Navigator.push(
                             context,
-                            pageRoute(
-                              NewAppointmentScreen(customer: customer),
-                            ),
+                            pageRoute(NewAppointmentScreen(customer: customer)),
                           ),
                         ),
                       ),
@@ -177,7 +182,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     EmptyState(
                       icon: Icons.event_busy_outlined,
                       title: AppStrings.customersNoVisitsYet.select(language),
-                      text: AppStrings.customersThisCustomerHasNotVisited.select(language),
+                      text: AppStrings.customersThisCustomerHasNotVisited
+                          .select(language),
                     )
                   else
                     ...recentVisits.map(

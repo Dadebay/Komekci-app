@@ -86,14 +86,18 @@ Future<void> _showFreeTimeActions(
                 action: _FreeTimeAction.addAppointment,
                 icon: Icons.person_add_alt_1,
                 title: AppStrings.scheduleAddAppointment.select(language),
-                subtitle: AppStrings.scheduleBookAClientIntoThis.select(language),
+                subtitle: AppStrings.scheduleBookAClientIntoThis.select(
+                  language,
+                ),
               ),
               Divider(height: 1, color: tokens.border),
               option(
                 action: _FreeTimeAction.reserveForSelf,
                 icon: Icons.schedule_outlined,
                 title: AppStrings.scheduleBlockTimeForMyself.select(language),
-                subtitle: AppStrings.scheduleKeepThisTimeForPersonal.select(language),
+                subtitle: AppStrings.scheduleKeepThisTimeForPersonal.select(
+                  language,
+                ),
               ),
             ],
           ),
@@ -110,9 +114,9 @@ Future<void> _showFreeTimeActions(
         DateTime.now(),
         context.read<ScheduleProvider>().schedule?.minLeadMin ?? 30,
       )) {
-        AppToast.of(context).error(
-          AppStrings.scheduleItIsTooLateTo.select(language),
-        );
+        AppToast.of(
+          context,
+        ).error(AppStrings.scheduleItIsTooLateTo.select(language));
         break;
       }
       await _NewSlotAppointmentSheet.show(context, start: start, end: end);

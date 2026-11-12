@@ -13,7 +13,8 @@ String apiErrorMessage(Object error, AppLanguage language) {
     if (error.isNetwork) {
       return AppStrings.sharedNoInternetConnectionPleaseTry.select(language);
     }
-    if (error.code == ApiErrors.rateLimited && error.retryAfterSeconds != null) {
+    if (error.code == ApiErrors.rateLimited &&
+        error.retryAfterSeconds != null) {
       final s = error.retryAfterSeconds!;
       return AppStrings.sharedTooManyAttemptsTryAgain(s).select(language);
     }
@@ -25,7 +26,9 @@ String apiErrorMessage(Object error, AppLanguage language) {
 /// `+993` + the eight digits found in [input] (any spacing/prefix).
 String toApiPhone(String input) {
   var digits = input.replaceAll(RegExp(r'\D'), '');
-  if (digits.startsWith('993') && digits.length > 8) digits = digits.substring(3);
+  if (digits.startsWith('993') && digits.length > 8) {
+    digits = digits.substring(3);
+  }
   return '+993$digits';
 }
 
@@ -52,7 +55,10 @@ String? socialUrl(String input, {required String host, bool atPrefix = false}) {
 
 /// Runs [action]; an `ApiException` (or any failure) is shown as a snackbar
 /// in the user's language. Resolves true when the action succeeded.
-Future<bool> runApi(BuildContext context, Future<void> Function() action) async {
+Future<bool> runApi(
+  BuildContext context,
+  Future<void> Function() action,
+) async {
   final language = context.read<LanguageProvider>().language;
   final toast = AppToast.of(context);
   try {

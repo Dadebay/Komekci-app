@@ -111,7 +111,10 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                 Text(
                   widget.onboarding
                       ? AppStrings.authTheAmountGoesToYour.select(language)
-                      : AppStrings.authMoneyGoesToYourBalance(fee, cur).select(language),
+                      : AppStrings.authMoneyGoesToYourBalance(
+                          fee,
+                          cur,
+                        ).select(language),
                   style: TextStyle(
                     color: tokens.textSecondary,
                     fontSize: 12.5,
@@ -206,7 +209,10 @@ class _MasterSubscriptionScreenState extends State<MasterSubscriptionScreen> {
                         ),
                       ),
                       Text(
-                        AppStrings.authForMonth(months, months == 1 ? '' : 's').select(language),
+                        AppStrings.authForMonth(
+                          months,
+                          months == 1 ? '' : 's',
+                        ).select(language),
                         style: TextStyle(
                           fontSize: 11.5,
                           color: tokens.textSecondary,

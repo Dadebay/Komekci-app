@@ -1,6 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-
 /// Client's "Profil" bottom-nav tab — a profile summary card that opens
 /// [ClientEditProfileScreen], and a menu of real destinations (no stubs):
 /// connected masters, notification preferences, appearance, language and
@@ -17,8 +16,11 @@ class ClientProfile extends StatelessWidget {
     final theme = context.watch<ThemeProvider>().selected;
     final mastersCount = context.watch<ClientMastersProvider>().accepted.length;
 
-    final notificationPrefs = context.watch<AuthProvider>().me?.notificationPrefs ?? const <String, bool>{};
-    final notificationsOn = notificationPrefs.isEmpty || notificationPrefs.values.any((v) => v);
+    final notificationPrefs =
+        context.watch<AuthProvider>().me?.notificationPrefs ??
+        const <String, bool>{};
+    final notificationsOn =
+        notificationPrefs.isEmpty || notificationPrefs.values.any((v) => v);
     return Builder(
       builder: (context) {
         final accountRows = <Widget>[
@@ -26,13 +28,19 @@ class ClientProfile extends StatelessWidget {
             icon: Icons.groups_outlined,
             title: AppStrings.profileMyMasters.select(language),
             subtitle: '$mastersCount',
-            onTap: () => Navigator.push(context, pageRoute(const MyMastersScreen())),
+            onTap: () =>
+                Navigator.push(context, pageRoute(const MyMastersScreen())),
           ),
           _ClientProfileMenuRow(
             icon: Icons.notifications_none,
             title: AppStrings.profileNotifications.select(language),
-            subtitle: notificationsOn ? AppStrings.profileOn.select(language) : AppStrings.profileOff.select(language),
-            onTap: () => Navigator.push(context, pageRoute(const ClientNotificationSettingsScreen())),
+            subtitle: notificationsOn
+                ? AppStrings.profileOn.select(language)
+                : AppStrings.profileOff.select(language),
+            onTap: () => Navigator.push(
+              context,
+              pageRoute(const ClientNotificationSettingsScreen()),
+            ),
           ),
         ];
         final appRows = <Widget>[
@@ -54,7 +62,8 @@ class ClientProfile extends StatelessWidget {
             icon: Icons.help_outline,
             title: AppStrings.profileSupport.select(language),
             subtitle: AppStrings.profileFaq.select(language),
-            onTap: () => Navigator.push(context, pageRoute(const ClientSupportScreen())),
+            onTap: () =>
+                Navigator.push(context, pageRoute(const ClientSupportScreen())),
           ),
         ];
 
@@ -65,17 +74,36 @@ class ClientProfile extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 120),
               children: [
-                Text(AppStrings.profileProfile.select(language), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, height: 1.1)),
+                Text(
+                  AppStrings.profileProfile.select(language),
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    height: 1.1,
+                  ),
+                ),
                 const SizedBox(height: 18),
                 _ClientProfileCard(
-                  onTap: () => Navigator.push(context, pageRoute(const ClientEditProfileScreen())),
+                  onTap: () => Navigator.push(
+                    context,
+                    pageRoute(const ClientEditProfileScreen()),
+                  ),
                 ),
                 const SizedBox(height: 24),
-                _ClientProfileGroup(title: AppStrings.profileAccount.select(language), children: accountRows),
+                _ClientProfileGroup(
+                  title: AppStrings.profileAccount.select(language),
+                  children: accountRows,
+                ),
                 const SizedBox(height: 20),
-                _ClientProfileGroup(title: AppStrings.profileApp.select(language), children: appRows),
+                _ClientProfileGroup(
+                  title: AppStrings.profileApp.select(language),
+                  children: appRows,
+                ),
                 const SizedBox(height: 20),
-                _ClientProfileGroup(title: AppStrings.profileHelp.select(language), children: helpRows),
+                _ClientProfileGroup(
+                  title: AppStrings.profileHelp.select(language),
+                  children: helpRows,
+                ),
                 const SizedBox(height: 20),
                 _ClientLogoutButton(t: t),
                 Center(
@@ -83,13 +111,22 @@ class ClientProfile extends StatelessWidget {
                     onPressed: () => _confirmDeleteAccount(context),
                     child: Text(
                       AppStrings.profileDeleteAccount.select(language),
-                      style: TextStyle(color: tokens.textSecondary, fontSize: 12),
+                      style: TextStyle(
+                        color: tokens.textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 Center(
-                  child: Text('KÖMEKÇI · v1.0.0', style: TextStyle(fontSize: 11.5, color: tokens.textSecondary)),
+                  child: Text(
+                    'KÖMEKÇI · v1.0.0',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: tokens.textSecondary,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -100,9 +137,7 @@ class ClientProfile extends StatelessWidget {
   }
 }
 
-String _themeName(KomekciTheme theme) => switch (
-  themeStyleFor(theme)
-) {
+String _themeName(KomekciTheme theme) => switch (themeStyleFor(theme)) {
   KomekciThemeStyle.gold => 'Ivory',
   KomekciThemeStyle.blue => 'Onyx',
   KomekciThemeStyle.red => 'Champagne',

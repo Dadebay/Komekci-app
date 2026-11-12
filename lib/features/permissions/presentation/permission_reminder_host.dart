@@ -15,7 +15,12 @@ enum _PermissionAction { later, allow, settings }
 /// Reminds signed-in users about missing permissions while the app is open.
 /// Closing the dialog starts a fresh 30-second wait.
 class PermissionReminderHost extends StatefulWidget {
-  const PermissionReminderHost({super.key, required this.child, required this.needsCalendar, this.permissions = const DeviceRequiredPermissions()});
+  const PermissionReminderHost({
+    super.key,
+    required this.child,
+    required this.needsCalendar,
+    this.permissions = const DeviceRequiredPermissions(),
+  });
 
   final Widget child;
   final bool needsCalendar;
@@ -25,7 +30,8 @@ class PermissionReminderHost extends StatefulWidget {
   State<PermissionReminderHost> createState() => _PermissionReminderHostState();
 }
 
-class _PermissionReminderHostState extends State<PermissionReminderHost> with WidgetsBindingObserver {
+class _PermissionReminderHostState extends State<PermissionReminderHost>
+    with WidgetsBindingObserver {
   static const _interval = Duration(seconds: 30);
   Timer? _timer;
   bool _checking = false;
@@ -59,7 +65,9 @@ class _PermissionReminderHostState extends State<PermissionReminderHost> with Wi
     _checking = true;
     try {
       if (!_canPrompt) return;
-      final missing = await widget.permissions.missing(needsCalendar: widget.needsCalendar);
+      final missing = await widget.permissions.missing(
+        needsCalendar: widget.needsCalendar,
+      );
       if (!_canPrompt || !missing.any) return;
       final action = await _showReminder(missing);
       if (!mounted) return;
@@ -91,7 +99,10 @@ class _PermissionReminderHostState extends State<PermissionReminderHost> with Wi
         insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 400, maxHeight: MediaQuery.sizeOf(dialogContext).height * .92),
+          constraints: BoxConstraints(
+            maxWidth: 400,
+            maxHeight: MediaQuery.sizeOf(dialogContext).height * .92,
+          ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(22, 24, 22, 14),
             child: Column(
@@ -106,30 +117,54 @@ class _PermissionReminderHostState extends State<PermissionReminderHost> with Wi
                           width: 54,
                           height: 54,
                           alignment: Alignment.center,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: tokens.accent.withValues(alpha: .12)),
-                          child: AppIcon(Icons.shield_outlined, size: 27, color: tokens.accent),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: tokens.accent.withValues(alpha: .12),
+                          ),
+                          child: AppIcon(
+                            Icons.shield_outlined,
+                            size: 27,
+                            color: tokens.accent,
+                          ),
                         ),
                         const SizedBox(height: 14),
                         Semantics(
                           header: true,
                           child: Text(
-                            AppStrings.permissionsPermissionsNeeded.select(language),
-                            style: TextStyle(fontFamily: 'Gilroy', fontSize: 20, fontWeight: FontWeight.w700, color: tokens.textPrimary),
+                            AppStrings.permissionsPermissionsNeeded.select(
+                              language,
+                            ),
+                            style: TextStyle(
+                              fontFamily: 'Gilroy',
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: tokens.textPrimary,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
                         if (missing.notifications)
                           _PermissionRow(
                             icon: Icons.notifications_none,
-                            title: AppStrings.permissionsAllowNotifications.select(language),
-                            detail: AppStrings.permissionsNewBookingsAndRemindersArrive.select(language),
+                            title: AppStrings.permissionsAllowNotifications
+                                .select(language),
+                            detail: AppStrings
+                                .permissionsNewBookingsAndRemindersArrive
+                                .select(language),
                           ),
-                        if (missing.notifications && missing.calendar) ...[const SizedBox(height: 14), Divider(height: 1, color: tokens.border), const SizedBox(height: 14)],
+                        if (missing.notifications && missing.calendar) ...[
+                          const SizedBox(height: 14),
+                          Divider(height: 1, color: tokens.border),
+                          const SizedBox(height: 14),
+                        ],
                         if (missing.calendar)
                           _PermissionRow(
                             icon: Icons.calendar_month_outlined,
-                            title: AppStrings.permissionsAllowCalendarAccess.select(language),
-                            detail: AppStrings.permissionsBookingsAndOneHourReminders.select(language),
+                            title: AppStrings.permissionsAllowCalendarAccess
+                                .select(language),
+                            detail: AppStrings
+                                .permissionsBookingsAndOneHourReminders
+                                .select(language),
                           ),
                       ],
                     ),
@@ -140,8 +175,14 @@ class _PermissionReminderHostState extends State<PermissionReminderHost> with Wi
                   width: double.infinity,
                   height: 52,
                   child: FilledButton(
-                    style: FilledButton.styleFrom(backgroundColor: tokens.button, foregroundColor: tokens.buttonText, shape: const StadiumBorder()),
-                    onPressed: () => Navigator.of(dialogContext).pop(_PermissionAction.allow),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: tokens.button,
+                      foregroundColor: tokens.buttonText,
+                      shape: const StadiumBorder(),
+                    ),
+                    onPressed: () => Navigator.of(
+                      dialogContext,
+                    ).pop(_PermissionAction.allow),
                     child: Text(AppStrings.permissionsAllow.select(language)),
                   ),
                 ),
@@ -150,14 +191,22 @@ class _PermissionReminderHostState extends State<PermissionReminderHost> with Wi
                   children: [
                     Expanded(
                       child: TextButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(_PermissionAction.settings),
-                        child: Text(AppStrings.profileSettings.select(language)),
+                        onPressed: () => Navigator.of(
+                          dialogContext,
+                        ).pop(_PermissionAction.settings),
+                        child: Text(
+                          AppStrings.profileSettings.select(language),
+                        ),
                       ),
                     ),
                     Expanded(
                       child: TextButton(
-                        style: TextButton.styleFrom(foregroundColor: tokens.textSecondary),
-                        onPressed: () => Navigator.of(dialogContext).pop(_PermissionAction.later),
+                        style: TextButton.styleFrom(
+                          foregroundColor: tokens.textSecondary,
+                        ),
+                        onPressed: () => Navigator.of(
+                          dialogContext,
+                        ).pop(_PermissionAction.later),
                         child: Text(AppStrings.requestsLater.select(language)),
                       ),
                     ),

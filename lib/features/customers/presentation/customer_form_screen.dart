@@ -74,7 +74,10 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
       _saving = true;
       _error = null;
     });
-    final ok = await runApi(context, () => provider.saveNote(widget.customer!.id, _noteController.text.trim()));
+    final ok = await runApi(
+      context,
+      () => provider.saveNote(widget.customer!.id, _noteController.text.trim()),
+    );
     if (!mounted) return;
     if (ok) {
       navigator.pop();
@@ -93,7 +96,9 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
       icon: Icons.delete_outline,
       danger: true,
       title: AppStrings.customersDeleteCustomer.select(language),
-      message: AppStrings.customersWillBeRemovedFromYour(customer.name).select(language),
+      message: AppStrings.customersWillBeRemovedFromYour(
+        customer.name,
+      ).select(language),
       confirmLabel: AppStrings.servicesDelete.select(language),
       cancelLabel: AppStrings.servicesCancel.select(language),
     );
@@ -121,80 +126,87 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
         bottom: false,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                children: [
-                  _FormBanner(
-                    title: _isEditing
-                        ? AppStrings.customersPrivateNote.select(language)
-                        : AppStrings.customersANewCustomerIsAdded.select(language),
-                    subtitle: _isEditing
-                        ? AppStrings.customersNamePhoneAndPhotoCome.select(language)
-                        : AppStrings.customersEnterANameAndPhone.select(language),
-                  ),
-                  const SizedBox(height: 22),
-                  if (_isEditing)
-                    Center(child: _CustomerAvatar(customer: widget.customer!, radius: 46)),
-                  if (_isEditing) const SizedBox(height: 24),
-                  _FieldLabel(text: AppStrings.customersName.select(language), required: !_isEditing),
-                  const SizedBox(height: 8),
-                  _FormField(
-                    controller: _nameController,
-                    hint: AppStrings.customersEnterCustomerName.select(language),
-                    fillColor: tokens.surface,
-                    invalid: _showErrors && !_nameOk,
-                    enabled: !_isEditing,
-                    onChanged: () => setState(() {}),
-                  ),
-                  const SizedBox(height: 18),
-                  _FieldLabel(
-                    text: AppStrings.customersPhoneNumber.select(language),
-                    required: !_isEditing,
-                  ),
-                  const SizedBox(height: 8),
-                  _FormField(
-                    controller: _phoneController,
-                    hint: '65 123456',
-                    fillColor: tokens.surface,
-                    keyboardType: TextInputType.phone,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => FocusScope.of(context).unfocus(),
-                    prefixIcon: _isEditing ? null : phonePrefix(context, fontSize: 14),
-                    inputFormatters: _isEditing ? null : [_PhoneNumberFormatter()],
-                    invalid: _showErrors && !_phoneOk,
-                    enabled: !_isEditing,
-                    onChanged: () => setState(() {}),
-                  ),
-                  if (_isEditing) ...[
-                    const SizedBox(height: 20),
-                    _FieldLabel(
-                      text: AppStrings.bookingNote.select(language),
-                      optionalLabel: AppStrings.customersOptional.select(language),
+          children: [
+            _FormBanner(
+              title: _isEditing
+                  ? AppStrings.customersPrivateNote.select(language)
+                  : AppStrings.customersANewCustomerIsAdded.select(language),
+              subtitle: _isEditing
+                  ? AppStrings.customersNamePhoneAndPhotoCome.select(language)
+                  : AppStrings.customersEnterANameAndPhone.select(language),
+            ),
+            const SizedBox(height: 22),
+            if (_isEditing)
+              Center(
+                child: _CustomerAvatar(customer: widget.customer!, radius: 46),
+              ),
+            if (_isEditing) const SizedBox(height: 24),
+            _FieldLabel(
+              text: AppStrings.customersName.select(language),
+              required: !_isEditing,
+            ),
+            const SizedBox(height: 8),
+            _FormField(
+              controller: _nameController,
+              hint: AppStrings.customersEnterCustomerName.select(language),
+              fillColor: tokens.surface,
+              invalid: _showErrors && !_nameOk,
+              enabled: !_isEditing,
+              onChanged: () => setState(() {}),
+            ),
+            const SizedBox(height: 18),
+            _FieldLabel(
+              text: AppStrings.customersPhoneNumber.select(language),
+              required: !_isEditing,
+            ),
+            const SizedBox(height: 8),
+            _FormField(
+              controller: _phoneController,
+              hint: '65 123456',
+              fillColor: tokens.surface,
+              keyboardType: TextInputType.phone,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => FocusScope.of(context).unfocus(),
+              prefixIcon: _isEditing
+                  ? null
+                  : phonePrefix(context, fontSize: 14),
+              inputFormatters: _isEditing ? null : [_PhoneNumberFormatter()],
+              invalid: _showErrors && !_phoneOk,
+              enabled: !_isEditing,
+              onChanged: () => setState(() {}),
+            ),
+            if (_isEditing) ...[
+              const SizedBox(height: 20),
+              _FieldLabel(
+                text: AppStrings.bookingNote.select(language),
+                optionalLabel: AppStrings.customersOptional.select(language),
+              ),
+              const SizedBox(height: 8),
+              _FormField(
+                controller: _noteController,
+                hint: AppStrings.customersAddANoteAboutThis.select(language),
+                fillColor: tokens.surface,
+                maxLines: 4,
+                maxLength: 2000,
+                onChanged: () => setState(() {}),
+              ),
+              const SizedBox(height: 18),
+              Center(
+                child: TextButton(
+                  onPressed: _confirmDelete,
+                  child: Text(
+                    AppStrings.customersDeleteCustomer2.select(language),
+                    style: TextStyle(
+                      color: tokens.danger,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13.5,
                     ),
-                    const SizedBox(height: 8),
-                    _FormField(
-                      controller: _noteController,
-                      hint: AppStrings.customersAddANoteAboutThis.select(language),
-                      fillColor: tokens.surface,
-                      maxLines: 4,
-                      maxLength: 2000,
-                      onChanged: () => setState(() {}),
-                    ),
-                    const SizedBox(height: 18),
-                    Center(
-                      child: TextButton(
-                        onPressed: _confirmDelete,
-                        child: Text(
-                          AppStrings.customersDeleteCustomer2.select(language),
-                          style: TextStyle(
-                            color: tokens.danger,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 13.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                  if (_error != null) _FieldError(_error!),
-                ],
+                  ),
+                ),
+              ),
+            ],
+            if (_error != null) _FieldError(_error!),
+          ],
         ),
       ),
       bottomNavigationBar: keyboardOpen
@@ -219,7 +231,9 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
                     TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: Text(
-                        AppStrings.customersGoBackWithoutSaving.select(language),
+                        AppStrings.customersGoBackWithoutSaving.select(
+                          language,
+                        ),
                         style: TextStyle(
                           color: tokens.accent,
                           fontWeight: FontWeight.w600,

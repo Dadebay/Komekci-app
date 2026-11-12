@@ -5,7 +5,9 @@ import 'package:komekci/core/localization/language_provider.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  testWidgets('role selection fits a short phone and remains scrollable', (tester) async {
+  testWidgets('role selection fits a short phone and remains scrollable', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(320, 480);
     tester.view.devicePixelRatio = 1;
     addTearDown(() {
@@ -24,7 +26,10 @@ void main() {
     expect(tester.takeException(), isNull);
     final scrollable = tester.state<ScrollableState>(find.byType(Scrollable));
     expect(scrollable.position.maxScrollExtent, greaterThan(0));
-    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -180));
+    await tester.drag(
+      find.byType(SingleChildScrollView),
+      const Offset(0, -180),
+    );
     await tester.pump();
     expect(scrollable.position.pixels, greaterThan(0));
     expect(tester.takeException(), isNull);

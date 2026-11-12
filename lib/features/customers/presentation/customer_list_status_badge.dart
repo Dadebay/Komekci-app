@@ -1,7 +1,11 @@
 part of '../../../app/komekci_app.dart';
 
 class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.status, required this.language, this.onTap});
+  const _StatusBadge({
+    required this.status,
+    required this.language,
+    this.onTap,
+  });
   final CustomerStatus status;
   final AppLanguage language;
 
@@ -24,7 +28,11 @@ class _StatusBadge extends StatelessWidget {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AppIcon(_statusIcon(status), size: 12, color: _statusColor(status, context.appTokens)),
+        AppIcon(
+          _statusIcon(status),
+          size: 12,
+          color: _statusColor(status, context.appTokens),
+        ),
         const SizedBox(width: 4),
         Text(
           _statusLabel(status, language),
@@ -36,7 +44,11 @@ class _StatusBadge extends StatelessWidget {
         ),
         if (onTap != null) ...[
           const SizedBox(width: 2),
-          AppIcon(Icons.expand_more, size: 13, color: _statusColor(status, context.appTokens)),
+          AppIcon(
+            Icons.expand_more,
+            size: 13,
+            color: _statusColor(status, context.appTokens),
+          ),
         ],
       ],
     ),
@@ -58,7 +70,11 @@ class _StatusPill extends StatelessWidget {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AppIcon(_statusIcon(status), size: 14, color: _statusColor(status, context.appTokens)),
+        AppIcon(
+          _statusIcon(status),
+          size: 14,
+          color: _statusColor(status, context.appTokens),
+        ),
         const SizedBox(width: 6),
         Text(
           _statusLabel(status, language),
@@ -69,7 +85,11 @@ class _StatusPill extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 2),
-        AppIcon(Icons.expand_more, size: 14, color: _statusColor(status, context.appTokens)),
+        AppIcon(
+          Icons.expand_more,
+          size: 14,
+          color: _statusColor(status, context.appTokens),
+        ),
       ],
     ),
   );
@@ -108,14 +128,20 @@ Future<void> _pickCustomerStatus(
                     children: [
                       Text(
                         AppStrings.customersCustomerStatus.select(language),
-                        style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         customer.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 13, color: tokens.textSecondary),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: tokens.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -143,11 +169,16 @@ Future<void> _pickCustomerStatus(
   await runApi(context, () => provider.setStatus(customer.id, picked));
 }
 
-String _statusHint(CustomerStatus status, AppLanguage language) => switch (status) {
-  CustomerStatus.vip => AppStrings.customersPriorityClient.select(language),
-  CustomerStatus.regular => AppStrings.customersVisitsRegularly.select(language),
-  CustomerStatus.newClient => AppStrings.customersJustGettingToKnow.select(language),
-};
+String _statusHint(CustomerStatus status, AppLanguage language) =>
+    switch (status) {
+      CustomerStatus.vip => AppStrings.customersPriorityClient.select(language),
+      CustomerStatus.regular => AppStrings.customersVisitsRegularly.select(
+        language,
+      ),
+      CustomerStatus.newClient => AppStrings.customersJustGettingToKnow.select(
+        language,
+      ),
+    };
 
 class _StatusOptionTile extends StatelessWidget {
   const _StatusOptionTile({
@@ -201,12 +232,18 @@ class _StatusOptionTile extends StatelessWidget {
                     children: [
                       Text(
                         _statusLabel(status, language),
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         _statusHint(status, language),
-                        style: TextStyle(fontSize: 12, color: tokens.textSecondary),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: tokens.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -218,7 +255,10 @@ class _StatusOptionTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: selected ? color : Colors.transparent,
-                    border: Border.all(color: selected ? color : tokens.border, width: 1.6),
+                    border: Border.all(
+                      color: selected ? color : tokens.border,
+                      width: 1.6,
+                    ),
                   ),
                   child: selected
                       ? const Icon(Icons.check, size: 15, color: Colors.white)

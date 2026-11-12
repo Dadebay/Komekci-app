@@ -122,7 +122,9 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                                   }),
                                 ),
                                 _FilterChipButton(
-                                  label: AppStrings.homeConfirmed.select(language),
+                                  label: AppStrings.homeConfirmed.select(
+                                    language,
+                                  ),
                                   selected:
                                       _filterStatus ==
                                       ClientBookingStatus.expected,
@@ -134,7 +136,9 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                                   }),
                                 ),
                                 _FilterChipButton(
-                                  label: AppStrings.scheduleCompleted.select(language),
+                                  label: AppStrings.scheduleCompleted.select(
+                                    language,
+                                  ),
                                   selected:
                                       _filterStatus ==
                                       ClientBookingStatus.completed,
@@ -146,7 +150,9 @@ extension _ClientBookingsFilterSheet on _ClientBookingsScreenState {
                                   }),
                                 ),
                                 _FilterChipButton(
-                                  label: AppStrings.scheduleCancelled.select(language),
+                                  label: AppStrings.scheduleCancelled.select(
+                                    language,
+                                  ),
                                   selected:
                                       _filterStatus ==
                                       ClientBookingStatus.cancelled,

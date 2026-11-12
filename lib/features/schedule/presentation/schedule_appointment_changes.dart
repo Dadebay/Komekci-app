@@ -47,7 +47,9 @@ Future<void> _confirmCancelAppointment(
     icon: Icons.event_busy_outlined,
     danger: true,
     title: AppStrings.appointmentsCancelThisBooking.select(language),
-    message: AppStrings.scheduleTheBookingForWillBe(appointment.clientName).select(language),
+    message: AppStrings.scheduleTheBookingForWillBe(
+      appointment.clientName,
+    ).select(language),
     confirmLabel: AppStrings.appointmentsCancel.select(language),
     cancelLabel: AppStrings.scheduleNo.select(language),
   );

@@ -1,7 +1,11 @@
 part of '../../../app/komekci_app.dart';
 
 class RecentClientsScreen extends StatefulWidget {
-  const RecentClientsScreen({super.key, this.initialSelection = const [], this.forPush = true});
+  const RecentClientsScreen({
+    super.key,
+    this.initialSelection = const [],
+    this.forPush = true,
+  });
   final List<String> initialSelection;
   final bool forPush;
 
@@ -23,8 +27,12 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
       AppLanguage.ru => AppStrings.recentPeriodLabelsRu,
       AppLanguage.en => AppStrings.recentPeriodLabelsEn,
     };
-    final cutoff = DateTime.now().subtract(Duration(days: _periodDays[_period]));
-    final clients = context.watch<CustomerProvider>().customers
+    final cutoff = DateTime.now().subtract(
+      Duration(days: _periodDays[_period]),
+    );
+    final clients = context
+        .watch<CustomerProvider>()
+        .customers
         .where((c) => c.lastVisit != null && !c.lastVisit!.isBefore(cutoff))
         .toList();
     final eligibleIds = clients
@@ -51,7 +59,9 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
                 children: [
                   _InfoBanner(
                     icon: Icons.schedule_outlined,
-                    text: AppStrings.cabinetSendAMessageToClients.select(language),
+                    text: AppStrings.cabinetSendAMessageToClients.select(
+                      language,
+                    ),
                   ),
                   const SizedBox(height: 18),
                   Text(
@@ -107,7 +117,10 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    AppStrings.cabinetClientsFromTheLast(periodLabels[_period], clients.length).select(language),
+                    AppStrings.cabinetClientsFromTheLast(
+                      periodLabels[_period],
+                      clients.length,
+                    ).select(language),
                     style: const TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
@@ -115,15 +128,22 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
                   ),
                   const SizedBox(height: 10),
                   ...clients.map((c) {
-                    final canSend = _canMessageCustomer(c, forPush: widget.forPush);
+                    final canSend = _canMessageCustomer(
+                      c,
+                      forPush: widget.forPush,
+                    );
                     final checked = canSend && selected.contains(c.id);
                     return _ClientListTile(
                       name: c.name,
                       phone: c.phone,
                       subtitle: !canSend
                           ? widget.forPush
-                              ? AppStrings.cabinetPushUnavailable.select(language)
-                              : AppStrings.cabinetNoPhoneNumber.select(language)
+                                ? AppStrings.cabinetPushUnavailable.select(
+                                    language,
+                                  )
+                                : AppStrings.cabinetNoPhoneNumber.select(
+                                    language,
+                                  )
                           : '${AppStrings.cabinetLastVisit2.select(language)}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
                       checked: checked,
                       enabled: canSend,

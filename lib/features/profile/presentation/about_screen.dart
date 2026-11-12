@@ -10,9 +10,7 @@ class AboutScreen extends StatelessWidget {
     final tokens = context.appTokens;
     return Scaffold(
       backgroundColor: tokens.surface,
-      appBar: CabinetAppBar(
-        title: AppStrings.profileAboutUs.select(language),
-      ),
+      appBar: CabinetAppBar(title: AppStrings.profileAboutUs.select(language)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
