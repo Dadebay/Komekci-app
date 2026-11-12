@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 class GlobalSafeAreaWrapper extends StatelessWidget {
@@ -25,7 +25,13 @@ class GlobalSafeAreaWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: _getSystemUiOverlayStyle(context),
-      child: SafeArea(top: top, bottom: bottom, left: left, right: right, child: child),
+      child: SafeArea(
+        top: top,
+        bottom: bottom,
+        left: left,
+        right: right,
+        child: child,
+      ),
     );
   }
 

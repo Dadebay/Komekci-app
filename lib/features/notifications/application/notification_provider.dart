@@ -80,7 +80,11 @@ class NotificationProvider extends SessionScoped {
   }
 
   /// A push arrived while the app was open.
-  void add({required String title, required String body, Map<String, dynamic> data = const {}}) {
+  void add({
+    required String title,
+    required String body,
+    Map<String, dynamic> data = const {},
+  }) {
     _items = [
       AppNotification(
         id: '${DateTime.now().microsecondsSinceEpoch}',

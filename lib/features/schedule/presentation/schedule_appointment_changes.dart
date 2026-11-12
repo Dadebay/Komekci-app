@@ -5,8 +5,6 @@ Future<void> _rescheduleAppointment(
   Appointment appointment,
 ) async {
   final language = context.read<LanguageProvider>().language;
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   final bookingProvider = context.read<BookingProvider>();
   final picked = await _pickAppointmentDateTime(
     context,
@@ -27,11 +25,7 @@ Future<void> _rescheduleAppointment(
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          t(
-            tk: 'Bu wagt eýýäm alyndy.',
-            ru: 'Это время уже занято.',
-            en: 'This time is already taken.',
-          ),
+          AppStrings.scheduleThisTimeIsAlreadyTaken.select(language),
         ),
       ),
     );
@@ -48,24 +42,16 @@ Future<void> _confirmCancelAppointment(
   Appointment appointment,
 ) async {
   final language = context.read<LanguageProvider>().language;
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   final confirmed = await _showConfirmDialog(
     context,
     icon: Icons.event_busy_outlined,
     danger: true,
-    title: t(
-      tk: 'Ýazgyny ýatyrmaly?',
-      ru: 'Отменить запись?',
-      en: 'Cancel this booking?',
-    ),
-    message: t(
-      tk: '${appointment.clientName} üçin bu ýazgy ýatyrylar.',
-      ru: 'Запись для ${appointment.clientName} будет отменена.',
-      en: 'The booking for ${appointment.clientName} will be cancelled.',
-    ),
-    confirmLabel: t(tk: 'Ýatyr', ru: 'Отменить', en: 'Cancel'),
-    cancelLabel: t(tk: 'Ýok', ru: 'Нет', en: 'No'),
+    title: AppStrings.appointmentsCancelThisBooking.select(language),
+    message: AppStrings.scheduleTheBookingForWillBe(
+      appointment.clientName,
+    ).select(language),
+    confirmLabel: AppStrings.appointmentsCancel.select(language),
+    cancelLabel: AppStrings.scheduleNo.select(language),
   );
   if (confirmed && context.mounted) {
     await runApi(

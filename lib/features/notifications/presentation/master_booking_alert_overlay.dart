@@ -1,6 +1,7 @@
+import '../../../core/localization/app_strings.dart';
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/localization/language_provider.dart';
@@ -175,11 +176,8 @@ class _BookingAlertCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          pickTr(
+                          AppStrings.notificationsAClientJustBookedYou.select(
                             language,
-                            tk: 'Müşderi size ýazyldy',
-                            ru: 'Клиент записался к вам',
-                            en: 'A client just booked you',
                           ),
                           textAlign: TextAlign.center,
                           style: TextStyle(
@@ -237,12 +235,7 @@ class _BookingAlertCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 20),
                         _CountdownButton(
-                          label: pickTr(
-                            language,
-                            tk: 'Düşnükli',
-                            ru: 'Понятно',
-                            en: 'Got it',
-                          ),
+                          label: AppStrings.notificationsGotIt.select(language),
                           duration: duration,
                           onTap: onDismiss,
                         ),
@@ -253,12 +246,7 @@ class _BookingAlertCard extends StatelessWidget {
                     top: 6,
                     right: 6,
                     child: Semantics(
-                      label: pickTr(
-                        language,
-                        tk: 'Ýap',
-                        ru: 'Закрыть',
-                        en: 'Close',
-                      ),
+                      label: AppStrings.notificationsClose.select(language),
                       child: IconButton(
                         onPressed: onDismiss,
                         icon: AppIcon(

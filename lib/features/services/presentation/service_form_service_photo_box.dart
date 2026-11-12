@@ -28,11 +28,15 @@ class _ServicePhotoBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final existingService = existing;
-    final hasExisting = existingService != null && existingService.imagePath.isNotEmpty;
+    final hasExisting =
+        existingService != null && existingService.imagePath.isNotEmpty;
     final hasImage = file != null || hasExisting;
 
     Future<void> pick() async {
-      final picked = await pickCompressedImage(context, language: context.read<LanguageProvider>().language);
+      final picked = await pickCompressedImage(
+        context,
+        language: context.read<LanguageProvider>().language,
+      );
       if (picked != null) onPicked(picked);
     }
 
@@ -46,15 +50,26 @@ class _ServicePhotoBox extends StatelessWidget {
           bottom: 10,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(color: Colors.black.withValues(alpha: .55), borderRadius: BorderRadius.circular(20)),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: .55),
+              borderRadius: BorderRadius.circular(20),
+            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const AppIcon(Icons.photo_camera_outlined, size: 14, color: Colors.white),
+                const AppIcon(
+                  Icons.photo_camera_outlined,
+                  size: 14,
+                  color: Colors.white,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   changeLabel,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ],
             ),
@@ -73,13 +88,24 @@ class _ServicePhotoBox extends StatelessWidget {
             width: 54,
             height: 54,
             alignment: Alignment.center,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: tokens.accent.withValues(alpha: .2)),
-            child: AppIcon(Icons.photo_camera_outlined, size: 26, color: tokens.accent),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: tokens.accent.withValues(alpha: .2),
+            ),
+            child: AppIcon(
+              Icons.photo_camera_outlined,
+              size: 26,
+              color: tokens.accent,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             title,
-            style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: tokens.textPrimary),
+            style: TextStyle(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w700,
+              color: tokens.textPrimary,
+            ),
           ),
           const SizedBox(height: 4),
           Padding(
@@ -95,13 +121,21 @@ class _ServicePhotoBox extends StatelessWidget {
     );
 
     Widget picture() {
-      if (file != null) return withChangePill(Image.file(file!, fit: BoxFit.cover));
+      if (file != null) {
+        return withChangePill(Image.file(file!, fit: BoxFit.cover));
+      }
       if (!hasExisting) return prompt;
       final service = existingService;
       if (service.imageIsNetwork) {
         // A picture that cannot be loaded falls back to the empty prompt
         // instead of a stretched placeholder icon.
-        return Image.network(service.imagePath, fit: BoxFit.cover, errorBuilder: (_, _, _) => prompt, frameBuilder: (_, child, frame, sync) => sync || frame != null ? withChangePill(child) : prompt);
+        return Image.network(
+          service.imagePath,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => prompt,
+          frameBuilder: (_, child, frame, sync) =>
+              sync || frame != null ? withChangePill(child) : prompt,
+        );
       }
       return withChangePill(ServiceThumb(service: service, size: _height));
     }
@@ -117,7 +151,10 @@ class _ServicePhotoBox extends StatelessWidget {
             // Clipped to the same rounded shape as the border, so the picture
             // gets rounded corners too ...
             clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(_radius), color: tokens.surface),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(_radius),
+              color: tokens.surface,
+            ),
             // ... and the border is painted on top of it, so the picture can
             // never cover it.
             foregroundDecoration: BoxDecoration(
@@ -174,7 +211,12 @@ class _DurationPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
-    Widget chip({required double width, required String text, required bool isSelected, required VoidCallback onTap}) => GestureDetector(
+    Widget chip({
+      required double width,
+      required String text,
+      required bool isSelected,
+      required VoidCallback onTap,
+    }) => GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -194,7 +236,11 @@ class _DurationPicker extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: isSelected ? tokens.accentOn : tokens.textPrimary),
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w700,
+            color: isSelected ? tokens.accentOn : tokens.textPrimary,
+          ),
         ),
       ),
     );
@@ -206,7 +252,11 @@ class _DurationPicker extends StatelessWidget {
           padding: const EdgeInsets.only(left: 2, bottom: 8),
           child: Text(
             label,
-            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textSecondary),
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: tokens.textSecondary,
+            ),
           ),
         ),
         LayoutBuilder(
@@ -217,8 +267,19 @@ class _DurationPicker extends StatelessWidget {
               spacing: gap,
               runSpacing: gap,
               children: [
-                for (final minutes in _serviceDurations) chip(width: width, text: '$minutes min', isSelected: !custom && selected == minutes, onTap: () => onPreset(minutes)),
-                chip(width: width, text: otherLabel, isSelected: custom, onTap: onCustom),
+                for (final minutes in _serviceDurations)
+                  chip(
+                    width: width,
+                    text: '$minutes min',
+                    isSelected: !custom && selected == minutes,
+                    onTap: () => onPreset(minutes),
+                  ),
+                chip(
+                  width: width,
+                  text: otherLabel,
+                  isSelected: custom,
+                  onTap: onCustom,
+                ),
               ],
             );
           },
@@ -231,7 +292,10 @@ class _DurationPicker extends StatelessWidget {
             icon: Icons.timer_outlined,
             hint: customHint,
             keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(3)],
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(3),
+            ],
             onChanged: onCustomChanged,
           ),
         ],
@@ -243,7 +307,12 @@ class _DurationPicker extends StatelessWidget {
 
 /// Fixed bar under the form: a server error (if any) and the save button.
 class _ServiceSaveBar extends StatelessWidget {
-  const _ServiceSaveBar({required this.error, required this.saving, required this.label, required this.onSave});
+  const _ServiceSaveBar({
+    required this.error,
+    required this.saving,
+    required this.label,
+    required this.onSave,
+  });
 
   final String? error;
   final bool saving;
@@ -258,7 +327,13 @@ class _ServiceSaveBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: tokens.surface,
         border: Border(top: BorderSide(color: tokens.border)),
-        boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .05), blurRadius: 14, offset: const Offset(0, -4))],
+        boxShadow: [
+          BoxShadow(
+            color: tokens.textPrimary.withValues(alpha: .05),
+            blurRadius: 14,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -275,18 +350,29 @@ class _ServiceSaveBar extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  AppIcon(Icons.warning_amber_rounded, size: 16, color: tokens.danger),
+                  AppIcon(
+                    Icons.warning_amber_rounded,
+                    size: 16,
+                    color: tokens.danger,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(error!, style: TextStyle(fontSize: 12.5, color: tokens.danger)),
+                    child: Text(
+                      error!,
+                      style: TextStyle(fontSize: 12.5, color: tokens.danger),
+                    ),
                   ),
                 ],
               ),
             ),
-          MasterActionButton(label: label, enabled: !saving, leading: saving ? null : Icons.save_outlined, onTap: onSave),
+          MasterActionButton(
+            label: label,
+            enabled: !saving,
+            leading: saving ? null : Icons.save_outlined,
+            onTap: onSave,
+          ),
         ],
       ),
     );
   }
 }
-

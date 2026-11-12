@@ -132,51 +132,25 @@ class _PaymentResultPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final cur = context.watch<AppSettingsProvider>().currencyLabel(language);
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final (icon, color, title, message) = switch (outcome) {
       _PaymentOutcome.success => (
         Icons.check_circle_outline,
         tokens.success,
-        t(
-          tk: 'Töleg üstünlikli!',
-          ru: 'Оплата прошла успешно!',
-          en: 'Payment successful!',
-        ),
-        t(
-          tk: 'Balansyňyza $amount $cur goşuldy.',
-          ru: 'На ваш баланс зачислено $amount $cur.',
-          en: '$amount $cur has been added to your balance.',
-        ),
+        AppStrings.authPaymentSuccessful.select(language),
+        AppStrings.authHasBeenAddedToYour(amount, cur).select(language),
       ),
       _PaymentOutcome.pending => (
         Icons.hourglass_top_outlined,
         tokens.warning,
-        t(
-          tk: 'Töleg garaşylýar',
-          ru: 'Платёж в обработке',
-          en: 'Payment pending',
-        ),
-        t(
-          tk: 'Tölegiňiz barlanýar, biraz wagt alyp biler.',
-          ru: 'Ваш платёж проверяется, это может занять некоторое время.',
-          en: 'Your payment is being verified — this may take a moment.',
-        ),
+        AppStrings.authPaymentPending.select(language),
+        AppStrings.authYourPaymentIsBeingVerified.select(language),
       ),
       _PaymentOutcome.failed => (
         Icons.error_outline,
         tokens.danger,
-        t(
-          tk: 'Töleg başa barmady',
-          ru: 'Платёж не прошёл',
-          en: 'Payment failed',
-        ),
-        t(
-          tk: 'Tölegi amala aşyryp bolmady.',
-          ru: 'Не удалось выполнить платёж.',
-          en: 'We couldn’t complete the payment.',
-        ),
+        AppStrings.authPaymentFailed.select(language),
+        AppStrings.authWeCouldnTCompleteThe.select(language),
       ),
     };
     final isSuccess = outcome == _PaymentOutcome.success;
@@ -214,22 +188,16 @@ class _PaymentResultPanel extends StatelessWidget {
           const SizedBox(height: 22),
           MasterActionButton(
             label: isSuccess
-                ? t(tk: 'Dowam et', ru: 'Продолжить', en: 'Continue')
+                ? AppStrings.onboardingContinue.select(language)
                 : outcome == _PaymentOutcome.pending
-                ? t(
-                    tk: 'Täzeden barla',
-                    ru: 'Проверить снова',
-                    en: 'Check again',
-                  )
-                : t(tk: 'Täzeden synanyş', ru: 'Повторить', en: 'Try again'),
+                ? AppStrings.authCheckAgain.select(language)
+                : AppStrings.profileTryAgain.select(language),
             enabled: true,
             onTap: isSuccess ? onContinue : onRetry,
           ),
           if (!isSuccess) ...[
             const SizedBox(height: 6),
-            _DialogCancelButton(
-              label: t(tk: 'Ýapmak', ru: 'Закрыть', en: 'Close'),
-            ),
+            _DialogCancelButton(label: AppStrings.authClose.select(language)),
           ],
         ],
       ),
@@ -245,8 +213,6 @@ class _PromoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final promo = context.watch<BillingProvider>().promo;
     if (promo == null) return const SizedBox.shrink();
 
@@ -255,11 +221,9 @@ class _PromoCard extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 16),
         child: _InfoBanner(
           icon: Icons.card_giftcard_outlined,
-          text: t(
-            tk: 'Mugt aý işjeň: ${promo.daysLeft} gün galdy. Soň abuna üçin balansyňyzy dolduryň.',
-            ru: 'Бесплатный месяц активен: осталось ${promo.daysLeft} дн. Затем пополните баланс для подписки.',
-            en: 'Free month is active: ${promo.daysLeft} days left. Afterwards top up your balance to continue.',
-          ),
+          text: AppStrings.authFreeMonthIsActiveDays(
+            promo.daysLeft,
+          ).select(language),
         ),
       );
     }
@@ -268,11 +232,7 @@ class _PromoCard extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 16),
         child: _InfoBanner(
           icon: Icons.info_outline,
-          text: t(
-            tk: 'Mugt aý gutardy. Onlaýn ýazgylary dowam etmek üçin balansyňyzy dolduryň.',
-            ru: 'Бесплатный месяц закончился. Пополните баланс, чтобы продолжить онлайн-запись.',
-            en: 'Your free month has ended. Top up your balance to keep online booking open.',
-          ),
+          text: AppStrings.authYourFreeMonthHasEnded.select(language),
         ),
       );
     }

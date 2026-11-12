@@ -1,6 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-
 /// Client's "Profil" bottom-nav tab — a profile summary card that opens
 /// [ClientEditProfileScreen], and a menu of real destinations (no stubs):
 /// connected masters, notification preferences, appearance, language and
@@ -17,34 +16,43 @@ class ClientProfile extends StatelessWidget {
     final theme = context.watch<ThemeProvider>().selected;
     final mastersCount = context.watch<ClientMastersProvider>().accepted.length;
 
-    final notificationPrefs = context.watch<AuthProvider>().me?.notificationPrefs ?? const <String, bool>{};
-    final notificationsOn = notificationPrefs.isEmpty || notificationPrefs.values.any((v) => v);
+    final notificationPrefs =
+        context.watch<AuthProvider>().me?.notificationPrefs ??
+        const <String, bool>{};
+    final notificationsOn =
+        notificationPrefs.isEmpty || notificationPrefs.values.any((v) => v);
     return Builder(
       builder: (context) {
         final accountRows = <Widget>[
           _ClientProfileMenuRow(
             icon: Icons.groups_outlined,
-            title: t(tk: 'Masterlerim', ru: 'Мои мастера', en: 'My masters'),
+            title: AppStrings.profileMyMasters.select(language),
             subtitle: '$mastersCount',
-            onTap: () => Navigator.push(context, pageRoute(const MyMastersScreen())),
+            onTap: () =>
+                Navigator.push(context, pageRoute(const MyMastersScreen())),
           ),
           _ClientProfileMenuRow(
             icon: Icons.notifications_none,
-            title: t(tk: 'Bildirişler', ru: 'Уведомления', en: 'Notifications'),
-            subtitle: notificationsOn ? t(tk: 'Işjeň', ru: 'Включены', en: 'On') : t(tk: 'Öçürilen', ru: 'Отключены', en: 'Off'),
-            onTap: () => Navigator.push(context, pageRoute(const ClientNotificationSettingsScreen())),
+            title: AppStrings.profileNotifications.select(language),
+            subtitle: notificationsOn
+                ? AppStrings.profileOn.select(language)
+                : AppStrings.profileOff.select(language),
+            onTap: () => Navigator.push(
+              context,
+              pageRoute(const ClientNotificationSettingsScreen()),
+            ),
           ),
         ];
         final appRows = <Widget>[
           _ClientProfileMenuRow(
             icon: Icons.brush_outlined,
-            title: t(tk: 'Görnüşi', ru: 'Оформление', en: 'Appearance'),
+            title: AppStrings.profileAppearance.select(language),
             subtitle: _themeName(theme),
             onTap: () => _showThemeSheet(context),
           ),
           _ClientProfileMenuRow(
             icon: Icons.language,
-            title: t(tk: 'Dil', ru: 'Язык', en: 'Language'),
+            title: AppStrings.profileLanguage.select(language),
             subtitle: _languageName(language),
             onTap: () => _showLanguageSheet(context),
           ),
@@ -52,9 +60,10 @@ class ClientProfile extends StatelessWidget {
         final helpRows = <Widget>[
           _ClientProfileMenuRow(
             icon: Icons.help_outline,
-            title: t(tk: 'Goldaw', ru: 'Поддержка', en: 'Support'),
-            subtitle: t(tk: 'Soraglar', ru: 'Вопросы', en: 'FAQ'),
-            onTap: () => Navigator.push(context, pageRoute(const ClientSupportScreen())),
+            title: AppStrings.profileSupport.select(language),
+            subtitle: AppStrings.profileFaq.select(language),
+            onTap: () =>
+                Navigator.push(context, pageRoute(const ClientSupportScreen())),
           ),
         ];
 
@@ -65,31 +74,59 @@ class ClientProfile extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 120),
               children: [
-                Text(t(tk: 'Profil', ru: 'Профиль', en: 'Profile'), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, height: 1.1)),
+                Text(
+                  AppStrings.profileProfile.select(language),
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    height: 1.1,
+                  ),
+                ),
                 const SizedBox(height: 18),
                 _ClientProfileCard(
-                  onTap: () => Navigator.push(context, pageRoute(const ClientEditProfileScreen())),
+                  onTap: () => Navigator.push(
+                    context,
+                    pageRoute(const ClientEditProfileScreen()),
+                  ),
                 ),
                 const SizedBox(height: 24),
-                _ClientProfileGroup(title: t(tk: 'Hasap', ru: 'Аккаунт', en: 'Account'), children: accountRows),
+                _ClientProfileGroup(
+                  title: AppStrings.profileAccount.select(language),
+                  children: accountRows,
+                ),
                 const SizedBox(height: 20),
-                _ClientProfileGroup(title: t(tk: 'Programma', ru: 'Приложение', en: 'App'), children: appRows),
+                _ClientProfileGroup(
+                  title: AppStrings.profileApp.select(language),
+                  children: appRows,
+                ),
                 const SizedBox(height: 20),
-                _ClientProfileGroup(title: t(tk: 'Kömek', ru: 'Помощь', en: 'Help'), children: helpRows),
+                _ClientProfileGroup(
+                  title: AppStrings.profileHelp.select(language),
+                  children: helpRows,
+                ),
                 const SizedBox(height: 20),
                 _ClientLogoutButton(t: t),
                 Center(
                   child: TextButton(
                     onPressed: () => _confirmDeleteAccount(context),
                     child: Text(
-                      t(tk: 'Hasaby poz', ru: 'Удалить аккаунт', en: 'Delete account'),
-                      style: TextStyle(color: tokens.textSecondary, fontSize: 12),
+                      AppStrings.profileDeleteAccount.select(language),
+                      style: TextStyle(
+                        color: tokens.textSecondary,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 Center(
-                  child: Text('KÖMEKÇI · v1.0.0', style: TextStyle(fontSize: 11.5, color: tokens.textSecondary)),
+                  child: Text(
+                    'KÖMEKÇI · v1.0.0',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: tokens.textSecondary,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -100,9 +137,7 @@ class ClientProfile extends StatelessWidget {
   }
 }
 
-String _themeName(KomekciTheme theme) => switch (
-  themeStyleFor(theme)
-) {
+String _themeName(KomekciTheme theme) => switch (themeStyleFor(theme)) {
   KomekciThemeStyle.gold => 'Ivory',
   KomekciThemeStyle.blue => 'Onyx',
   KomekciThemeStyle.red => 'Champagne',
@@ -110,9 +145,9 @@ String _themeName(KomekciTheme theme) => switch (
 };
 
 String _languageName(AppLanguage language) => switch (language) {
-  AppLanguage.tk => 'Türkmençe',
-  AppLanguage.ru => 'Русский',
-  AppLanguage.en => 'English',
+  AppLanguage.tk => AppStrings.languageTurkmen,
+  AppLanguage.ru => AppStrings.languageRussian,
+  AppLanguage.en => AppStrings.languageEnglish,
 };
 
 /// "Dil" row's destination — a floating sheet, since picking a language is a
@@ -122,17 +157,11 @@ void _showLanguageSheet(BuildContext context) {
   final authProvider = context.read<AuthProvider>();
   final settingsProvider = context.read<AppSettingsProvider>();
   final language = languageProvider.language;
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   _showFloatingSheet<void>(
     context,
     icon: Icons.translate_rounded,
-    title: t(tk: 'Dil saýlaň', ru: 'Выберите язык', en: 'Choose language'),
-    subtitle: t(
-      tk: 'Programmanyň dilini üýtgediň.',
-      ru: 'Измените язык приложения.',
-      en: 'Change the app language.',
-    ),
+    title: AppStrings.profileChooseLanguage.select(language),
+    subtitle: AppStrings.profileChangeTheAppLanguage.select(language),
     builder: (sheetContext) {
       final current = sheetContext.watch<LanguageProvider>().language;
       final locales = sheetContext.watch<AppSettingsProvider>().locales;
@@ -165,17 +194,11 @@ void _showThemeSheet(BuildContext context) {
   final themeProvider = context.read<ThemeProvider>();
   final authProvider = context.read<AuthProvider>();
   final language = context.read<LanguageProvider>().language;
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   _showFloatingSheet<void>(
     context,
     icon: Icons.palette_outlined,
-    title: t(tk: 'Görnüşi saýlaň', ru: 'Выберите тему', en: 'Choose a theme'),
-    subtitle: t(
-      tk: 'Saýlan reňkiňiz derrew ulanylýar.',
-      ru: 'Цвет применится сразу.',
-      en: 'Your choice applies immediately.',
-    ),
+    title: AppStrings.profileChooseATheme.select(language),
+    subtitle: AppStrings.profileYourChoiceAppliesImmediately.select(language),
     builder: (sheetContext) {
       final tokens = sheetContext.appTokens;
       final selected = sheetContext.watch<ThemeProvider>().selected;
@@ -194,11 +217,7 @@ void _showThemeSheet(BuildContext context) {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 20),
           child: Text(
-            t(
-              tk: 'Häzir tema saýlawy elýeterli däl.',
-              ru: 'Темы сейчас недоступны.',
-              en: 'Themes are unavailable right now.',
-            ),
+            AppStrings.profileThemesAreUnavailableRightNow.select(language),
             textAlign: TextAlign.center,
             style: TextStyle(color: tokens.textSecondary, fontSize: 14),
           ),
@@ -234,16 +253,16 @@ void _showThemeSheet(BuildContext context) {
 
 String _themeLabel(KomekciThemeStyle style, AppLanguage language) =>
     switch (style) {
-      KomekciThemeStyle.gold => pickTr(language, tk: 'Altyn', ru: 'Золотая', en: 'Gold'),
-      KomekciThemeStyle.blue => pickTr(language, tk: 'Mawy', ru: 'Синяя', en: 'Blue'),
-      KomekciThemeStyle.red => pickTr(language, tk: 'Gyzyl', ru: 'Красная', en: 'Red'),
-      KomekciThemeStyle.dark => pickTr(language, tk: 'Garaňky', ru: 'Тёмная', en: 'Dark'),
+      KomekciThemeStyle.gold => AppStrings.profileGold.select(language),
+      KomekciThemeStyle.blue => AppStrings.profileBlue.select(language),
+      KomekciThemeStyle.red => AppStrings.profileRed.select(language),
+      KomekciThemeStyle.dark => AppStrings.profileDark.select(language),
     };
 
 String _themeDescription(KomekciThemeStyle style, AppLanguage language) =>
     switch (style) {
-      KomekciThemeStyle.gold => pickTr(language, tk: 'Adaty görnüş', ru: 'Классический стиль', en: 'Classic look'),
-      KomekciThemeStyle.blue => pickTr(language, tk: 'Mawy öwüşgin', ru: 'Синие акценты', en: 'Blue accents'),
-      KomekciThemeStyle.red => pickTr(language, tk: 'Gyzyl öwüşgin', ru: 'Красные акценты', en: 'Red accents'),
-      KomekciThemeStyle.dark => pickTr(language, tk: 'Gara görnüş', ru: 'Тёмная тема', en: 'Dark theme'),
+      KomekciThemeStyle.gold => AppStrings.profileClassicLook.select(language),
+      KomekciThemeStyle.blue => AppStrings.profileBlueAccents.select(language),
+      KomekciThemeStyle.red => AppStrings.profileRedAccents.select(language),
+      KomekciThemeStyle.dark => AppStrings.profileDarkTheme.select(language),
     };

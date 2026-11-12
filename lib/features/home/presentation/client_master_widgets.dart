@@ -25,18 +25,8 @@ class _ClientMasterCarouselState extends State<_ClientMasterCarousel> {
     if (masters.isEmpty) {
       return EmptyState(
         icon: Icons.groups_outlined,
-        title: pickTr(
-          language,
-          tk: 'Baglanan masteriňiz ýok',
-          ru: 'Связанных мастеров нет',
-          en: 'No connected masters yet',
-        ),
-        text: pickTr(
-          language,
-          tk: 'Lakamy ýa-da telefon belgisi bilen masteri tapyp baglanyň.',
-          ru: 'Найдите мастера по никнейму или телефону и подключитесь.',
-          en: 'Find a master by nickname or phone and connect.',
-        ),
+        title: AppStrings.appointmentsNoConnectedMastersYet.select(language),
+        text: AppStrings.homeFindAMasterByNickname2.select(language),
       );
     }
     return SizedBox(
@@ -178,18 +168,8 @@ class _ClientMasterCard extends StatelessWidget {
                             : null,
                         child: Text(
                           open
-                              ? pickTr(
-                                  language,
-                                  tk: 'Ýazyl',
-                                  ru: 'Записаться',
-                                  en: 'Book',
-                                )
-                              : pickTr(
-                                  language,
-                                  tk: 'Wagtlaýyn ýapyk',
-                                  ru: 'Запись закрыта',
-                                  en: 'Paused',
-                                ),
+                              ? AppStrings.appointmentsBook.select(language)
+                              : AppStrings.homePaused.select(language),
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -241,23 +221,13 @@ class _AddMasterCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              pickTr(
-                language,
-                tk: 'Master goş',
-                ru: 'Добавить мастера',
-                en: 'Add master',
-              ),
+              AppStrings.authAddMaster.select(language),
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 4),
             Text(
-              pickTr(
-                language,
-                tk: 'Lakam ýa-da telefon',
-                ru: 'Никнейм или телефон',
-                en: 'Nickname or phone',
-              ),
+              AppStrings.homeNicknameOrPhone.select(language),
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 11.5, color: tokens.textSecondary),
             ),

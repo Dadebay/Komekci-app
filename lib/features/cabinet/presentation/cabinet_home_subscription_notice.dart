@@ -37,17 +37,11 @@ class _SubscriptionNotice extends StatelessWidget {
               Expanded(
                 child: Text(
                   suspended
-                      ? pickTr(
+                      ? AppStrings.cabinetSubscriptionIsNotActiveNew.select(
                           language,
-                          tk: 'Abuna işjeň däl: täze ýazgylar ýapyk. Açmak üçin balansy dolduryň.',
-                          ru: 'Подписка не активна: новые записи закрыты. Пополните баланс, чтобы открыть.',
-                          en: 'Subscription is not active: new bookings are closed. Top up to reopen.',
                         )
-                      : pickTr(
+                      : AppStrings.cabinetYourSubscriptionPaymentIsDue.select(
                           language,
-                          tk: 'Tölegiň wagty ýakynlaşdy. Balansy dolduryň.',
-                          ru: 'Скоро нужно оплатить подписку. Пополните баланс.',
-                          en: 'Your subscription payment is due soon. Please top up.',
                         ),
                   style: const TextStyle(fontSize: 12.5, height: 1.4),
                 ),

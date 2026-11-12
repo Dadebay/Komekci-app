@@ -257,8 +257,6 @@ class _MasterResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.appTokens;
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final status = connection?.status;
     final connected = status == ConnectionStatus.accepted;
     final pending = status == ConnectionStatus.pending;
@@ -336,16 +334,8 @@ class _MasterResultCard extends StatelessWidget {
                     _ProfilePill(
                       dotColor: statusColor,
                       label: master.acceptingBookings
-                          ? t(
-                              tk: 'Ýazgy kabul edýär',
-                              ru: 'Принимает записи',
-                              en: 'Accepting bookings',
-                            )
-                          : t(
-                              tk: 'Wagtlaýyn ýapyk',
-                              ru: 'Запись временно закрыта',
-                              en: 'Bookings paused',
-                            ),
+                          ? AppStrings.authAcceptingBookings.select(language)
+                          : AppStrings.authBookingsPaused.select(language),
                     ),
                   ],
                 ),
@@ -384,18 +374,10 @@ class _MasterResultCard extends StatelessWidget {
                           ),
                     label: Text(
                       connected
-                          ? t(
-                              tk: 'Eýýäm baglanyşykly',
-                              ru: 'Уже подключены',
-                              en: 'Already connected',
-                            )
+                          ? AppStrings.authAlreadyConnected.select(language)
                           : pending
-                          ? t(
-                              tk: 'Haýyş iberildi',
-                              ru: 'Запрос отправлен',
-                              en: 'Request sent',
-                            )
-                          : t(tk: 'Baglan', ru: 'Подключиться', en: 'Connect'),
+                          ? AppStrings.authRequestSent.select(language)
+                          : AppStrings.authConnect.select(language),
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,

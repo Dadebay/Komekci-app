@@ -14,4 +14,3 @@ Future<void> _loadMonthsBetween(
     cursor = DateTime(cursor.year, cursor.month + 1);
   }
 }
-

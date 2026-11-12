@@ -34,7 +34,14 @@ class MultipartBody {
 ///   cleared and [onSessionExpired] fires
 /// - every failure surfaces as an [ApiException]
 class ApiClient {
-  ApiClient({http.Client? client, TokenStore? tokenStore, this._offlineCache, this._baseUrl = apiBaseUrl, this.languageCode}) : _client = client ?? http.Client(), _store = tokenStore ?? const SecureTokenStore();
+  ApiClient({
+    http.Client? client,
+    TokenStore? tokenStore,
+    this._offlineCache,
+    this._baseUrl = apiBaseUrl,
+    this.languageCode,
+  }) : _client = client ?? http.Client(),
+       _store = tokenStore ?? const SecureTokenStore();
 
   final http.Client _client;
   final TokenStore _store;
@@ -77,18 +84,54 @@ class ApiClient {
 
   String? get refreshToken => _tokens?.refresh;
 
-  Future<dynamic> get(String path, {Map<String, Object?>? query, bool auth = true, bool offlineFallback = true}) => request('GET', path, query: query, auth: auth, offlineFallback: offlineFallback);
+  Future<dynamic> get(
+    String path, {
+    Map<String, Object?>? query,
+    bool auth = true,
+    bool offlineFallback = true,
+  }) => request(
+    'GET',
+    path,
+    query: query,
+    auth: auth,
+    offlineFallback: offlineFallback,
+  );
 
-  Future<dynamic> post(String path, {Object? json, bool auth = true, Map<String, String>? headers}) => request('POST', path, json: json, auth: auth, headers: headers);
+  Future<dynamic> post(
+    String path, {
+    Object? json,
+    bool auth = true,
+    Map<String, String>? headers,
+  }) => request('POST', path, json: json, auth: auth, headers: headers);
 
-  Future<dynamic> put(String path, {Object? json}) => request('PUT', path, json: json);
+  Future<dynamic> put(String path, {Object? json}) =>
+      request('PUT', path, json: json);
 
-  Future<dynamic> patch(String path, {Object? json}) => request('PATCH', path, json: json);
+  Future<dynamic> patch(String path, {Object? json}) =>
+      request('PATCH', path, json: json);
 
-  Future<dynamic> delete(String path, {Object? json}) => request('DELETE', path, json: json);
+  Future<dynamic> delete(String path, {Object? json}) =>
+      request('DELETE', path, json: json);
 
-  Future<dynamic> request(String method, String path, {Map<String, Object?>? query, Object? json, MultipartBody? multipart, bool auth = true, bool offlineFallback = true, Map<String, String>? headers}) async {
-    Future<http.Response> send() => _send(method, path, query: query, json: json, multipart: multipart, auth: auth, extraHeaders: headers);
+  Future<dynamic> request(
+    String method,
+    String path, {
+    Map<String, Object?>? query,
+    Object? json,
+    MultipartBody? multipart,
+    bool auth = true,
+    bool offlineFallback = true,
+    Map<String, String>? headers,
+  }) async {
+    Future<http.Response> send() => _send(
+      method,
+      path,
+      query: query,
+      json: json,
+      multipart: multipart,
+      auth: auth,
+      extraHeaders: headers,
+    );
 
     final requestEpoch = _sessionEpoch;
     try {
@@ -96,18 +139,27 @@ class ApiClient {
       var response = await send();
       if (response.statusCode == 401 && auth && usedAccess != null) {
         // Another call may have refreshed while this one was in flight.
-        final alreadyRefreshed = _tokens != null && _tokens!.access != usedAccess;
+        final alreadyRefreshed =
+            _tokens != null && _tokens!.access != usedAccess;
         if (alreadyRefreshed || await _refresh()) {
           response = await send();
         }
       }
       final body = _decode(response);
-      if (method == 'GET' && auth && _tokens != null && requestEpoch == _sessionEpoch) {
+      if (method == 'GET' &&
+          auth &&
+          _tokens != null &&
+          requestEpoch == _sessionEpoch) {
         await _offlineCache?.write(path, query, body);
       }
       return body;
     } on ApiException catch (error) {
-      if (offlineFallback && error.isNetwork && method == 'GET' && auth && _tokens != null && requestEpoch == _sessionEpoch) {
+      if (offlineFallback &&
+          error.isNetwork &&
+          method == 'GET' &&
+          auth &&
+          _tokens != null &&
+          requestEpoch == _sessionEpoch) {
         final cached = await _offlineCache?.read(path, query);
         if (cached != null) return cached;
       }
@@ -115,12 +167,22 @@ class ApiClient {
     }
   }
 
-  Future<http.Response> _send(String method, String path, {Map<String, Object?>? query, Object? json, MultipartBody? multipart, required bool auth, Map<String, String>? extraHeaders}) async {
+  Future<http.Response> _send(
+    String method,
+    String path, {
+    Map<String, Object?>? query,
+    Object? json,
+    MultipartBody? multipart,
+    required bool auth,
+    Map<String, String>? extraHeaders,
+  }) async {
     final queryParameters = {
       for (final e in (query ?? const <String, Object?>{}).entries)
         if (e.value != null) e.key: '${e.value}',
     };
-    final uri = Uri.parse('$_baseUrl$path').replace(queryParameters: queryParameters.isEmpty ? null : queryParameters);
+    final uri = Uri.parse('$_baseUrl$path').replace(
+      queryParameters: queryParameters.isEmpty ? null : queryParameters,
+    );
     final headers = <String, String>{
       'Accept': 'application/json',
       if (languageCode != null) 'Accept-Language': languageCode!(),
@@ -134,8 +196,10 @@ class ApiClient {
         // PATCH/PUT arrives with every field and file missing, so Laravel
         // would answer 200 and silently save nothing. `_method` is Laravel's
         // own override, so the route still sees the verb it declared.
-        final spoofed = method == 'PATCH' || method == 'PUT' || method == 'DELETE';
-        final request = http.MultipartRequest(spoofed ? 'POST' : method, uri)..headers.addAll(headers);
+        final spoofed =
+            method == 'PATCH' || method == 'PUT' || method == 'DELETE';
+        final request = http.MultipartRequest(spoofed ? 'POST' : method, uri)
+          ..headers.addAll(headers);
         if (spoofed) request.fields['_method'] = method;
         // `fields` is a Map, so a key that repeats (`other_links[]`) goes in
         // as its own text parts instead.
@@ -154,10 +218,17 @@ class ApiClient {
           // Safety net behind the picker: whatever file reaches an upload is
           // brought under the size limit here (a no-op when it already is).
           final file = await compressImageUnder(File(f.path));
-          request.files.add(await http.MultipartFile.fromPath(f.field, file.path));
+          request.files.add(
+            await http.MultipartFile.fromPath(f.field, file.path),
+          );
         }
         final streamed = await _client.send(request).timeout(apiUploadTimeout);
-        return _logged(method, uri, watch, await http.Response.fromStream(streamed));
+        return _logged(
+          method,
+          uri,
+          watch,
+          await http.Response.fromStream(streamed),
+        );
       }
       final request = http.Request(method, uri)..headers.addAll(headers);
       if (json != null) {
@@ -165,7 +236,12 @@ class ApiClient {
         request.body = jsonEncode(json);
       }
       final streamed = await _client.send(request).timeout(apiTimeout);
-      return _logged(method, uri, watch, await http.Response.fromStream(streamed));
+      return _logged(
+        method,
+        uri,
+        watch,
+        await http.Response.fromStream(streamed),
+      );
     } on ApiException {
       rethrow;
     } on TimeoutException catch (e) {
@@ -179,13 +255,35 @@ class ApiClient {
     }
   }
 
-  http.Response _logged(String method, Uri uri, Stopwatch watch, http.Response response) {
-    ApiLogger.log(method: method, uri: uri, elapsed: watch.elapsed, status: response.statusCode, body: response.bodyBytes);
+  http.Response _logged(
+    String method,
+    Uri uri,
+    Stopwatch watch,
+    http.Response response,
+  ) {
+    ApiLogger.log(
+      method: method,
+      uri: uri,
+      elapsed: watch.elapsed,
+      status: response.statusCode,
+      body: response.bodyBytes,
+    );
     return response;
   }
 
-  ApiException _failed(String method, Uri uri, Stopwatch watch, String reason, Object cause) {
-    ApiLogger.log(method: method, uri: uri, elapsed: watch.elapsed, failure: reason);
+  ApiException _failed(
+    String method,
+    Uri uri,
+    Stopwatch watch,
+    String reason,
+    Object cause,
+  ) {
+    ApiLogger.log(
+      method: method,
+      uri: uri,
+      elapsed: watch.elapsed,
+      failure: reason,
+    );
     return ApiException.network(cause);
   }
 
@@ -212,13 +310,19 @@ class ApiClient {
     final refresh = _tokens?.refresh;
     if (refresh == null) return false;
     try {
-      final response = await _send('POST', '/auth/refresh', json: {'refresh_token': refresh}, auth: false);
+      final response = await _send(
+        'POST',
+        '/auth/refresh',
+        json: {'refresh_token': refresh},
+        auth: false,
+      );
       final body = _decode(response);
       await saveSession(AuthTokens.fromJson(body as Map<String, dynamic>));
       return true;
     } on ApiException catch (e) {
-      // A dead connection says nothing about the token; keep the session.
-      if (e.isNetwork) rethrow;
+      // Only an authentication rejection proves the refresh token is invalid.
+      // Rate limits, timeouts and server errors must leave the session intact.
+      if (e.statusCode != 401) rethrow;
       await clearSession();
       onSessionExpired?.call();
       return false;

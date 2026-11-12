@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:hugeicons/hugeicons.dart';
 part 'nav_motion_painter.dart';
 
@@ -12,11 +12,21 @@ enum NavMotionKind { home, people, calendar, addUser, profile, heart }
 /// The scene for the HugeIcons glyph a nav slot was given, if it has one.
 NavMotionKind? navMotionKindFor(List<List<dynamic>> icon) {
   if (identical(icon, HugeIcons.strokeRoundedHome01)) return NavMotionKind.home;
-  if (identical(icon, HugeIcons.strokeRoundedUserGroup)) return NavMotionKind.people;
-  if (identical(icon, HugeIcons.strokeRoundedCalendar01)) return NavMotionKind.calendar;
-  if (identical(icon, HugeIcons.strokeRoundedUserAdd01)) return NavMotionKind.addUser;
-  if (identical(icon, HugeIcons.strokeRoundedUser)) return NavMotionKind.profile;
-  if (identical(icon, HugeIcons.strokeRoundedFavourite)) return NavMotionKind.heart;
+  if (identical(icon, HugeIcons.strokeRoundedUserGroup)) {
+    return NavMotionKind.people;
+  }
+  if (identical(icon, HugeIcons.strokeRoundedCalendar01)) {
+    return NavMotionKind.calendar;
+  }
+  if (identical(icon, HugeIcons.strokeRoundedUserAdd01)) {
+    return NavMotionKind.addUser;
+  }
+  if (identical(icon, HugeIcons.strokeRoundedUser)) {
+    return NavMotionKind.profile;
+  }
+  if (identical(icon, HugeIcons.strokeRoundedFavourite)) {
+    return NavMotionKind.heart;
+  }
   return null;
 }
 
@@ -34,7 +44,14 @@ Duration navMotionLength(NavMotionKind kind) => Duration(
 /// it is over — and 1 is also the resting icon, so a finished scene and an
 /// icon that never played look the same.
 class NavMotionIcon extends StatelessWidget {
-  const NavMotionIcon({super.key, required this.kind, required this.t, required this.color, this.size = 22, this.day});
+  const NavMotionIcon({
+    super.key,
+    required this.kind,
+    required this.t,
+    required this.color,
+    this.size = 22,
+    this.day,
+  });
 
   final NavMotionKind kind;
   final double t;
@@ -49,8 +66,16 @@ class NavMotionIcon extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     width: size,
     height: size,
-    child: CustomPaint(painter: _NavIconPainter(kind: kind, t: t, color: color, day: day ?? DateTime.now().day)),
+    child: CustomPaint(
+      painter: _NavIconPainter(
+        kind: kind,
+        t: t,
+        color: color,
+        day: day ?? DateTime.now().day,
+      ),
+    ),
   );
 }
 
-double _seg(double t, double from, double to) => ((t - from) / (to - from)).clamp(0.0, 1.0);
+double _seg(double t, double from, double to) =>
+    ((t - from) / (to - from)).clamp(0.0, 1.0);

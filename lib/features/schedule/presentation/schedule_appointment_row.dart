@@ -116,12 +116,19 @@ class _AppointmentRow extends StatelessWidget {
                                 appointment.serviceName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 12.5, color: tokens.textSecondary),
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: tokens.textSecondary,
+                                ),
                               ),
                               if (canCall)
                                 Text(
                                   displayPhone(phone),
-                                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: tokens.accent),
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: tokens.accent,
+                                  ),
                                 ),
                             ],
                           ),
@@ -131,17 +138,19 @@ class _AppointmentRow extends StatelessWidget {
                     if (canCall) ...[
                       const SizedBox(width: 4),
                       IconButton(
-                        tooltip: pickTr(
-                          language,
-                          tk: 'Jaň etmek',
-                          ru: 'Позвонить',
-                          en: 'Call',
-                        ),
+                        tooltip: AppStrings.scheduleCall.select(language),
                         onPressed: () => launchUrl(
                           Uri(scheme: 'tel', path: phone.replaceAll(' ', '')),
                         ),
-                        constraints: const BoxConstraints.tightFor(width: 48, height: 48),
-                        icon: AppIcon(Icons.phone_outlined, size: 20, color: tokens.accent),
+                        constraints: const BoxConstraints.tightFor(
+                          width: 48,
+                          height: 48,
+                        ),
+                        icon: AppIcon(
+                          Icons.phone_outlined,
+                          size: 20,
+                          color: tokens.accent,
+                        ),
                       ),
                     ],
                   ],
@@ -210,7 +219,9 @@ class _FreeSlotRow extends StatelessWidget {
         decoration: BoxDecoration(
           color: freeSlotSurface(context.appTokens),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: freeSlotForeground(context.appTokens).withValues(alpha: .6)),
+          border: Border.all(
+            color: freeSlotForeground(context.appTokens).withValues(alpha: .6),
+          ),
         ),
         child: Row(
           children: [
@@ -219,7 +230,9 @@ class _FreeSlotRow extends StatelessWidget {
               height: 26,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: freeSlotForeground(context.appTokens).withValues(alpha: .16),
+                color: freeSlotForeground(
+                  context.appTokens,
+                ).withValues(alpha: .16),
                 shape: BoxShape.circle,
               ),
               child: AppIcon(
@@ -239,7 +252,7 @@ class _FreeSlotRow extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              '· ${pickTr(language, tk: "Boş wagt", ru: "Свободно", en: "Free")}',
+              '· ${AppStrings.scheduleFree2.select(language)}',
               style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
@@ -247,7 +260,11 @@ class _FreeSlotRow extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            AppIcon(Icons.add, size: 15, color: freeSlotForeground(context.appTokens)),
+            AppIcon(
+              Icons.add,
+              size: 15,
+              color: freeSlotForeground(context.appTokens),
+            ),
           ],
         ),
       ),

@@ -43,8 +43,6 @@ dependencies:
   url_launcher: ^6.3.2
   image_picker: ^1.2.3
 
-  background_sms:
-    path: third_party/background_sms
   permission_handler: ^11.3.1
   flutter_secure_storage: ^11.2.0
   webview_flutter: ^4.14.1
@@ -54,6 +52,8 @@ dependencies:
   device_calendar_plus: ^0.12.0
   flutter_svg: ^2.3.2
 
+  material_ui: any
+  wakelock_plus: ^1.8.0
 dependency_overrides:
   firebase_core:
     path: third_party/firebase_core

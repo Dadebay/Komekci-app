@@ -7,8 +7,6 @@ class _MasterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final balance = context.watch<BillingProvider>().balance;
     final profile = context.watch<MasterProfileProvider>();
     final tokens = context.appTokens;
@@ -104,7 +102,7 @@ class _MasterCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        t(tk: 'Balans', ru: 'Баланс', en: 'Balance'),
+                        AppStrings.cabinetBalance.select(language),
                         style: TextStyle(
                           fontSize: 11.5,
                           color: tokens.textSecondary,
@@ -124,7 +122,9 @@ class _MasterCard extends StatelessWidget {
                 GestureDetector(
                   onTap: () => Navigator.push(
                     context,
-                    pageRoute(const MasterSubscriptionScreen(onboarding: false)),
+                    pageRoute(
+                      const MasterSubscriptionScreen(onboarding: false),
+                    ),
                   ),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -136,7 +136,7 @@ class _MasterCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      t(tk: 'Doldur', ru: 'Пополнить', en: 'Top up'),
+                      AppStrings.cabinetTopUp.select(language),
                       style: TextStyle(
                         color: tokens.surface,
                         fontSize: 12.5,
@@ -167,7 +167,10 @@ class _MetaLine extends StatelessWidget {
       Expanded(
         child: Text(
           text,
-          style: TextStyle(fontSize: 12.5, color: context.appTokens.textSecondary),
+          style: TextStyle(
+            fontSize: 12.5,
+            color: context.appTokens.textSecondary,
+          ),
           overflow: TextOverflow.ellipsis,
         ),
       ),
@@ -235,7 +238,11 @@ class _CabinetRow extends StatelessWidget {
                 ),
                 child: Text(
                   badgeCount > 99 ? '99+' : '$badgeCount',
-                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -263,9 +270,7 @@ class _HelpCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: tokens.surface,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: tokens.border,
-          ),
+          border: Border.all(color: tokens.border),
         ),
         child: Row(
           children: [
@@ -273,12 +278,7 @@ class _HelpCard extends StatelessWidget {
             const SizedBox(width: 13),
             Expanded(
               child: Text(
-                pickTr(
-                  language,
-                  tk: 'Kömek gerekmi?',
-                  ru: 'Нужна помощь?',
-                  en: 'Need help?',
-                ),
+                AppStrings.cabinetNeedHelp.select(language),
                 style: const TextStyle(
                   fontSize: 14.5,
                   fontWeight: FontWeight.w700,

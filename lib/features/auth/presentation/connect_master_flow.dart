@@ -45,12 +45,7 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
       setState(() {
         _result = null;
         _notFound = false;
-        _message = pickTr(
-          language,
-          tk: 'Iň az 3 simwol giriziň',
-          ru: 'Введите минимум 3 символа',
-          en: 'Enter at least 3 characters',
-        );
+        _message = AppStrings.authEnterAtLeast3Characters.select(language);
       });
       return;
     }
@@ -132,8 +127,6 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final masters = context.watch<ClientMastersProvider>();
     final result = _result;
@@ -182,11 +175,7 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                   ),
                   Expanded(
                     child: Text(
-                      t(
-                        tk: 'Master goş',
-                        ru: 'Добавить мастера',
-                        en: 'Add master',
-                      ),
+                      AppStrings.authAddMaster.select(language),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 18,
@@ -205,15 +194,9 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
                 children: [
                   _ConnectHero(
-                    title: t(
-                      tk: 'Masteriňize baglanyň',
-                      ru: 'Подключитесь к мастеру',
-                      en: 'Connect to your master',
-                    ),
-                    subtitle: t(
-                      tk: 'Masteriň lakamyny ýa-da telefon belgisini giriziň',
-                      ru: 'Введите никнейм или номер телефона мастера',
-                      en: "Enter your master's nickname or phone number",
+                    title: AppStrings.authConnectToYourMaster.select(language),
+                    subtitle: AppStrings.authEnterYourMasterSNickname.select(
+                      language,
                     ),
                   ),
                   const SizedBox(height: 22),
@@ -221,11 +204,7 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                     controller: _controller,
                     focusNode: _focus,
                     searching: _searching,
-                    hint: t(
-                      tk: '@lakam ýa-da +993 telefon',
-                      ru: '@никнейм или телефон +993',
-                      en: '@nickname or +993 phone',
-                    ),
+                    hint: AppStrings.authNicknameOr993Phone.select(language),
                     onSearch: _search,
                     onClear: _clear,
                   ),
@@ -234,13 +213,13 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                     children: [
                       _HintChip(
                         icon: Icons.person_outline,
-                        label: t(tk: 'Lakam', ru: 'Никнейм', en: 'Nickname'),
+                        label: AppStrings.authNickname2.select(language),
                         onTap: () => _fill('@'),
                       ),
                       const SizedBox(width: 8),
                       _HintChip(
                         icon: Icons.phone_outlined,
-                        label: t(tk: 'Telefon', ru: 'Телефон', en: 'Phone'),
+                        label: AppStrings.profilePhone.select(language),
                         onTap: () => _fill('+993 '),
                       ),
                     ],
@@ -259,63 +238,29 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                     )
                   else if (_notFound)
                     _NotFoundNote(
-                      title: t(
-                        tk: 'Master tapylmady',
-                        ru: 'Мастер не найден',
-                        en: 'No master found',
-                      ),
-                      text: t(
-                        tk: 'Lakamy ýa-da telefon belgisini doly we dogry ýazandygyňyzy barlaň. Gözleg takyk deňleşdirme bilen işleýär.',
-                        ru: 'Проверьте, что никнейм или номер введены полностью и без ошибок. Поиск работает по точному совпадению.',
-                        en: 'Check that the nickname or number is complete and correct. Search only matches exactly.',
+                      title: AppStrings.authNoMasterFound.select(language),
+                      text: AppStrings.authCheckThatTheNicknameOr.select(
+                        language,
                       ),
                     )
                   else if (!_searching)
                     _HowItWorks(
-                      title: t(
-                        tk: 'Nähili işleýär?',
-                        ru: 'Как это работает?',
-                        en: 'How it works',
-                      ),
+                      title: AppStrings.authHowItWorks.select(language),
                       steps: [
                         (
                           Icons.chat_bubble_outline,
-                          t(
-                            tk: 'Masterden lakamyny soraň',
-                            ru: 'Узнайте никнейм у мастера',
-                            en: 'Ask your master for their nickname',
-                          ),
-                          t(
-                            tk: 'Ýa-da onuň telefon belgisini ulanyň.',
-                            ru: 'Или воспользуйтесь его номером телефона.',
-                            en: 'Or use their phone number.',
-                          ),
+                          AppStrings.authAskYourMasterForTheir.select(language),
+                          AppStrings.authOrUseTheirPhoneNumber.select(language),
                         ),
                         (
                           Icons.search,
-                          t(
-                            tk: 'Gözläň we haýyş iberiň',
-                            ru: 'Найдите и отправьте запрос',
-                            en: 'Search and send a request',
-                          ),
-                          t(
-                            tk: 'Master sizi öz müşderileriniň hataryna goşar.',
-                            ru: 'Мастер добавит вас в свои клиенты.',
-                            en: 'The master adds you to their clients.',
-                          ),
+                          AppStrings.authSearchAndSendARequest.select(language),
+                          AppStrings.authTheMasterAddsYouTo.select(language),
                         ),
                         (
                           Icons.calendar_month_outlined,
-                          t(
-                            tk: 'Ýazylyň',
-                            ru: 'Записывайтесь',
-                            en: 'Book appointments',
-                          ),
-                          t(
-                            tk: 'Kabul edilenden soň hyzmatlary we boş wagtlary görersiňiz.',
-                            ru: 'После принятия вы увидите услуги и свободное время.',
-                            en: 'Once accepted you can see services and free times.',
-                          ),
+                          AppStrings.authBookAppointments.select(language),
+                          AppStrings.authOnceAcceptedYouCanSee.select(language),
                         ),
                       ],
                     ),
@@ -329,11 +274,7 @@ class _ConnectMasterScreenState extends State<ConnectMasterScreen> {
                 (_) => false,
               ),
               child: Text(
-                t(
-                  tk: 'Soňrak baglanaryn',
-                  ru: 'Подключусь позже',
-                  en: 'I’ll connect later',
-                ),
+                AppStrings.authILlConnectLater.select(language),
                 style: TextStyle(
                   color: tokens.textSecondary,
                   fontWeight: FontWeight.w600,

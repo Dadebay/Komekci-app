@@ -54,7 +54,7 @@ class _HomeApptRow extends StatelessWidget {
     // Mirrors the reference design's single highlighted "in progress" row —
     // the client is on-site right now, so it's the one row worth calling out.
     final highlighted = appointment.status == AppointmentStatus.arrived;
-    final minutesLabel = pickTr(language, tk: 'min', ru: 'мин', en: 'min');
+    final minutesLabel = AppStrings.bookingMin2.select(language);
 
     return InkWell(
       onTap: onTap,
@@ -110,19 +110,13 @@ class _HomeApptRow extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      customer == null
-                          ? CircleAvatar(
-                              radius: 16,
-                              backgroundColor: tokens.accent.withValues(
-                                alpha: .18,
-                              ),
-                              child: AppIcon(
-                                Icons.person_outline,
-                                size: 15,
-                                color: tokens.textPrimary,
-                              ),
-                            )
-                          : _CustomerAvatar(customer: customer!, radius: 16),
+                      // The customer on file first, then the photo that came
+                      // with the appointment itself.
+                      RoundPhoto(
+                        url: customer?.photoUrl ?? appointment.clientPhotoUrl,
+                        radius: 16,
+                        backgroundColor: tokens.accent.withValues(alpha: .18),
+                      ),
                       const SizedBox(width: 9),
                       Expanded(
                         child: Column(

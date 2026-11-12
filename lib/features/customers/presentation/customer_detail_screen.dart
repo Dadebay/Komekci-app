@@ -26,8 +26,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final provider = context.watch<CustomerProvider>();
     final customer = _findCustomer(provider.customers, widget.customerId);
     if (customer == null) {
@@ -43,7 +41,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Müşderi maglumatlary', ru: 'Информация о клиенте', en: 'Customer details'),
+        title: AppStrings.customersCustomerDetails.select(language),
       ),
       body: SafeArea(
         child: Column(
@@ -60,7 +58,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         child: _InfoTile(
                           icon: Icons.content_cut,
                           accent: tokens.accent,
-                          label: t(tk: 'Soňky hyzmat', ru: 'Последняя услуга', en: 'Last service'),
+                          label: AppStrings.customersLastService.select(
+                            language,
+                          ),
                           value: customer.lastCompletedVisit == null
                               ? '—'
                               : customer.lastCompletedVisit!.serviceName,
@@ -70,17 +70,20 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       Expanded(
                         child: _InfoTile(
                           icon: Icons.calendar_month_outlined,
-                          accent: _statusColor(CustomerStatus.newClient, tokens),
-                          label: t(tk: 'Indiki ýazgy', ru: 'Следующая запись', en: 'Next booking'),
+                          accent: _statusColor(
+                            CustomerStatus.newClient,
+                            tokens,
+                          ),
+                          label: AppStrings.customersNextBooking.select(
+                            language,
+                          ),
                           value: customer.nextVisit == null
-                              ? t(tk: 'Ýok', ru: 'Нет', en: 'None')
+                              ? AppStrings.customersNone.select(language)
                               : '${formatDate(customer.nextVisit!)} • ${formatTime(TimeOfDay.fromDateTime(customer.nextVisit!))}',
                           chevron: true,
                           onTap: () => Navigator.push(
                             context,
-                            pageRoute(
-                              NewAppointmentScreen(customer: customer),
-                            ),
+                            pageRoute(NewAppointmentScreen(customer: customer)),
                           ),
                         ),
                       ),
@@ -113,7 +116,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  t(tk: 'Bellik', ru: 'Заметка', en: 'Note'),
+                                  AppStrings.bookingNote.select(language),
                                   style: TextStyle(
                                     fontSize: 11.5,
                                     color: tokens.textSecondary,
@@ -140,7 +143,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        t(tk: 'Sapar taryhy', ru: 'История визитов', en: 'Visit history'),
+                        AppStrings.customersVisitHistory.select(language),
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
@@ -157,7 +160,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           child: Row(
                             children: [
                               Text(
-                                t(tk: 'Ählisini görmek', ru: 'Смотреть все', en: 'View all'),
+                                AppStrings.customersViewAll.select(language),
                                 style: TextStyle(
                                   fontSize: 12.5,
                                   color: tokens.accent,
@@ -178,8 +181,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   if (recentVisits.isEmpty)
                     EmptyState(
                       icon: Icons.event_busy_outlined,
-                      title: t(tk: 'Sapar ýok', ru: 'Визитов пока нет', en: 'No visits yet'),
-                      text: t(tk: 'Bu müşderi entek gelen däldir.', ru: 'Клиент ещё не приходил.', en: 'This customer has not visited yet.'),
+                      title: AppStrings.customersNoVisitsYet.select(language),
+                      text: AppStrings.customersThisCustomerHasNotVisited
+                          .select(language),
                     )
                   else
                     ...recentVisits.map(
@@ -195,7 +199,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   Expanded(
                     child: _OutlineActionButton(
                       icon: Icons.phone_outlined,
-                      label: t(tk: 'Habarlaşmak', ru: 'Связаться', en: 'Contact'),
+                      label: AppStrings.customersContact.select(language),
                       onTap: () => launchUrl(
                         Uri(
                           scheme: 'tel',
@@ -207,7 +211,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: MasterActionButton(
-                      label: t(tk: 'Täze ýazgy etmek', ru: 'Новая запись', en: 'New booking'),
+                      label: AppStrings.customersNewBooking.select(language),
                       enabled: true,
                       leading: Icons.calendar_month_outlined,
                       onTap: () => Navigator.push(

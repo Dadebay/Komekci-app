@@ -23,12 +23,7 @@ class _PrivacyNote extends StatelessWidget {
         const SizedBox(width: 11),
         Expanded(
           child: Text(
-            pickTr(
-              language,
-              tk: 'Siziň maglumatlaryňyz ygtybarly saklanýar we üçünji taraplar bilen paýlaşylmaýar.',
-              ru: 'Ваши данные хранятся надёжно и не передаются третьим лицам.',
-              en: 'Your data is stored securely and never shared with third parties.',
-            ),
+            AppStrings.authYourDataIsStoredSecurely.select(language),
             style: TextStyle(
               color: tokens.textSecondary,
               fontSize: 12,

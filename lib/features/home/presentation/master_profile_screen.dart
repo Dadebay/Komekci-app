@@ -46,8 +46,6 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final profile = _profile;
     final services =
@@ -157,33 +155,19 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                         _ProfilePill(
                           dotColor: accepting ? tokens.success : tokens.warning,
                           label: accepting
-                              ? t(
-                                  tk: 'Ýazgy açyk',
-                                  ru: 'Запись открыта',
-                                  en: 'Taking bookings',
-                                )
-                              : t(
-                                  tk: 'Wagtlaýyn ýapyk',
-                                  ru: 'Запись закрыта',
-                                  en: 'Bookings paused',
-                                ),
+                              ? AppStrings.homeTakingBookings.select(language)
+                              : AppStrings.homeBookingsPaused.select(language),
                         ),
                       ],
                     ),
                     if (_error != null) ...[
                       const SizedBox(height: 20),
                       RetryErrorState(
-                        title: t(
-                          tk: 'Ýalňyşlyk',
-                          ru: 'Ошибка',
-                          en: 'Something went wrong',
+                        title: AppStrings.requestsSomethingWentWrong.select(
+                          language,
                         ),
                         text: apiErrorMessage(_error!, language),
-                        retryLabel: t(
-                          tk: 'Täzeden synanyş',
-                          ru: 'Повторить',
-                          en: 'Try again',
-                        ),
+                        retryLabel: AppStrings.profileTryAgain.select(language),
                         onRetry: _load,
                       ),
                     ],
@@ -194,11 +178,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                           Expanded(
                             child: _ProfileStat(
                               icon: Icons.content_cut,
-                              caption: t(
-                                tk: 'Hyzmat',
-                                ru: 'Услуг',
-                                en: 'Services',
-                              ),
+                              caption: AppStrings.homeServices.select(language),
                               value: '${services.length}',
                             ),
                           ),
@@ -206,7 +186,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                           Expanded(
                             child: _ProfileStat(
                               icon: Icons.payments_outlined,
-                              caption: t(tk: 'Başlangyç', ru: 'От', en: 'From'),
+                              caption: AppStrings.homeFrom.select(language),
                               value: cheapest == null
                                   ? '—'
                                   : '${formatMoney(cheapest)} $currency',
@@ -216,14 +196,10 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                           Expanded(
                             child: _ProfileStat(
                               icon: Icons.schedule_outlined,
-                              caption: t(
-                                tk: 'Iň gysga',
-                                ru: 'От',
-                                en: 'Shortest',
-                              ),
+                              caption: AppStrings.homeShortest.select(language),
                               value: shortest == null
                                   ? '—'
-                                  : '$shortest ${t(tk: 'min', ru: 'мин', en: 'min')}',
+                                  : '$shortest ${AppStrings.bookingMin2.select(language)}',
                             ),
                           ),
                         ],
@@ -231,9 +207,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                     ],
                     if ((profile?.description ?? '').isNotEmpty) ...[
                       const SizedBox(height: 28),
-                      sectionTitle(
-                        t(tk: 'Hakynda', ru: 'О мастере', en: 'About'),
-                      ),
+                      sectionTitle(AppStrings.homeAbout.select(language)),
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
@@ -251,11 +225,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                     if (links.isNotEmpty) ...[
                       const SizedBox(height: 28),
                       sectionTitle(
-                        t(
-                          tk: 'Sosial ulgamlar',
-                          ru: 'Соцсети',
-                          en: 'Social media',
-                        ),
+                        AppStrings.cabinetSocialMedia.select(language),
                       ),
                       Wrap(
                         spacing: 10,
@@ -302,7 +272,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                     ],
                     const SizedBox(height: 28),
                     sectionTitle(
-                      t(tk: 'Hyzmatlar', ru: 'Услуги', en: 'Services'),
+                      AppStrings.servicesServices.select(language),
                       count: _services == null ? null : services.length,
                     ),
                     if (_services == null && _error == null)
@@ -312,11 +282,7 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
                       )
                     else if (services.isEmpty && _error == null)
                       Text(
-                        t(
-                          tk: 'Heniz hyzmat goşulmady.',
-                          ru: 'Услуги пока не добавлены.',
-                          en: 'No services yet.',
-                        ),
+                        AppStrings.homeNoServicesYet.select(language),
                         style: TextStyle(
                           color: tokens.textSecondary,
                           fontSize: 13,
@@ -372,15 +338,11 @@ class _MasterProfileScreenState extends State<MasterProfileScreen> {
         ],
       ),
       bottomNavigationBar: _BookingBottomBar(
-        caption: t(tk: 'Başlangyç bahasy', ru: 'Цена от', en: 'Starting from'),
+        caption: AppStrings.homeStartingFrom.select(language),
         value: cheapest == null ? '—' : '${formatMoney(cheapest)} $currency',
         label: accepting
-            ? t(tk: 'Ýazyl', ru: 'Записаться', en: 'Book')
-            : t(
-                tk: 'Wagtlaýyn ýapyk',
-                ru: 'Запись закрыта',
-                en: 'Bookings paused',
-              ),
+            ? AppStrings.appointmentsBook.select(language)
+            : AppStrings.homeBookingsPaused.select(language),
         onPressed: accepting
             ? () => Navigator.push(
                 context,

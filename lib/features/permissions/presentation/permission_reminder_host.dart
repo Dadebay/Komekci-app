@@ -1,6 +1,7 @@
+import '../../../core/localization/app_strings.dart';
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/localization/language_provider.dart';
@@ -89,8 +90,6 @@ class _PermissionReminderHostState extends State<PermissionReminderHost>
   Future<_PermissionAction?> _showReminder(MissingAppPermissions missing) {
     final language = context.read<LanguageProvider>().language;
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return showDialog<_PermissionAction>(
       context: context,
       barrierColor: tokens.scrim,
@@ -132,10 +131,8 @@ class _PermissionReminderHostState extends State<PermissionReminderHost>
                         Semantics(
                           header: true,
                           child: Text(
-                            t(
-                              tk: 'Rugsatlar gerek',
-                              ru: 'Нужны разрешения',
-                              en: 'Permissions needed',
+                            AppStrings.permissionsPermissionsNeeded.select(
+                              language,
                             ),
                             style: TextStyle(
                               fontFamily: 'Gilroy',
@@ -149,16 +146,11 @@ class _PermissionReminderHostState extends State<PermissionReminderHost>
                         if (missing.notifications)
                           _PermissionRow(
                             icon: Icons.notifications_none,
-                            title: t(
-                              tk: 'Bildirişlere rugsat beriň',
-                              ru: 'Разрешите уведомления',
-                              en: 'Allow notifications',
-                            ),
-                            detail: t(
-                              tk: 'Täze ýazgylar we ýatlatmalar wagtynda geler.',
-                              ru: 'Новые записи и напоминания придут вовремя.',
-                              en: 'New bookings and reminders arrive on time.',
-                            ),
+                            title: AppStrings.permissionsAllowNotifications
+                                .select(language),
+                            detail: AppStrings
+                                .permissionsNewBookingsAndRemindersArrive
+                                .select(language),
                           ),
                         if (missing.notifications && missing.calendar) ...[
                           const SizedBox(height: 14),
@@ -168,16 +160,11 @@ class _PermissionReminderHostState extends State<PermissionReminderHost>
                         if (missing.calendar)
                           _PermissionRow(
                             icon: Icons.calendar_month_outlined,
-                            title: t(
-                              tk: 'Senenama rugsat beriň',
-                              ru: 'Разрешите доступ к календарю',
-                              en: 'Allow calendar access',
-                            ),
-                            detail: t(
-                              tk: 'Ýazgylar we 1 sagat öňki ýatlatmalar senenamada saklanar.',
-                              ru: 'Записи и напоминания за час сохранятся в календаре.',
-                              en: 'Bookings and one-hour reminders stay in your calendar.',
-                            ),
+                            title: AppStrings.permissionsAllowCalendarAccess
+                                .select(language),
+                            detail: AppStrings
+                                .permissionsBookingsAndOneHourReminders
+                                .select(language),
                           ),
                       ],
                     ),
@@ -196,9 +183,7 @@ class _PermissionReminderHostState extends State<PermissionReminderHost>
                     onPressed: () => Navigator.of(
                       dialogContext,
                     ).pop(_PermissionAction.allow),
-                    child: Text(
-                      t(tk: 'Rugsat ber', ru: 'Разрешить', en: 'Allow'),
-                    ),
+                    child: Text(AppStrings.permissionsAllow.select(language)),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -210,7 +195,7 @@ class _PermissionReminderHostState extends State<PermissionReminderHost>
                           dialogContext,
                         ).pop(_PermissionAction.settings),
                         child: Text(
-                          t(tk: 'Sazlamalar', ru: 'Настройки', en: 'Settings'),
+                          AppStrings.profileSettings.select(language),
                         ),
                       ),
                     ),
@@ -222,7 +207,7 @@ class _PermissionReminderHostState extends State<PermissionReminderHost>
                         onPressed: () => Navigator.of(
                           dialogContext,
                         ).pop(_PermissionAction.later),
-                        child: Text(t(tk: 'Soňra', ru: 'Позже', en: 'Later')),
+                        child: Text(AppStrings.requestsLater.select(language)),
                       ),
                     ),
                   ],

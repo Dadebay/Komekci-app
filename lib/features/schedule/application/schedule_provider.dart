@@ -26,22 +26,27 @@ class ScheduleProvider extends SessionScoped {
   bool get loading => _loading;
   ApiException? get error => _error;
 
-  List<ClosedTime> closedTimesOn(DateTime day) =>
-      List.unmodifiable(_closedByDay[formatApiDate(day)] ?? const <ClosedTime>[]);
+  List<ClosedTime> closedTimesOn(DateTime day) => List.unmodifiable(
+    _closedByDay[formatApiDate(day)] ?? const <ClosedTime>[],
+  );
 
-  bool closedTimesLoaded(DateTime day) => _closedDaysLoaded.contains(formatApiDate(day));
-  ApiException? closedTimesError(DateTime day) => _closedErrors[formatApiDate(day)];
+  bool closedTimesLoaded(DateTime day) =>
+      _closedDaysLoaded.contains(formatApiDate(day));
+  ApiException? closedTimesError(DateTime day) =>
+      _closedErrors[formatApiDate(day)];
 
   bool hasClosedConflict(DateTime start, int minutes) {
     final end = start.add(Duration(minutes: minutes));
     return closedTimesOn(start).any(
-      (closed) => start.isBefore(closed.endsAt) && closed.startsAt.isBefore(end),
+      (closed) =>
+          start.isBefore(closed.endsAt) && closed.startsAt.isBefore(end),
     );
   }
 
   /// Seven entries, Monday (0) to Sunday (6).
   List<ScheduleDay> get days {
-    final list = [...?_schedule?.days]..sort((a, b) => a.weekday.compareTo(b.weekday));
+    final list = [...?_schedule?.days]
+      ..sort((a, b) => a.weekday.compareTo(b.weekday));
     return list;
   }
 
@@ -97,7 +102,10 @@ class ScheduleProvider extends SessionScoped {
 
   Future<void> loadClosedTimes(DateTime day, {bool force = false}) async {
     final key = formatApiDate(day);
-    if (_closedDaysLoading.contains(key) || (!force && _closedDaysLoaded.contains(key))) return;
+    if (_closedDaysLoading.contains(key) ||
+        (!force && _closedDaysLoaded.contains(key))) {
+      return;
+    }
     final userId = sessionUserId;
     _closedDaysLoading.add(key);
     _closedErrors.remove(key);
@@ -120,8 +128,16 @@ class ScheduleProvider extends SessionScoped {
     }
   }
 
-  Future<ClosedTime> blockTime(DateTime start, DateTime end, {String? note}) async {
-    final closed = await _repository.createClosedTime(start: start, end: end, note: note);
+  Future<ClosedTime> blockTime(
+    DateTime start,
+    DateTime end, {
+    String? note,
+  }) async {
+    final closed = await _repository.createClosedTime(
+      start: start,
+      end: end,
+      note: note,
+    );
     final key = formatApiDate(start);
     _closedByDay[key] = [...?_closedByDay[key], closed];
     notifyListeners();
@@ -158,7 +174,8 @@ class ScheduleProvider extends SessionScoped {
     notifyListeners();
   }
 
-  Future<void> addDayOff(DateTime date) => _addOverride(date, OverrideType.dayOff);
+  Future<void> addDayOff(DateTime date) =>
+      _addOverride(date, OverrideType.dayOff);
 
   Future<void> addCustomHours(DateTime date, String start, String end) =>
       _addOverride(date, OverrideType.customHours, start: start, end: end);
@@ -181,7 +198,13 @@ class ScheduleProvider extends SessionScoped {
   Future<void> removeOverride(int id) async {
     await _repository.deleteOverride(id);
     _withSchedule(
-      (s) => _copy(s, overrides: [for (final o in s.overrides) if (o.id != id) o]),
+      (s) => _copy(
+        s,
+        overrides: [
+          for (final o in s.overrides)
+            if (o.id != id) o,
+        ],
+      ),
     );
   }
 
@@ -193,7 +216,13 @@ class ScheduleProvider extends SessionScoped {
   Future<void> removeVacation(int id) async {
     await _repository.deleteVacation(id);
     _withSchedule(
-      (s) => _copy(s, vacations: [for (final v in s.vacations) if (v.id != id) v]),
+      (s) => _copy(
+        s,
+        vacations: [
+          for (final v in s.vacations)
+            if (v.id != id) v,
+        ],
+      ),
     );
   }
 
@@ -204,12 +233,15 @@ class ScheduleProvider extends SessionScoped {
     notifyListeners();
   }
 
-  Schedule _copy(Schedule s, {List<ScheduleOverride>? overrides, List<Vacation>? vacations}) =>
-      Schedule(
-        gridStepMin: s.gridStepMin,
-        minLeadMin: s.minLeadMin,
-        days: s.days,
-        overrides: overrides ?? s.overrides,
-        vacations: vacations ?? s.vacations,
-      );
+  Schedule _copy(
+    Schedule s, {
+    List<ScheduleOverride>? overrides,
+    List<Vacation>? vacations,
+  }) => Schedule(
+    gridStepMin: s.gridStepMin,
+    minLeadMin: s.minLeadMin,
+    days: s.days,
+    overrides: overrides ?? s.overrides,
+    vacations: vacations ?? s.vacations,
+  );
 }

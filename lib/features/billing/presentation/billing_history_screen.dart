@@ -2,46 +2,18 @@ part of '../../../app/komekci_app.dart';
 
 String _ledgerTypeLabel(LedgerType type, AppLanguage language) =>
     switch (type) {
-      LedgerType.topup => pickTr(
+      LedgerType.topup => AppStrings.billingBalanceTopUp.select(language),
+      LedgerType.charge => AppStrings.billingSubscriptionPayment.select(
         language,
-        tk: 'Balans doldurmak',
-        ru: 'Пополнение баланса',
-        en: 'Balance top-up',
       ),
-      LedgerType.charge => pickTr(
-        language,
-        tk: 'Abuna tölegi',
-        ru: 'Оплата подписки',
-        en: 'Subscription payment',
-      ),
-      LedgerType.refund => pickTr(
-        language,
-        tk: 'Yzyna gaýtarylma',
-        ru: 'Возврат',
-        en: 'Refund',
-      ),
+      LedgerType.refund => AppStrings.billingRefund.select(language),
     };
 
 String _ledgerStatusLabel(LedgerStatus status, AppLanguage language) =>
     switch (status) {
-      LedgerStatus.succeeded => pickTr(
-        language,
-        tk: 'Üstünlikli',
-        ru: 'Успешно',
-        en: 'Successful',
-      ),
-      LedgerStatus.pending => pickTr(
-        language,
-        tk: 'Garaşylýar',
-        ru: 'В обработке',
-        en: 'Pending',
-      ),
-      LedgerStatus.failed => pickTr(
-        language,
-        tk: 'Şowsuz',
-        ru: 'Не удалось',
-        en: 'Failed',
-      ),
+      LedgerStatus.succeeded => AppStrings.billingSuccessful.select(language),
+      LedgerStatus.pending => AppStrings.billingPending.select(language),
+      LedgerStatus.failed => AppStrings.billingFailed.select(language),
     };
 
 Color _ledgerStatusColor(LedgerStatus status, AppThemeTokens tokens) =>
@@ -60,8 +32,6 @@ class _LedgerEntryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final statusColor = _ledgerStatusColor(entry.status, tokens);
     return Container(
@@ -140,7 +110,7 @@ class _LedgerEntryTile extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                '${t(tk: "Balans", ru: "Баланс", en: "Balance")}: ${formatMoney(entry.balanceAfter)}',
+                '${AppStrings.billingBalance.select(language)}: ${formatMoney(entry.balanceAfter)}',
                 style: TextStyle(fontSize: 11, color: tokens.textSecondary),
               ),
             ],
@@ -158,19 +128,13 @@ class BillingHistoryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final billing = context.watch<BillingProvider>();
     final history = billing.history;
     final tokens = context.appTokens;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(
-          tk: 'Töleg taryhy',
-          ru: 'История платежей',
-          en: 'Payment history',
-        ),
+        title: AppStrings.billingPaymentHistory.select(language),
         action: const _BalanceChip(),
       ),
       body: SafeArea(
@@ -179,16 +143,8 @@ class BillingHistoryScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 40, 20, 24),
                 child: EmptyState(
                   icon: Icons.receipt_long_outlined,
-                  title: t(
-                    tk: 'Töleg taryhy boş',
-                    ru: 'История платежей пуста',
-                    en: 'No payment history',
-                  ),
-                  text: t(
-                    tk: 'Töleg edeniňizden soň, ol şu ýerde görüner.',
-                    ru: 'После оплаты она появится здесь.',
-                    en: 'Once you make a payment, it will appear here.',
-                  ),
+                  title: AppStrings.billingNoPaymentHistory.select(language),
+                  text: AppStrings.billingOnceYouMakeAPayment.select(language),
                 ),
               )
             : RefreshIndicator(
@@ -207,16 +163,8 @@ class BillingHistoryScreen extends StatelessWidget {
                               : billing.loadMoreHistory,
                           child: Text(
                             billing.loadingMore
-                                ? t(
-                                    tk: 'Ýüklenýär...',
-                                    ru: 'Загрузка...',
-                                    en: 'Loading...',
-                                  )
-                                : t(
-                                    tk: 'Köpräk görkez',
-                                    ru: 'Показать ещё',
-                                    en: 'Show more',
-                                  ),
+                                ? AppStrings.billingLoading.select(language)
+                                : AppStrings.billingShowMore.select(language),
                           ),
                         ),
                       ),

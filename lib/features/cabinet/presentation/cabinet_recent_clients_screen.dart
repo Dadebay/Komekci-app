@@ -1,7 +1,11 @@
 part of '../../../app/komekci_app.dart';
 
 class RecentClientsScreen extends StatefulWidget {
-  const RecentClientsScreen({super.key, this.initialSelection = const [], this.forPush = true});
+  const RecentClientsScreen({
+    super.key,
+    this.initialSelection = const [],
+    this.forPush = true,
+  });
   final List<String> initialSelection;
   final bool forPush;
 
@@ -18,15 +22,17 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final periodLabels = switch (language) {
-      AppLanguage.tk => ['7 gün', '30 gün', '3 aý', '6 aý'],
-      AppLanguage.ru => ['7 дней', '30 дней', '3 мес.', '6 мес.'],
-      AppLanguage.en => ['7 days', '30 days', '3 mo.', '6 mo.'],
+      AppLanguage.tk => AppStrings.recentPeriodLabelsTk,
+      AppLanguage.ru => AppStrings.recentPeriodLabelsRu,
+      AppLanguage.en => AppStrings.recentPeriodLabelsEn,
     };
-    final cutoff = DateTime.now().subtract(Duration(days: _periodDays[_period]));
-    final clients = context.watch<CustomerProvider>().customers
+    final cutoff = DateTime.now().subtract(
+      Duration(days: _periodDays[_period]),
+    );
+    final clients = context
+        .watch<CustomerProvider>()
+        .customers
         .where((c) => c.lastVisit != null && !c.lastVisit!.isBefore(cutoff))
         .toList();
     final eligibleIds = clients
@@ -38,11 +44,7 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(
-          tk: 'Soňky müşderiler',
-          ru: 'Недавние клиенты',
-          en: 'Recent clients',
-        ),
+        title: AppStrings.cabinetRecentClients.select(language),
         action: AppHelpButton(
           onTap: () =>
               Navigator.push(context, pageRoute(const SupportScreen())),
@@ -57,19 +59,13 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
                 children: [
                   _InfoBanner(
                     icon: Icons.schedule_outlined,
-                    text: t(
-                      tk: 'Soňky haçan hyzmat alan müşderileriňize habar iberiň.',
-                      ru: 'Отправьте сообщение клиентам, которые недавно получали услугу.',
-                      en: 'Send a message to clients who recently received a service.',
+                    text: AppStrings.cabinetSendAMessageToClients.select(
+                      language,
                     ),
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    t(
-                      tk: 'Döwrüni saýlaň',
-                      ru: 'Выберите период',
-                      en: 'Choose a period',
-                    ),
+                    AppStrings.cabinetChooseAPeriod.select(language),
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -121,11 +117,10 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    t(
-                      tk: 'Soňky ${periodLabels[_period]} içinde hyzmat alanlar (${clients.length})',
-                      ru: 'Клиенты за последние ${periodLabels[_period]} (${clients.length})',
-                      en: 'Clients from the last ${periodLabels[_period]} (${clients.length})',
-                    ),
+                    AppStrings.cabinetClientsFromTheLast(
+                      periodLabels[_period],
+                      clients.length,
+                    ).select(language),
                     style: const TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
@@ -133,16 +128,23 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
                   ),
                   const SizedBox(height: 10),
                   ...clients.map((c) {
-                    final canSend = _canMessageCustomer(c, forPush: widget.forPush);
+                    final canSend = _canMessageCustomer(
+                      c,
+                      forPush: widget.forPush,
+                    );
                     final checked = canSend && selected.contains(c.id);
                     return _ClientListTile(
                       name: c.name,
                       phone: c.phone,
                       subtitle: !canSend
                           ? widget.forPush
-                              ? t(tk: 'Push üçin elýeterli däl', ru: 'Push недоступен', en: 'Push unavailable')
-                              : t(tk: 'Telefon belgisi ýok', ru: 'Нет номера телефона', en: 'No phone number')
-                          : '${t(tk: "Soňky sapar", ru: "Последний визит", en: "Last visit")}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
+                                ? AppStrings.cabinetPushUnavailable.select(
+                                    language,
+                                  )
+                                : AppStrings.cabinetNoPhoneNumber.select(
+                                    language,
+                                  )
+                          : '${AppStrings.cabinetLastVisit2.select(language)}: ${c.lastVisit!.day}.${c.lastVisit!.month}.${c.lastVisit!.year}',
                       checked: checked,
                       enabled: canSend,
                       onTap: canSend
@@ -159,11 +161,7 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
                   const SizedBox(height: 8),
                   _InfoBanner(
                     icon: Icons.info_outline,
-                    text: t(
-                      tk: 'Bir gezekde 50 müşdera çenli habar iberip bilersiňiz.',
-                      ru: 'За раз можно отправить сообщение максимум 50 клиентам.',
-                      en: 'You can message up to 50 clients at a time.',
-                    ),
+                    text: AppStrings.cabinetYouCanMessageUpTo.select(language),
                   ),
                 ],
               ),
@@ -172,7 +170,7 @@ class _RecentClientsScreenState extends State<RecentClientsScreen> {
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: MasterActionButton(
                 label:
-                    '${t(tk: "Dowam et", ru: "Продолжить", en: "Continue")} (${selected.length})',
+                    '${AppStrings.cabinetContinue.select(language)} (${selected.length})',
                 enabled: selected.isNotEmpty && selected.length <= 50,
                 onTap: () => Navigator.pop(context, selected.toList()),
               ),

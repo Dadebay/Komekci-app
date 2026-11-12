@@ -1,32 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-class _HeaderStat extends StatelessWidget {
-  const _HeaderStat({required this.value, required this.label});
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Text(
-        value,
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      const SizedBox(height: 3),
-      Text(
-        label,
-        style: TextStyle(
-          fontSize: 10.5,
-          color: context.appTokens.textSecondary,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    ],
-  );
-}
-
 class _InfoTile extends StatelessWidget {
   const _InfoTile({
     required this.icon,
@@ -114,38 +87,9 @@ class _VisitRow extends StatelessWidget {
   final CustomerVisit visit;
   final AppLanguage language;
 
-  static const _monthsTk = [
-    'Ýan',
-    'Few',
-    'Mart',
-    'Apr',
-    'Maý',
-    'Iýun',
-    'Iýul',
-    'Awg',
-    'Sen',
-    'Okt',
-    'Noý',
-    'Dek',
-  ];
-  static const _monthsRu = [
-    'Янв',
-    'Фев',
-    'Мар',
-    'Апр',
-    'Май',
-    'Июн',
-    'Июл',
-    'Авг',
-    'Сен',
-    'Окт',
-    'Ноя',
-    'Дек',
-  ];
-  static const _monthsEn = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
+  static const _monthsTk = AppStrings.monthsShortTk;
+  static const _monthsRu = AppStrings.monthsShortRu;
+  static const _monthsEn = AppStrings.monthsShortEn;
 
   @override
   Widget build(BuildContext context) {
@@ -281,18 +225,21 @@ class CustomerVisitsScreen extends StatelessWidget {
     );
     return Scaffold(
       backgroundColor: context.appTokens.surface,
-      appBar: CabinetAppBar(title: pickTr(language, tk: 'Sapar taryhy', ru: 'История визитов', en: 'Visit history')),
+      appBar: CabinetAppBar(
+        title: AppStrings.customersVisitHistory.select(language),
+      ),
       body: SafeArea(
         child: customer == null
             ? const SizedBox.shrink()
             : ListView.builder(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
                 itemCount: customer.visits.length,
-                itemBuilder: (_, index) =>
-                    _VisitRow(visit: customer.visits[index], language: language),
+                itemBuilder: (_, index) => _VisitRow(
+                  visit: customer.visits[index],
+                  language: language,
+                ),
               ),
       ),
     );
   }
 }
-

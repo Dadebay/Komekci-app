@@ -1,7 +1,12 @@
 part of 'nav_motion_icons.dart';
 
 class _NavIconPainter extends CustomPainter {
-  const _NavIconPainter({required this.kind, required this.t, required this.color, required this.day});
+  const _NavIconPainter({
+    required this.kind,
+    required this.t,
+    required this.color,
+    required this.day,
+  });
 
   final NavMotionKind kind;
   final double t;
@@ -59,9 +64,17 @@ class _NavIconPainter extends CustomPainter {
       Path()
         ..moveTo(5.6, 10.2)
         ..lineTo(5.6, 19.4)
-        ..arcToPoint(const Offset(7.2, 21), radius: const Radius.circular(1.6), clockwise: false)
+        ..arcToPoint(
+          const Offset(7.2, 21),
+          radius: const Radius.circular(1.6),
+          clockwise: false,
+        )
         ..lineTo(16.8, 21)
-        ..arcToPoint(const Offset(18.4, 19.4), radius: const Radius.circular(1.6), clockwise: false)
+        ..arcToPoint(
+          const Offset(18.4, 19.4),
+          radius: const Radius.circular(1.6),
+          clockwise: false,
+        )
         ..lineTo(18.4, 10.2),
       stroke,
     );
@@ -82,7 +95,10 @@ class _NavIconPainter extends CustomPainter {
       Path()
         ..moveTo(9.8, 21)
         ..lineTo(9.8, 16.6)
-        ..arcToPoint(const Offset(14.2, 16.6), radius: const Radius.circular(2.2)),
+        ..arcToPoint(
+          const Offset(14.2, 16.6),
+          radius: const Radius.circular(2.2),
+        ),
       stroke,
     );
     final leafX = 14.2 - 4.0 * open;
@@ -133,10 +149,17 @@ class _NavIconPainter extends CustomPainter {
     final clap = t < .3 ? math.sin(math.pi * t / .3) : 0.0;
     final stroke = _stroke;
 
-    canvas.drawRRect(RRect.fromLTRBR(3.2, 5.2, 20.8, 20.8, const Radius.circular(3.2)), stroke);
+    canvas.drawRRect(
+      RRect.fromLTRBR(3.2, 5.2, 20.8, 20.8, const Radius.circular(3.2)),
+      stroke,
+    );
     canvas.drawLine(const Offset(3.2, 9.6), const Offset(20.8, 9.6), stroke);
     for (final x in const [8.0, 16.0]) {
-      canvas.drawLine(Offset(x, 2.8 + clap * 1.2), Offset(x, 6.8 + clap * 1.2), stroke);
+      canvas.drawLine(
+        Offset(x, 2.8 + clap * 1.2),
+        Offset(x, 6.8 + clap * 1.2),
+        stroke,
+      );
     }
 
     // Today's date, counting up from 1 while the rings clap.
@@ -175,11 +198,15 @@ class _NavIconPainter extends CustomPainter {
     canvas.drawPath(
       Path()
         ..moveTo(3.2, 20.4)
-        ..arcToPoint(const Offset(15.2, 20.4), radius: const Radius.circular(6)),
+        ..arcToPoint(
+          const Offset(15.2, 20.4),
+          radius: const Radius.circular(6),
+        ),
       stroke,
     );
 
-    final turn = -(math.pi / 2) * (1 - Curves.easeOutCubic.transform(_seg(t, 0, .7)));
+    final turn =
+        -(math.pi / 2) * (1 - Curves.easeOutCubic.transform(_seg(t, 0, .7)));
     final grow = .25 + .75 * Curves.elasticOut.transform(_seg(t, 0, .85));
     canvas.save();
     canvas.translate(18.6, 8.6);
@@ -201,12 +228,19 @@ class _NavIconPainter extends CustomPainter {
     canvas.drawPath(
       Path()
         ..moveTo(4.8 - look * .5, 20.6)
-        ..arcToPoint(Offset(19.2 - look * .5, 20.6), radius: const Radius.circular(7.2)),
+        ..arcToPoint(
+          Offset(19.2 - look * .5, 20.6),
+          radius: const Radius.circular(7.2),
+        ),
       stroke,
     );
     final rx = 3.5 * (1 - .24 * look.abs());
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(12 + look * 1.9, 8 + look.abs() * .35), width: rx * 2, height: 7),
+      Rect.fromCenter(
+        center: Offset(12 + look * 1.9, 8 + look.abs() * .35),
+        width: rx * 2,
+        height: 7,
+      ),
       stroke,
     );
   }
@@ -215,10 +249,14 @@ class _NavIconPainter extends CustomPainter {
 
   void _heart(Canvas canvas) {
     final first = t < .25 ? math.sin(math.pi * t / .25) : 0.0;
-    final second = t >= .3 && t < .6 ? .7 * math.sin(math.pi * (t - .3) / .3) : 0.0;
+    final second = t >= .3 && t < .6
+        ? .7 * math.sin(math.pi * (t - .3) / .3)
+        : 0.0;
     final beat = 1 + .24 * math.max(first, second);
     // Rises, holds, then drains back to an outline.
-    final fill = t < .45 ? Curves.easeOut.transform(t / .45) : (t < .75 ? 1.0 : 1 - (t - .75) / .25);
+    final fill = t < .45
+        ? Curves.easeOut.transform(t / .45)
+        : (t < .75 ? 1.0 : 1 - (t - .75) / .25);
     final stroke = _stroke;
 
     final heart = Path()
@@ -266,5 +304,6 @@ class _NavIconPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_NavIconPainter old) => old.kind != kind || old.t != t || old.color != color || old.day != day;
+  bool shouldRepaint(_NavIconPainter old) =>
+      old.kind != kind || old.t != t || old.color != color || old.day != day;
 }

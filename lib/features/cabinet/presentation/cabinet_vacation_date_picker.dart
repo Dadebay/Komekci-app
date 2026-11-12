@@ -22,5 +22,4 @@ extension _VacationDatePicker on _VacationScreenState {
       }
     });
   }
-
 }

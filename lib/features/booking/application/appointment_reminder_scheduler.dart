@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/services/local_notifications_service.dart';
+import '../../../core/localization/app_strings.dart';
 
 @immutable
 class ReminderBooking {
@@ -147,20 +148,12 @@ List<AppointmentReminder> buildAppointmentReminders({
         '${AppointmentReminderScheduler._prefix}$userId:${booking.id}:${start.millisecondsSinceEpoch}:$locale';
     final time =
         '${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')}';
-    final (title, body) = switch (locale) {
-      'ru' => (
-        'Напоминание о записи',
-        'Через час у вас запись к ${booking.masterName} на $time: ${booking.serviceName}.',
-      ),
-      'en' => (
-        'Appointment reminder',
-        'Your ${booking.serviceName} appointment with ${booking.masterName} is at $time, in one hour.',
-      ),
-      _ => (
-        'Ýazgy ýatlatmasy',
-        '${booking.masterName} bilen ${booking.serviceName} hyzmatyna ýazgyňyz $time-da. 1 sagat galdy.',
-      ),
-    };
+    final title = AppStrings.appointmentReminderTitle.selectCode(locale);
+    final body = AppStrings.appointmentReminderBody(
+      booking.masterName,
+      booking.serviceName,
+      time,
+    ).selectCode(locale);
     reminders.add(
       AppointmentReminder(
         id: _notificationId(payload),

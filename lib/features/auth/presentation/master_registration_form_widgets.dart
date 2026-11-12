@@ -113,10 +113,8 @@ extension _MasterRegistrationFormWidgets on _MasterRegistrationScreenState {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  t(
-                                    tk: 'Baner suraty goşuň *',
-                                    ru: 'Добавьте баннер *',
-                                    en: 'Add a banner *',
+                                  AppStrings.authAddABanner.select(
+                                    context.read<LanguageProvider>().language,
                                   ),
                                   style: TextStyle(
                                     fontSize: 13.5,
@@ -128,10 +126,8 @@ extension _MasterRegistrationFormWidgets on _MasterRegistrationScreenState {
                                 ),
                                 const SizedBox(height: 3),
                                 Text(
-                                  t(
-                                    tk: 'Profiliňiziň ýokarsynda görner',
-                                    ru: 'Отображается вверху профиля',
-                                    en: 'Shown at the top of your profile',
+                                  AppStrings.authShownAtTheTopOf.select(
+                                    context.read<LanguageProvider>().language,
                                   ),
                                   style: TextStyle(
                                     fontSize: 11.5,
@@ -193,15 +189,11 @@ extension _MasterRegistrationFormWidgets on _MasterRegistrationScreenState {
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 24),
             child: Text(
               _photo == null
-                  ? t(
-                      tk: 'Profil suratyny goşuň *',
-                      ru: 'Добавьте фото профиля *',
-                      en: 'Add a profile photo *',
+                  ? AppStrings.authAddAProfilePhoto.select(
+                      context.read<LanguageProvider>().language,
                     )
-                  : t(
-                      tk: 'Suraty üýtgetmek üçin basyň',
-                      ru: 'Нажмите, чтобы изменить фото',
-                      en: 'Tap to change the photo',
+                  : AppStrings.authTapToChangeThePhoto.select(
+                      context.read<LanguageProvider>().language,
                     ),
               style: TextStyle(
                 fontSize: 12.5,
@@ -239,10 +231,8 @@ extension _MasterRegistrationFormWidgets on _MasterRegistrationScreenState {
     final message =
         serverError ??
         (missing
-            ? t(
-                tk: 'Bu meýdan hökmany',
-                ru: 'Обязательное поле',
-                en: 'This field is required',
+            ? AppStrings.servicesThisFieldIsRequired.select(
+                context.read<LanguageProvider>().language,
               )
             : null);
     return Padding(

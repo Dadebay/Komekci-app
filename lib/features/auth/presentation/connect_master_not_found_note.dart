@@ -165,15 +165,9 @@ class RequestPendingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     return AppScaffold(
-      title: t(
-        tk: 'Haýyş iberildi',
-        ru: 'Запрос отправлен',
-        en: 'Request sent',
-      ),
+      title: AppStrings.authRequestSent.select(language),
       titleInAppBar: true,
       child: Column(
         children: [
@@ -224,11 +218,7 @@ class RequestPendingScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 26),
                     Text(
-                      t(
-                        tk: 'Tassyklama garaşylýar',
-                        ru: 'Ожидание подтверждения',
-                        en: 'Waiting for confirmation',
-                      ),
+                      AppStrings.authWaitingForConfirmation.select(language),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 22,
@@ -238,11 +228,9 @@ class RequestPendingScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      t(
-                        tk: '${master.name} haýyşyňyz barada habarly bolar.',
-                        ru: '${master.name} получит уведомление о вашем запросе.',
-                        en: '${master.name} will be notified about your request.',
-                      ),
+                      AppStrings.authWillBeNotifiedAboutYour(
+                        master.name,
+                      ).select(language),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
@@ -284,11 +272,7 @@ class RequestPendingScreen extends StatelessWidget {
                           ),
                           _ProfilePill(
                             dotColor: tokens.warning,
-                            label: t(
-                              tk: 'Garaşylýar',
-                              ru: 'Ожидание',
-                              en: 'Pending',
-                            ),
+                            label: AppStrings.authPending.select(language),
                           ),
                         ],
                       ),
@@ -300,7 +284,7 @@ class RequestPendingScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           PrimaryButton(
-            label: t(tk: 'Baş sahypa', ru: 'На главную', en: 'Go to home'),
+            label: AppStrings.authGoToHome.select(language),
             onTap: () => Navigator.pushAndRemoveUntil(
               context,
               pageRoute(const ClientHome()),

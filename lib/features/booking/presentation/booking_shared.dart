@@ -1,6 +1,5 @@
 part of '../../../app/komekci_app.dart';
 
-
 const _monthsEn = [
   'January',
   'February',
@@ -25,31 +24,58 @@ typedef _Tr =
     });
 
 /// Soft raised surface used by every card in the booking flow.
-BoxDecoration _bookingCardDecoration(AppThemeTokens tokens, {bool selected = false}) => BoxDecoration(
+BoxDecoration _bookingCardDecoration(
+  AppThemeTokens tokens, {
+  bool selected = false,
+}) => BoxDecoration(
   color: selected && tokens.surfaceElevated != tokens.surface
       ? Color.alphaBlend(tokens.accent.withValues(alpha: .07), tokens.surface)
       : tokens.surface,
   borderRadius: BorderRadius.circular(20),
-  border: Border.all(color: selected ? tokens.accent : tokens.border.withValues(alpha: .7), width: selected ? 1.5 : 1),
+  border: Border.all(
+    color: selected ? tokens.accent : tokens.border.withValues(alpha: .7),
+    width: selected ? 1.5 : 1,
+  ),
   boxShadow: [
-    BoxShadow(color: tokens.textPrimary.withValues(alpha: selected ? .07 : .05), blurRadius: 18, offset: const Offset(0, 6)),
+    BoxShadow(
+      color: tokens.textPrimary.withValues(alpha: selected ? .07 : .05),
+      blurRadius: 18,
+      offset: const Offset(0, 6),
+    ),
   ],
 );
 
 /// A flat, softly tinted surface (no gradient) for highlighted cards: the
 /// page colour with a wash of [tint], a thin border in the same tint and,
 /// optionally, a soft shadow.
-BoxDecoration _flatTintDecoration(AppThemeTokens tokens, Color tint, {double radius = 28, bool shadow = false}) => BoxDecoration(
+BoxDecoration _flatTintDecoration(
+  AppThemeTokens tokens,
+  Color tint, {
+  double radius = 28,
+  bool shadow = false,
+}) => BoxDecoration(
   color: Color.alphaBlend(tint.withValues(alpha: .10), tokens.surface),
   borderRadius: BorderRadius.circular(radius),
   border: Border.all(color: tint.withValues(alpha: .28)),
-  boxShadow: shadow ? [BoxShadow(color: tokens.textPrimary.withValues(alpha: .06), blurRadius: 18, offset: const Offset(0, 8))] : null,
+  boxShadow: shadow
+      ? [
+          BoxShadow(
+            color: tokens.textPrimary.withValues(alpha: .06),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ]
+      : null,
 );
 
 /// Top of every wizard step: back button, the master being booked, and the
 /// step progress underneath.
 class _BookingHeader extends StatelessWidget {
-  const _BookingHeader({required this.master, required this.current, required this.labels});
+  const _BookingHeader({
+    required this.master,
+    required this.current,
+    required this.labels,
+  });
   final MasterBrief master;
   final int current;
   final List<String> labels;
@@ -72,10 +98,22 @@ class _BookingHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: tokens.surface,
                     shape: BoxShape.circle,
-                    border: Border.all(color: tokens.border.withValues(alpha: .8)),
-                    boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .06), blurRadius: 10, offset: const Offset(0, 3))],
+                    border: Border.all(
+                      color: tokens.border.withValues(alpha: .8),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: tokens.textPrimary.withValues(alpha: .06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                  child: AppIcon(Icons.arrow_back, size: 19, color: tokens.textPrimary),
+                  child: AppIcon(
+                    Icons.arrow_back,
+                    size: 19,
+                    color: tokens.textPrimary,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -85,7 +123,9 @@ class _BookingHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: tokens.surfaceElevated,
                     borderRadius: BorderRadius.circular(26),
-                    border: Border.all(color: tokens.border.withValues(alpha: .6)),
+                    border: Border.all(
+                      color: tokens.border.withValues(alpha: .6),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -99,13 +139,23 @@ class _BookingHeader extends StatelessWidget {
                               master.name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, height: 1.15),
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w700,
+                                height: 1.15,
+                              ),
                             ),
                             Text(
-                              master.address.isNotEmpty ? master.address : '@${master.nickname}',
+                              master.address.isNotEmpty
+                                  ? master.address
+                                  : '@${master.nickname}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 11, color: tokens.textSecondary, height: 1.2),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: tokens.textSecondary,
+                                height: 1.2,
+                              ),
                             ),
                           ],
                         ),
@@ -145,7 +195,10 @@ class _WizardSteps extends StatelessWidget {
               child: AnimatedContainer(
                 duration: dur,
                 height: 2.5,
-                decoration: BoxDecoration(color: done ? t.accent : t.border, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                  color: done ? t.accent : t.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
           );
@@ -165,14 +218,29 @@ class _WizardSteps extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: active || done ? t.accent : t.surface,
-                  border: Border.all(color: active || done ? t.accent : t.border, width: 1.5),
-                  boxShadow: active ? [BoxShadow(color: t.accent.withValues(alpha: .35), blurRadius: 10, offset: const Offset(0, 3))] : null,
+                  border: Border.all(
+                    color: active || done ? t.accent : t.border,
+                    width: 1.5,
+                  ),
+                  boxShadow: active
+                      ? [
+                          BoxShadow(
+                            color: t.accent.withValues(alpha: .35),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: done
                     ? AppIcon(Icons.check, size: 14, color: t.accentOn)
                     : Text(
                         '$step',
-                        style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: active ? t.accentOn : t.textSecondary),
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: active ? t.accentOn : t.textSecondary,
+                        ),
                       ),
               ),
               const SizedBox(height: 6),
@@ -196,7 +264,13 @@ class _WizardSteps extends StatelessWidget {
 
 /// Bottom bar with a summary on the left and the primary action on the right.
 class _BookingBottomBar extends StatelessWidget {
-  const _BookingBottomBar({required this.caption, required this.value, required this.label, required this.onPressed, this.loading = false});
+  const _BookingBottomBar({
+    required this.caption,
+    required this.value,
+    required this.label,
+    required this.onPressed,
+    this.loading = false,
+  });
   final String caption;
   final String value;
   final String label;
@@ -210,7 +284,13 @@ class _BookingBottomBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: tokens.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
-        boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .08), blurRadius: 22, offset: const Offset(0, -6))],
+        boxShadow: [
+          BoxShadow(
+            color: tokens.textPrimary.withValues(alpha: .08),
+            blurRadius: 22,
+            offset: const Offset(0, -6),
+          ),
+        ],
       ),
       child: SafeArea(
         top: false,
@@ -225,9 +305,23 @@ class _BookingBottomBar extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(caption, style: TextStyle(fontSize: 11.5, color: tokens.textSecondary)),
+                    Text(
+                      caption,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: tokens.textSecondary,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(value, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                    Text(
+                      value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -243,8 +337,21 @@ class _BookingBottomBar extends StatelessWidget {
                   ),
                   onPressed: loading ? null : onPressed,
                   child: loading
-                      ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2.4, color: tokens.surface))
-                      : Text(label, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700)),
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.4,
+                            color: tokens.surface,
+                          ),
+                        )
+                      : Text(
+                          label,
+                          style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -265,10 +372,23 @@ class _BookingTitle extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, height: 1.15)),
+      Text(
+        title,
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+          height: 1.15,
+        ),
+      ),
       if (subtitle != null) ...[
         const SizedBox(height: 4),
-        Text(subtitle!, style: TextStyle(fontSize: 13.5, color: context.appTokens.textSecondary)),
+        Text(
+          subtitle!,
+          style: TextStyle(
+            fontSize: 13.5,
+            color: context.appTokens.textSecondary,
+          ),
+        ),
       ],
     ],
   );

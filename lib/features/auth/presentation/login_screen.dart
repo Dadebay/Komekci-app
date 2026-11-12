@@ -21,8 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -96,11 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        t(
-                          tk: 'Hoş geldiňiz',
-                          ru: 'Добро пожаловать',
-                          en: 'Welcome',
-                        ),
+                        AppStrings.authWelcome.select(language),
                         style: const TextStyle(
                           fontSize: 27,
                           fontWeight: FontWeight.w700,
@@ -108,10 +102,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 7),
                       Text(
-                        t(
-                          tk: 'Telefon belgiňiz bilen dowam ediň.',
-                          ru: 'Продолжите с номером телефона.',
-                          en: 'Continue with your phone number.',
+                        AppStrings.authContinueWithYourPhoneNumber.select(
+                          language,
                         ),
                         style: TextStyle(
                           color: tokens.textSecondary,
@@ -143,10 +135,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           prefixIcon: phonePrefix(context, fontSize: 17),
                           prefixIconConstraints: phonePrefixConstraints,
                           errorText: _showPhoneError
-                              ? t(
-                                  tk: '8 sanly telefon belgisini ýazyň',
-                                  ru: 'Введите 8-значный номер',
-                                  en: 'Enter an 8-digit phone number',
+                              ? AppStrings.authEnterAn8DigitPhone.select(
+                                  language,
                                 )
                               : _serverError,
                           errorMaxLines: 3,
@@ -167,21 +157,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 14),
                       PrimaryButton(
-                        label: t(
-                          tk: 'Kod iber',
-                          ru: 'Отправить код',
-                          en: 'Send code',
-                        ),
+                        label: AppStrings.profileSendCode.select(language),
                         loading: _busy,
                         onTap: _continueToOtp,
                       ),
                       const SizedBox(height: 15),
                       Center(
                         child: Text(
-                          t(
-                            tk: 'Dowam etmek bilen hyzmat şertlerini kabul edýärsiňiz.',
-                            ru: 'Продолжая, вы принимаете условия сервиса.',
-                            en: 'By continuing, you accept the terms of service.',
+                          AppStrings.authByContinuingYouAcceptThe.select(
+                            language,
                           ),
                           textAlign: TextAlign.center,
                           style: TextStyle(
@@ -216,8 +200,17 @@ class _LoginScreenState extends State<LoginScreen> {
       _busy = true;
       _serverError = null;
     });
+    // Clients sign in by texting a code; masters keep the SMS-to-phone code.
+    final smsFlow = auth.role == UserRole.client;
+    SmsOtpChallenge? challenge;
+    var signedIn = false;
     try {
-      await auth.requestOtp(phone);
+      if (smsFlow) {
+        challenge = await auth.requestSmsOtp(phone);
+        signedIn = challenge == null;
+      } else {
+        signedIn = await auth.requestOtp(phone);
+      }
     } catch (error) {
       if (!mounted) return;
       FocusScope.of(context).unfocus();
@@ -229,9 +222,25 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     if (!mounted) return;
     setState(() => _busy = false);
+    // The server's test number is signed in without a code.
+    if (signedIn) {
+      Navigator.of(context).pushAndRemoveUntil(
+        pageRoute(homeForAccount(auth.me!)),
+        (route) => false,
+      );
+      return;
+    }
     Navigator.push(
       context,
-      pageRoute(OtpScreen(phone: phone, nextBuilder: homeForAccount)),
+      pageRoute(
+        challenge != null
+            ? SmsOtpScreen(
+                phone: phone,
+                challenge: challenge,
+                nextBuilder: homeForAccount,
+              )
+            : OtpScreen(phone: phone, nextBuilder: homeForAccount),
+      ),
     );
   }
 }

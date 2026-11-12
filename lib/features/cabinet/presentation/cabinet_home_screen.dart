@@ -21,48 +21,42 @@ class _CabinetScreenState extends State<CabinetScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final pendingRequests = context.watch<ConnectionRequestsProvider>().count;
     final entries = <(IconData, String, Widget)>[
       (
         Icons.person_outline,
-        t(tk: 'Profil', ru: 'Профиль', en: 'Profile'),
+        AppStrings.profileProfile.select(language),
         const CabinetProfileScreen(),
       ),
       (
         Icons.content_cut,
-        t(tk: 'Hyzmatlar', ru: 'Услуги', en: 'Services'),
+        AppStrings.servicesServices.select(language),
         const ServicesScreen(),
       ),
       (
         Icons.schedule_outlined,
-        t(tk: 'Iş wagty', ru: 'График работы', en: 'Working hours'),
+        AppStrings.cabinetWorkingHours.select(language),
         const WorkingHoursScreen(),
       ),
       (
         Icons.send_outlined,
-        t(tk: 'Müşderilere habar', ru: 'Сообщения клиентам', en: 'Client messages'),
+        AppStrings.cabinetClientMessages.select(language),
         const ClientNotifyScreen(),
       ),
       (
         Icons.account_balance_wallet_outlined,
-        t(
-          tk: 'Töleg we Abuna',
-          ru: 'Оплата и подписка',
-          en: 'Billing & subscription',
-        ),
+        AppStrings.cabinetBillingSubscription.select(language),
         const BillingScreen(),
       ),
       (
         Icons.person_add_alt_1_outlined,
-        t(tk: 'Baglanyşyk haýyşlary', ru: 'Запросы на связь', en: 'Connection requests'),
+        AppStrings.requestsConnectionRequests.select(language),
         const RequestsScreen(),
       ),
       (
         Icons.inbox_outlined,
-        t(tk: 'Bildirişler', ru: 'Уведомления', en: 'Notifications'),
+        AppStrings.profileNotifications.select(language),
         const ClientNotificationSettingsScreen(),
       ),
     ];
@@ -76,7 +70,7 @@ class _CabinetScreenState extends State<CabinetScreen> {
             Row(
               children: [
                 Tooltip(
-                  message: t(tk: 'Sazlamalar', ru: 'Настройки', en: 'Settings'),
+                  message: AppStrings.profileSettings.select(language),
                   child: _RoundIconButton(
                     icon: Icons.settings_outlined,
                     onTap: () => Navigator.push(
@@ -87,7 +81,7 @@ class _CabinetScreenState extends State<CabinetScreen> {
                 ),
                 Expanded(
                   child: Text(
-                    t(tk: 'KABINET', ru: 'КАБИНЕТ', en: 'CABINET'),
+                    AppStrings.cabinetCabinet.select(language),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 15,
@@ -143,14 +137,14 @@ class _CabinetScreenState extends State<CabinetScreen> {
                   shape: const StadiumBorder(),
                 ),
                 icon: const AppIcon(Icons.logout, size: 18),
-                label: Text(t(tk: 'Ulgamdan çyk', ru: 'Выйти', en: 'Sign out')),
+                label: Text(AppStrings.cabinetSignOut.select(language)),
               ),
             ),
             Center(
               child: TextButton(
                 onPressed: () => _confirmDeleteAccount(context),
                 child: Text(
-                  t(tk: 'Hasaby poz', ru: 'Удалить аккаунт', en: 'Delete account'),
+                  AppStrings.profileDeleteAccount.select(language),
                   style: TextStyle(color: tokens.textSecondary, fontSize: 12),
                 ),
               ),

@@ -56,8 +56,6 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final customerProvider = context.watch<CustomerProvider>();
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final ready =
         !_sending &&
@@ -68,11 +66,7 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(
-          tk: 'Habar ibermek',
-          ru: 'Отправить сообщение',
-          en: 'Send message',
-        ),
+        title: AppStrings.cabinetSendMessage.select(language),
       ),
       body: SafeArea(
         child: Column(
@@ -89,21 +83,11 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                       customerProvider.customers.isEmpty) ...[
                     const SizedBox(height: 10),
                     RetryErrorState(
-                      title: t(
-                        tk: 'Müşderileri ýükläp bolmady',
-                        ru: 'Не удалось загрузить клиентов',
-                        en: 'Could not load clients',
+                      title: AppStrings.cabinetCouldNotLoadClients.select(
+                        language,
                       ),
-                      text: t(
-                        tk: 'Täzeden synanyşyň.',
-                        ru: 'Попробуйте ещё раз.',
-                        en: 'Please try again.',
-                      ),
-                      retryLabel: t(
-                        tk: 'Täzeden synanyş',
-                        ru: 'Повторить',
-                        en: 'Try again',
-                      ),
+                      text: AppStrings.cabinetPleaseTryAgain.select(language),
+                      retryLabel: AppStrings.profileTryAgain.select(language),
                       onRetry: customerProvider.load,
                     ),
                   ] else if (_eligibleClients.isEmpty) ...[
@@ -112,26 +96,17 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                       icon: Icons.info_outline,
                       text: customerProvider.customers.isEmpty
                           ? _pushChannel
-                                ? t(
-                                    tk: 'Sanawda entek müşderi ýok. Push üçin baglanan müşderi gerek.',
-                                    ru: 'Список клиентов пуст. Для push нужен подключённый клиент.',
-                                    en: 'The client list is empty. Push needs a connected client.',
+                                ? AppStrings.cabinetTheClientListIsEmpty.select(
+                                    language,
                                   )
-                                : t(
-                                    tk: 'Sanawda entek müşderi ýok.',
-                                    ru: 'Список клиентов пока пуст.',
-                                    en: 'The client list is empty.',
-                                  )
+                                : AppStrings.cabinetTheClientListIsEmpty2
+                                      .select(language)
                           : _pushChannel
-                          ? t(
-                              tk: 'Müşderiler bar, ýöne push alyjynyň hasaby kesgitlenmedi. SMS saýlap bilersiňiz.',
-                              ru: 'Клиенты есть, но аккаунт получателя для push не определён. Можно выбрать SMS.',
-                              en: 'Clients are listed, but their push account cannot be identified. You can choose SMS.',
+                          ? AppStrings.cabinetClientsAreListedButTheir.select(
+                              language,
                             )
-                          : t(
-                              tk: 'Müşderileriň telefon belgisi ýok.',
-                              ru: 'У клиентов нет номеров телефонов.',
-                              en: 'These clients have no phone numbers.',
+                          : AppStrings.cabinetTheseClientsHaveNoPhone.select(
+                              language,
                             ),
                     ),
                   ],
@@ -139,10 +114,8 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                     const SizedBox(height: 10),
                     _InfoBanner(
                       icon: Icons.info_outline,
-                      text: t(
-                        tk: 'Bir gezekde iň köp 50 müşderini saýlaň.',
-                        ru: 'Выберите не более 50 клиентов за раз.',
-                        en: 'Choose up to 50 clients at a time.',
+                      text: AppStrings.cabinetChooseUpTo50Clients.select(
+                        language,
                       ),
                     ),
                   ],
@@ -155,49 +128,33 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                   ),
                   if (_pushChannel) ...[
                     _FieldLabel(
-                      text: t(tk: 'Sözbaşy', ru: 'Заголовок', en: 'Title'),
+                      text: AppStrings.cabinetTitle.select(language),
                       required: true,
                     ),
                     const SizedBox(height: 8),
                     _FormField(
                       controller: _titleController,
-                      hint: t(
-                        tk: 'Habaryň sözbaşysy',
-                        ru: 'Заголовок сообщения',
-                        en: 'Message title',
-                      ),
+                      hint: AppStrings.cabinetMessageTitle.select(language),
                       maxLength: 80,
                       onChanged: () => setState(() {}),
                     ),
                     const SizedBox(height: 18),
                   ],
                   _FieldLabel(
-                    text: t(
-                      tk: 'Habar teksti',
-                      ru: 'Текст сообщения',
-                      en: 'Message text',
-                    ),
+                    text: AppStrings.cabinetMessageText.select(language),
                     required: true,
                   ),
                   const SizedBox(height: 8),
                   _FormField(
                     controller: _messageController,
-                    hint: t(
-                      tk: 'Habaryňyzy ýazyň...',
-                      ru: 'Напишите сообщение...',
-                      en: 'Write your message...',
-                    ),
+                    hint: AppStrings.cabinetWriteYourMessage.select(language),
                     maxLines: 5,
                     maxLength: 300,
                     onChanged: () => setState(() {}),
                   ),
                   const SizedBox(height: 18),
                   _FieldLabel(
-                    text: t(
-                      tk: 'Geplesik görnüşi',
-                      ru: 'Способ отправки',
-                      en: 'Delivery method',
-                    ),
+                    text: AppStrings.cabinetDeliveryMethod.select(language),
                   ),
                   const SizedBox(height: 8),
                   GestureDetector(
@@ -237,11 +194,8 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
                               children: [
                                 Text(
                                   _pushChannel
-                                      ? t(
-                                          tk: 'Push habar',
-                                          ru: 'Push-уведомление',
-                                          en: 'Push notification',
-                                        )
+                                      ? AppStrings.cabinetPushNotification
+                                            .select(language)
                                       : 'SMS',
                                   style: const TextStyle(
                                     fontSize: 14,
@@ -267,8 +221,8 @@ class _SendMessageScreenState extends State<SendMessageScreen> {
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: MasterActionButton(
                 label: _pushChannel
-                    ? t(tk: 'Push iber', ru: 'Отправить push', en: 'Send push')
-                    : t(tk: 'SMS iber', ru: 'Отправить SMS', en: 'Send SMS'),
+                    ? AppStrings.cabinetSendPush.select(language)
+                    : AppStrings.cabinetSendSms.select(language),
                 enabled: ready,
                 leading: Icons.send_outlined,
                 onTap: () => _confirmAndSend(language, update: setState),

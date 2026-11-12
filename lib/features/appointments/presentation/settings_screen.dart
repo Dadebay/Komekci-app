@@ -6,37 +6,19 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return AppScaffold(
       title: title,
       child: ListView(
         children: [
           Text(
-            t(
-              tk: 'Sazlamalaryňyzy dolandyryň.',
-              ru: 'Управляйте своими настройками.',
-              en: 'Manage your preferences.',
-            ),
+            AppStrings.appointmentsManageYourPreferences.select(language),
             style: TextStyle(color: context.appTokens.textSecondary),
           ),
           const SizedBox(height: 18),
           ...[
-            t(
-              tk: 'Ýazgy ýatlatmalary',
-              ru: 'Напоминания о записи',
-              en: 'Appointment reminders',
-            ),
-            t(
-              tk: 'Has irki wagt teklipleri',
-              ru: 'Предложения более раннего времени',
-              en: 'Earlier-slot offers',
-            ),
-            t(
-              tk: 'Master habarlary',
-              ru: 'Сообщения мастера',
-              en: 'Master messages',
-            ),
+            AppStrings.appointmentsAppointmentReminders.select(language),
+            AppStrings.appointmentsEarlierSlotOffers.select(language),
+            AppStrings.profileMasterMessages.select(language),
           ].map(
             (x) => SwitchListTile(
               contentPadding: EdgeInsets.zero,
@@ -46,13 +28,7 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Field(
-            label: t(
-              tk: 'Habarlaşmak ýa-da bellik',
-              ru: 'Контакт или заметка',
-              en: 'Contact or note',
-            ),
-          ),
+          Field(label: AppStrings.appointmentsContactOrNote.select(language)),
         ],
       ),
     );

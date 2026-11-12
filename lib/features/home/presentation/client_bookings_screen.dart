@@ -30,30 +30,38 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final tk = language == AppLanguage.tk;
-    String t({required String tk, required String ru, required String en}) => pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final canPop = _canPop;
     final provider = context.watch<ClientBookingsProvider>();
     final allBookings = provider.bookings;
-    final masters = allBookings.map((b) => b.masterName).toSet().toList()..sort();
+    final masters = allBookings.map((b) => b.masterName).toSet().toList()
+      ..sort();
 
-    final upcomingAll = allBookings.where((b) => b.status == ClientBookingStatus.expected).toList()..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+    final upcomingAll = allBookings.where((b) => b.isUpcoming).toList()
+      ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
     final pastCount = allBookings.length - upcomingAll.length;
 
     final filtered =
         allBookings.where((b) {
-            final isUpcoming = b.status == ClientBookingStatus.expected;
+            final isUpcoming = b.isUpcoming;
             if (isUpcoming == _showPast) return false;
             if (_filterMaster != null && b.masterName != _filterMaster) {
               return false;
             }
-            if (_filterStatus != null && b.status != _filterStatus && !(_filterStatus == ClientBookingStatus.cancelled && b.status == ClientBookingStatus.noShow)) {
+            if (_filterStatus != null &&
+                b.status != _filterStatus &&
+                !(_filterStatus == ClientBookingStatus.cancelled &&
+                    b.status == ClientBookingStatus.noShow)) {
               return false;
             }
             return true;
           }).toList()
           // Next appointment first; history newest first.
-          ..sort((a, b) => _showPast ? b.startsAt.compareTo(a.startsAt) : a.startsAt.compareTo(b.startsAt));
+          ..sort(
+            (a, b) => _showPast
+                ? b.startsAt.compareTo(a.startsAt)
+                : a.startsAt.compareTo(b.startsAt),
+          );
     final visible = filtered.take(_visibleCount).toList();
     final showHero = !_showPast && visible.isNotEmpty && _filterMaster == null;
 
@@ -73,22 +81,42 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
             decoration: BoxDecoration(
               color: selected ? tokens.textPrimary : tokens.surfaceElevated,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: selected ? tokens.textPrimary : tokens.border.withValues(alpha: .7)),
+              border: Border.all(
+                color: selected
+                    ? tokens.textPrimary
+                    : tokens.border.withValues(alpha: .7),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   label,
-                  style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: selected ? tokens.surface : tokens.textPrimary),
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: selected ? tokens.surface : tokens.textPrimary,
+                  ),
                 ),
                 const SizedBox(width: 7),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(color: selected ? tokens.surface.withValues(alpha: .2) : tokens.accent.withValues(alpha: .16), borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? tokens.surface.withValues(alpha: .2)
+                        : tokens.accent.withValues(alpha: .16),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   child: Text(
                     '$count',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: selected ? tokens.surface : tokens.accent),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: selected ? tokens.surface : tokens.accent,
+                    ),
                   ),
                 ),
               ],
@@ -101,15 +129,20 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Ýazgylarym', ru: 'Мои записи', en: 'My bookings'),
+        title: AppStrings.homeMyBookings.select(language),
         action: GestureDetector(
-          onTap: () => _openFilterSheet(context, language: language, masters: masters),
+          onTap: () =>
+              _openFilterSheet(context, language: language, masters: masters),
           child: SizedBox(
             width: 34,
             height: 34,
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: AppIcon(Icons.filter_list, color: _hasActiveFilter ? tokens.accent : tokens.textPrimary, size: 21),
+              child: AppIcon(
+                Icons.filter_list,
+                color: _hasActiveFilter ? tokens.accent : tokens.textPrimary,
+                size: 21,
+              ),
             ),
           ),
         ),
@@ -122,9 +155,17 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
               padding: const EdgeInsets.fromLTRB(20, 6, 20, 14),
               child: Row(
                 children: [
-                  tabButton(t(tk: 'Indiki', ru: 'Предстоящие', en: 'Upcoming'), upcomingAll.length, false),
+                  tabButton(
+                    AppStrings.homeUpcoming.select(language),
+                    upcomingAll.length,
+                    false,
+                  ),
                   const SizedBox(width: 10),
-                  tabButton(t(tk: 'Geçen', ru: 'Прошедшие', en: 'Past'), pastCount, true),
+                  tabButton(
+                    AppStrings.homePast.select(language),
+                    pastCount,
+                    true,
+                  ),
                 ],
               ),
             ),
@@ -135,28 +176,52 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
                     ? ListView(
                         children: [
                           Padding(
-                            padding: EdgeInsets.fromLTRB(20, 10, 20, canPop ? 20 : 110),
+                            padding: EdgeInsets.fromLTRB(
+                              20,
+                              10,
+                              20,
+                              canPop ? 20 : 110,
+                            ),
                             child: EmptyState(
                               icon: Icons.event_busy_outlined,
                               title: _hasActiveFilter
-                                  ? t(tk: 'Ýazgy tapylmady', ru: 'Записи не найдены', en: 'No bookings found')
+                                  ? AppStrings.homeNoBookingsFound.select(
+                                      language,
+                                    )
                                   : _showPast
-                                  ? t(tk: 'Geçen ýazgy ýok', ru: 'Прошедших записей нет', en: 'No past bookings')
-                                  : t(tk: 'Indiki ýazgy ýok', ru: 'Предстоящих записей нет', en: 'No upcoming bookings'),
+                                  ? AppStrings.homeNoPastBookings.select(
+                                      language,
+                                    )
+                                  : AppStrings.homeNoUpcomingBookings.select(
+                                      language,
+                                    ),
                               text: _hasActiveFilter
-                                  ? t(tk: 'Süzgüçi üýtgediň.', ru: 'Измените фильтр.', en: 'Try a different filter.')
+                                  ? AppStrings.homeTryADifferentFilter.select(
+                                      language,
+                                    )
                                   : _showPast
-                                  ? t(tk: 'Tamamlanan ýazgylaryňyz şu ýerde görünýär.', ru: 'Здесь будут завершённые записи.', en: 'Finished bookings show up here.')
-                                  : t(tk: 'Master saýlap ýazylyň.', ru: 'Выберите мастера и запишитесь.', en: 'Choose a master and book an appointment.'),
+                                  ? AppStrings.homeFinishedBookingsShowUpHere
+                                        .select(language)
+                                  : AppStrings.homeChooseAMasterAndBook.select(
+                                      language,
+                                    ),
                             ),
                           ),
                         ],
                       )
                     : ListView(
-                        padding: EdgeInsets.fromLTRB(20, 0, 20, canPop ? 20 : 110),
+                        padding: EdgeInsets.fromLTRB(
+                          20,
+                          0,
+                          20,
+                          canPop ? 20 : 110,
+                        ),
                         children: [
                           if (showHero) ...[
-                            _NextBookingHero(booking: visible.first, language: language),
+                            _NextBookingHero(
+                              booking: visible.first,
+                              language: language,
+                            ),
                             if (visible.length > 1) ...[
                               const SizedBox(height: 22),
                               Padding(
@@ -166,22 +231,38 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
                                     Container(
                                       width: 4,
                                       height: 16,
-                                      decoration: BoxDecoration(color: tokens.accent, borderRadius: BorderRadius.circular(2)),
+                                      decoration: BoxDecoration(
+                                        color: tokens.accent,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      t(tk: 'Ýene ýazgylar', ru: 'Другие записи', en: 'More bookings'),
-                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                                      AppStrings.homeMoreBookings.select(
+                                        language,
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
                             ],
                           ],
-                          ...visible.skip(showHero ? 1 : 0).map((b) => _ClientBookingCard(booking: b, tk: tk)),
-                          if (visible.length < filtered.length || (_showPast && provider.hasMoreHistory))
+                          ...visible
+                              .skip(showHero ? 1 : 0)
+                              .map(
+                                (b) => _ClientBookingCard(booking: b, tk: tk),
+                              ),
+                          if (visible.length < filtered.length ||
+                              (_showPast && provider.hasMoreHistory))
                             Padding(
-                              padding: const EdgeInsets.only(top: 4, bottom: 10),
+                              padding: const EdgeInsets.only(
+                                top: 4,
+                                bottom: 10,
+                              ),
                               child: OutlinedButton(
                                 style: OutlinedButton.styleFrom(
                                   side: BorderSide(color: tokens.border),
@@ -194,7 +275,9 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
                                   }
                                   setState(() => _visibleCount += _pageSize);
                                 },
-                                child: Text(t(tk: 'Has köp görkez', ru: 'Показать ещё', en: 'Show more')),
+                                child: Text(
+                                  AppStrings.homeShowMore.select(language),
+                                ),
                               ),
                             ),
                         ],
@@ -207,11 +290,24 @@ class _ClientBookingsScreenState extends State<ClientBookingsScreen> {
     );
   }
 
-  void _openFilterSheet(BuildContext context, {required AppLanguage language, required List<String> masters}) => _showFilterSheet(context, language: language, masters: masters, update: setState);
+  void _openFilterSheet(
+    BuildContext context, {
+    required AppLanguage language,
+    required List<String> masters,
+  }) => _showFilterSheet(
+    context,
+    language: language,
+    masters: masters,
+    update: setState,
+  );
 }
 
 class _FilterChipButton extends StatelessWidget {
-  const _FilterChipButton({required this.label, required this.selected, required this.onTap});
+  const _FilterChipButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -227,11 +323,17 @@ class _FilterChipButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? tokens.textPrimary : tokens.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: selected ? tokens.textPrimary : tokens.border),
+          border: Border.all(
+            color: selected ? tokens.textPrimary : tokens.border,
+          ),
         ),
         child: Text(
           label,
-          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: selected ? tokens.surface : tokens.textPrimary),
+          style: TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.w600,
+            color: selected ? tokens.surface : tokens.textPrimary,
+          ),
         ),
       ),
     );

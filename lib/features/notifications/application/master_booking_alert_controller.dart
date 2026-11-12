@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../../../core/localization/app_strings.dart';
+
 /// A new client booking delivered by push to the signed-in master.
 class MasterBookingAlert {
   const MasterBookingAlert({
@@ -31,16 +33,18 @@ class MasterBookingAlert {
       'booking_created',
       'appointment_created',
     }.contains(type);
-    final bookingTitle = const {
-      'täze ýazgy',
-      'новая запись',
-      'new booking',
+    final bookingTitle = {
+      AppStrings.bookingAlertDefaultTitle.tk.toLowerCase(),
+      AppStrings.bookingAlertDefaultTitle.ru.toLowerCase(),
+      AppStrings.bookingAlertDefaultTitle.en.toLowerCase(),
       'yeni randevu',
     }.contains(title.trim().toLowerCase());
     if (eventCode.isEmpty && !bookingType && !bookingTitle) return null;
     return MasterBookingAlert(
       id: id,
-      title: title.trim().isEmpty ? 'Täze ýazgy' : title,
+      title: title.trim().isEmpty
+          ? AppStrings.bookingAlertDefaultTitle.tk
+          : title,
       body: body,
     );
   }

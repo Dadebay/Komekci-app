@@ -1,7 +1,14 @@
 part of 'glass_nav_bar.dart';
 
 class _DockedBar extends StatelessWidget {
-  const _DockedBar({required this.icons, required this.labels, required this.currentIndex, required this.onSelected, required this.tokens, required this.badgeCounts});
+  const _DockedBar({
+    required this.icons,
+    required this.labels,
+    required this.currentIndex,
+    required this.onSelected,
+    required this.tokens,
+    required this.badgeCounts,
+  });
 
   final List<HugeIconData> icons;
   final List<String>? labels;
@@ -20,7 +27,13 @@ class _DockedBar extends StatelessWidget {
         color: tokens.surface,
         borderRadius: BorderRadius.circular(26),
         border: Border.all(color: tokens.border.withValues(alpha: .6)),
-        boxShadow: [BoxShadow(color: tokens.textPrimary.withValues(alpha: .10), blurRadius: 22, offset: const Offset(0, 6))],
+        boxShadow: [
+          BoxShadow(
+            color: tokens.textPrimary.withValues(alpha: .10),
+            blurRadius: 22,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
@@ -45,7 +58,14 @@ class _DockedBar extends StatelessWidget {
 }
 
 class _DockedSlot extends StatefulWidget {
-  const _DockedSlot({required this.icon, required this.selected, required this.onTap, required this.tokens, required this.badgeCount, this.label});
+  const _DockedSlot({
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+    required this.tokens,
+    required this.badgeCount,
+    this.label,
+  });
 
   final HugeIconData icon;
   final String? label;
@@ -58,9 +78,13 @@ class _DockedSlot extends StatefulWidget {
   State<_DockedSlot> createState() => _DockedSlotState();
 }
 
-class _DockedSlotState extends State<_DockedSlot> with SingleTickerProviderStateMixin {
+class _DockedSlotState extends State<_DockedSlot>
+    with SingleTickerProviderStateMixin {
   /// Drives the icon tracing itself: 0 → 1 when the tab is picked.
-  late final AnimationController _draw = AnimationController(vsync: this, duration: const Duration(milliseconds: 850));
+  late final AnimationController _draw = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 850),
+  );
 
   @override
   void didUpdateWidget(_DockedSlot oldWidget) {
@@ -105,16 +129,26 @@ class _DockedSlotState extends State<_DockedSlot> with SingleTickerProviderState
                     width: 52,
                     height: 32,
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(color: tokens.accent.withValues(alpha: t), borderRadius: BorderRadius.circular(16)),
+                    decoration: BoxDecoration(
+                      color: tokens.accent.withValues(alpha: t),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: AnimatedBuilder(
                       animation: _draw,
                       builder: (context, _) {
                         final p = _draw.isAnimating ? _draw.value : 1.0;
                         // A small springy pop while the lines are being drawn.
-                        final pop = _draw.isAnimating ? .14 * math.sin(math.pi * p) : 0.0;
+                        final pop = _draw.isAnimating
+                            ? .14 * math.sin(math.pi * p)
+                            : 0.0;
                         return Transform.scale(
                           scale: 1 + .06 * t + pop,
-                          child: AnimatedHugeIcon(icon: widget.icon, color: color, progress: p, size: 22),
+                          child: AnimatedHugeIcon(
+                            icon: widget.icon,
+                            color: color,
+                            progress: p,
+                            size: 22,
+                          ),
                         );
                       },
                     ),
@@ -125,17 +159,30 @@ class _DockedSlotState extends State<_DockedSlot> with SingleTickerProviderState
                       top: -7,
                       child: IgnorePointer(
                         child: Container(
-                          constraints: const BoxConstraints(minWidth: 19, minHeight: 19),
+                          constraints: const BoxConstraints(
+                            minWidth: 19,
+                            minHeight: 19,
+                          ),
                           alignment: Alignment.center,
                           padding: const EdgeInsets.symmetric(horizontal: 4),
                           decoration: BoxDecoration(
                             color: tokens.danger,
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: tokens.surface, width: 1.5),
+                            border: Border.all(
+                              color: tokens.surface,
+                              width: 1.5,
+                            ),
                           ),
                           child: Text(
-                            widget.badgeCount > 99 ? '99+' : '${widget.badgeCount}',
-                            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, height: 1),
+                            widget.badgeCount > 99
+                                ? '99+'
+                                : '${widget.badgeCount}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              height: 1,
+                            ),
                           ),
                         ),
                       ),
@@ -148,7 +195,17 @@ class _DockedSlotState extends State<_DockedSlot> with SingleTickerProviderState
                   widget.label!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 10.5, fontWeight: widget.selected ? FontWeight.w700 : FontWeight.w600, color: Color.lerp(tokens.textSecondary, tokens.textPrimary, t)),
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: widget.selected
+                        ? FontWeight.w700
+                        : FontWeight.w600,
+                    color: Color.lerp(
+                      tokens.textSecondary,
+                      tokens.textPrimary,
+                      t,
+                    ),
+                  ),
                 ),
               ],
             ],

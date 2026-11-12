@@ -8,18 +8,12 @@ Future<void> _showBlockTimeSheet(
 }) async {
   final language = context.read<LanguageProvider>().language;
   final tokens = context.appTokens;
-  String t({required String tk, required String ru, required String en}) =>
-      pickTr(language, tk: tk, ru: ru, en: en);
   if (!start.isAfter(DateTime.now()) ||
       !end.isAfter(start) ||
       end.difference(start) > const Duration(hours: 24)) {
-    AppToast.of(context).error(
-      t(
-        tk: 'Bu wagty ýapyp bolmaýar. Geljekdäki wagt saýlaň.',
-        ru: 'Это время закрыть нельзя. Выберите время в будущем.',
-        en: 'This time cannot be blocked. Choose a future time.',
-      ),
-    );
+    AppToast.of(
+      context,
+    ).error(AppStrings.scheduleThisTimeCannotBeBlocked.select(language));
     return;
   }
   final noteController = TextEditingController();
@@ -45,7 +39,7 @@ Future<void> _showBlockTimeSheet(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                t(tk: 'Wagty ýapmak', ru: 'Закрыть время', en: 'Block time'),
+                AppStrings.scheduleBlockTime.select(language),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
@@ -76,10 +70,8 @@ Future<void> _showBlockTimeSheet(
                     if (!candidate.isAfter(start) ||
                         candidate.isAfter(availableEnd)) {
                       AppToast.of(sheetContext).error(
-                        t(
-                          tk: 'Tamamlanyş wagty boş aralygyň içinde bolmaly.',
-                          ru: 'Конец должен быть внутри свободного промежутка.',
-                          en: 'Choose an end time within the free interval.',
+                        AppStrings.scheduleChooseAnEndTimeWithin.select(
+                          language,
                         ),
                       );
                       return;
@@ -88,11 +80,7 @@ Future<void> _showBlockTimeSheet(
                   },
                   icon: const Icon(Icons.schedule_outlined),
                   label: Text(
-                    t(
-                      tk: 'Tamamlanyş wagtyny üýtget',
-                      ru: 'Изменить время окончания',
-                      en: 'Change end time',
-                    ),
+                    AppStrings.scheduleChangeEndTime.select(language),
                   ),
                 ),
               ],
@@ -102,10 +90,8 @@ Future<void> _showBlockTimeSheet(
                 maxLength: 500,
                 maxLines: 2,
                 decoration: InputDecoration(
-                  labelText: t(
-                    tk: 'Şahsy bellik (hökmany däl)',
-                    ru: 'Личная заметка (необязательно)',
-                    en: 'Private note (optional)',
+                  labelText: AppStrings.schedulePrivateNoteOptional.select(
+                    language,
                   ),
                   border: const OutlineInputBorder(),
                 ),
@@ -116,7 +102,7 @@ Future<void> _showBlockTimeSheet(
                 child: FilledButton(
                   onPressed: () =>
                       Navigator.pop(sheetContext, noteController.text.trim()),
-                  child: Text(t(tk: 'Ýapmak', ru: 'Закрыть', en: 'Block time')),
+                  child: Text(AppStrings.scheduleBlockTime2.select(language)),
                 ),
               ),
             ],
@@ -137,12 +123,7 @@ Future<void> _showBlockTimeSheet(
   });
   if (ok) {
     toast.success(
-      t(
-        tk: 'Wagt ýapyldy. Müşderiler bu aralyga ýazylyp bilmez.',
-        ru: 'Время закрыто. Клиенты не смогут записаться в этот промежуток.',
-        en: 'Time blocked. Clients cannot book this interval.',
-      ),
+      AppStrings.scheduleTimeBlockedClientsCannotBook.select(language),
     );
   }
 }
-

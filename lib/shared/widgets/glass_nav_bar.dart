@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
@@ -17,7 +17,16 @@ typedef HugeIconData = List<List<dynamic>>;
 /// tile that glides between positions, stretching slightly mid-travel; an
 /// optional label sits under each icon, outside the tile.
 class GlassNavBar extends StatelessWidget {
-  const GlassNavBar({super.key, required this.icons, required this.currentIndex, required this.onSelected, this.labels, this.animatedIcons = false, this.docked = false, this.badgeCounts = const {}});
+  const GlassNavBar({
+    super.key,
+    required this.icons,
+    required this.currentIndex,
+    required this.onSelected,
+    this.labels,
+    this.animatedIcons = false,
+    this.docked = false,
+    this.badgeCounts = const {},
+  });
 
   final List<HugeIconData> icons;
   final int currentIndex;
@@ -51,7 +60,14 @@ class GlassNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.appTokens;
     if (docked) {
-      return _DockedBar(icons: icons, labels: labels, currentIndex: currentIndex, onSelected: onSelected, tokens: t, badgeCounts: badgeCounts);
+      return _DockedBar(
+        icons: icons,
+        labels: labels,
+        currentIndex: currentIndex,
+        onSelected: onSelected,
+        tokens: t,
+        badgeCounts: badgeCounts,
+      );
     }
     final hasLabels = labels != null;
     final barHeight = hasLabels ? _labelledBarHeight : _barHeight;
@@ -65,8 +81,18 @@ class GlassNavBar extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(26),
             boxShadow: [
-              BoxShadow(color: t.scrim.withValues(alpha: .18), blurRadius: 30, spreadRadius: -6, offset: const Offset(0, 14)),
-              BoxShadow(color: t.scrim.withValues(alpha: .10), blurRadius: 10, spreadRadius: -2, offset: const Offset(0, 3)),
+              BoxShadow(
+                color: t.scrim.withValues(alpha: .18),
+                blurRadius: 30,
+                spreadRadius: -6,
+                offset: const Offset(0, 14),
+              ),
+              BoxShadow(
+                color: t.scrim.withValues(alpha: .10),
+                blurRadius: 10,
+                spreadRadius: -2,
+                offset: const Offset(0, 3),
+              ),
             ],
           ),
           child: ClipRRect(
@@ -79,7 +105,10 @@ class GlassNavBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: t.surface.withValues(alpha: .9),
                   borderRadius: BorderRadius.circular(26),
-                  border: Border.all(color: t.textPrimary.withValues(alpha: .10), width: 1),
+                  border: Border.all(
+                    color: t.textPrimary.withValues(alpha: .10),
+                    width: 1,
+                  ),
                 ),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
@@ -92,17 +121,23 @@ class GlassNavBar extends StatelessWidget {
                       tween: Tween(end: currentIndex.toDouble()),
                       builder: (context, position, _) {
                         // Widest at the halfway point of a hop, back to rest on arrival.
-                        final travel = (position - position.roundToDouble()).abs() * 2;
+                        final travel =
+                            (position - position.roundToDouble()).abs() * 2;
                         final width = _tileWidth * (1 + (travel * .28));
                         return Stack(
                           children: [
                             Positioned(
                               left: (slot * position) + ((slot - width) / 2),
-                              top: hasLabels ? _tileTop : (barHeight - tileHeight) / 2,
+                              top: hasLabels
+                                  ? _tileTop
+                                  : (barHeight - tileHeight) / 2,
                               width: width,
                               height: tileHeight,
                               child: DecoratedBox(
-                                decoration: BoxDecoration(color: t.accent, borderRadius: BorderRadius.circular(16)),
+                                decoration: BoxDecoration(
+                                  color: t.accent,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                               ),
                             ),
                             Row(
@@ -116,7 +151,8 @@ class GlassNavBar extends StatelessWidget {
                                     selected: index == currentIndex,
                                     animated: animatedIcons,
                                     // Fade tracks the tile, so the icon lights up as it arrives.
-                                    progress: (1 - (position - index).abs()).clamp(0.0, 1.0),
+                                    progress: (1 - (position - index).abs())
+                                        .clamp(0.0, 1.0),
                                     onTap: () => onSelected(index),
                                   ),
                                 ),
@@ -162,13 +198,16 @@ class _NavSlot extends StatefulWidget {
   State<_NavSlot> createState() => _NavSlotState();
 }
 
-class _NavSlotState extends State<_NavSlot> with SingleTickerProviderStateMixin {
+class _NavSlotState extends State<_NavSlot>
+    with SingleTickerProviderStateMixin {
   static const _iconSize = 21.0;
 
   late final AnimationController _controller = AnimationController(vsync: this);
 
   /// Hand-drawn icons play their own scene (master bar only); otherwise plain HugeIcons.
-  late final NavMotionKind? _kind = widget.animated ? navMotionKindFor(widget.icon) : null;
+  late final NavMotionKind? _kind = widget.animated
+      ? navMotionKindFor(widget.icon)
+      : null;
   bool _pressed = false;
 
   @override
@@ -194,8 +233,18 @@ class _NavSlotState extends State<_NavSlot> with SingleTickerProviderStateMixin 
     final kind = _kind;
     if (kind != null) {
       // Grey while the tile is away, the on-accent colour as it arrives.
-      final color = Color.lerp(widget.tokens.textPrimary.withValues(alpha: .5), widget.tokens.accentOn, widget.progress)!;
-      return NavMotionIcon(kind: kind, t: t, color: color, size: _iconSize, day: appToday().day);
+      final color = Color.lerp(
+        widget.tokens.textPrimary.withValues(alpha: .5),
+        widget.tokens.accentOn,
+        widget.progress,
+      )!;
+      return NavMotionIcon(
+        kind: kind,
+        t: t,
+        color: color,
+        size: _iconSize,
+        day: appToday().day,
+      );
     }
     // Two copies cross-fade so the icon recolours while the tile travels.
     return SizedBox(
@@ -206,11 +255,19 @@ class _NavSlotState extends State<_NavSlot> with SingleTickerProviderStateMixin 
         children: [
           Opacity(
             opacity: 1 - widget.progress,
-            child: HugeIcon(icon: widget.icon, color: widget.tokens.textPrimary.withValues(alpha: .5), size: _iconSize),
+            child: HugeIcon(
+              icon: widget.icon,
+              color: widget.tokens.textPrimary.withValues(alpha: .5),
+              size: _iconSize,
+            ),
           ),
           Opacity(
             opacity: widget.progress,
-            child: HugeIcon(icon: widget.icon, color: widget.tokens.accentOn, size: _iconSize),
+            child: HugeIcon(
+              icon: widget.icon,
+              color: widget.tokens.accentOn,
+              size: _iconSize,
+            ),
           ),
         ],
       ),
@@ -226,7 +283,11 @@ class _NavSlotState extends State<_NavSlot> with SingleTickerProviderStateMixin 
         height: widget.label == null ? 40 : GlassNavBar._labelledTileHeight,
         child: Center(
           // 1 is the resting icon, so it is also what an idle slot paints.
-          child: AnimatedBuilder(animation: _controller, builder: (context, _) => _glyph(_controller.isAnimating ? _controller.value : 1)),
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) =>
+                _glyph(_controller.isAnimating ? _controller.value : 1),
+          ),
         ),
       ),
     );
@@ -258,7 +319,11 @@ class _NavSlotState extends State<_NavSlot> with SingleTickerProviderStateMixin 
                       style: TextStyle(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w600,
-                        color: Color.lerp(widget.tokens.textSecondary, widget.tokens.accent, widget.progress),
+                        color: Color.lerp(
+                          widget.tokens.textSecondary,
+                          widget.tokens.accent,
+                          widget.progress,
+                        ),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

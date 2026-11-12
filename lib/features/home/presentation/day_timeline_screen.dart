@@ -11,8 +11,6 @@ class DayTimelineScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
     final tk = language == AppLanguage.tk;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final bookingProvider = context.watch<BookingProvider>();
     final customerProvider = context.watch<CustomerProvider>();
@@ -21,12 +19,18 @@ class DayTimelineScreen extends StatelessWidget {
     bookingProvider.prefetch(day);
     scheduleProvider.prefetchClosedTimes(day);
     final dayAppointments = bookingProvider.onDay(day);
-    final entries = _buildTimeline(
-      dayAppointments,
-      day,
-      scheduleProvider.closedTimesLoaded(day) ? schedule : null,
-      closedTimes: scheduleProvider.closedTimesOn(day),
-    );
+    final entries =
+        _buildTimeline(
+              dayAppointments,
+              day,
+              scheduleProvider.closedTimesLoaded(day) ? schedule : null,
+              closedTimes: scheduleProvider.closedTimesOn(day),
+            )
+            .where(
+              (entry) =>
+                  entry is! _FreeEntry || entry.start.isAfter(DateTime.now()),
+            )
+            .toList();
 
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -41,7 +45,7 @@ class DayTimelineScreen extends StatelessWidget {
           children: [
             _DayTimelineCard(
               tk: tk,
-              title: t(tk: 'ÝAZGYLAR', ru: 'ЗАПИСИ', en: 'BOOKINGS'),
+              title: AppStrings.homeBookings.select(language),
               dateLabel: formatDate(day),
               accent: freeSlotColorDark,
               accentBg: freeSlotBg,
@@ -53,16 +57,10 @@ class DayTimelineScreen extends StatelessWidget {
                       padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
                       child: EmptyState(
                         icon: Icons.event_busy_outlined,
-                        title: t(
-                          tk: 'Bu gün ýazgy ýok',
-                          ru: 'На этот день записей нет',
-                          en: 'No bookings this day',
+                        title: AppStrings.homeNoBookingsThisDay.select(
+                          language,
                         ),
-                        text: t(
-                          tk: 'Boş gün.',
-                          ru: 'Свободный день.',
-                          en: 'A free day.',
-                        ),
+                        text: AppStrings.homeAFreeDay.select(language),
                       ),
                     )
                   : _HomeApptTable(

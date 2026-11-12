@@ -74,7 +74,10 @@ class ClientProfileProvider extends SessionScoped {
 
   /// Saves the name (and nickname when given). Throws `ApiException`.
   Future<void> save({String? name, String? nickname}) async {
-    final me = await _me.updateMe(name: name != null && name != _name ? name : null, nickname: nickname != null && nickname != _nickname ? nickname : null);
+    final me = await _me.updateMe(
+      name: name != null && name != _name ? name : null,
+      nickname: nickname != null && nickname != _nickname ? nickname : null,
+    );
     _onMeChanged(me);
   }
 }

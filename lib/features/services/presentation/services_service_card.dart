@@ -7,10 +7,10 @@ class _ServiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final provider = context.read<ServiceProvider>();
-    final currency = context.watch<AppSettingsProvider>().currencyLabel(language);
+    final currency = context.watch<AppSettingsProvider>().currencyLabel(
+      language,
+    );
     final tokens = context.appTokens;
 
     return AnimatedOpacity(
@@ -23,7 +23,11 @@ class _ServiceCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(22),
           border: Border.all(color: tokens.border),
           boxShadow: [
-            BoxShadow(color: tokens.textPrimary.withValues(alpha: .04), blurRadius: 14, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: tokens.textPrimary.withValues(alpha: .04),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Column(
@@ -44,14 +48,21 @@ class _ServiceCard extends StatelessWidget {
                           left: 6,
                           bottom: 6,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: .6),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              t(tk: 'Gizlin', ru: 'Скрыта', en: 'Hidden'),
-                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white),
+                              AppStrings.servicesHidden2.select(language),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -66,7 +77,12 @@ class _ServiceCard extends StatelessWidget {
                           service.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, height: 1.25, color: tokens.textPrimary),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            height: 1.25,
+                            color: tokens.textPrimary,
+                          ),
                         ),
                         if (service.description.isNotEmpty) ...[
                           const SizedBox(height: 4),
@@ -74,7 +90,11 @@ class _ServiceCard extends StatelessWidget {
                             service.description,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 12, color: tokens.textSecondary, height: 1.35),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: tokens.textSecondary,
+                              height: 1.35,
+                            ),
                           ),
                         ],
                         const SizedBox(height: 10),
@@ -83,18 +103,28 @@ class _ServiceCard extends StatelessWidget {
                           runSpacing: 6,
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
                               decoration: BoxDecoration(
                                 color: tokens.accent.withValues(alpha: .16),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
                                 '${service.price} $currency',
-                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: tokens.textPrimary),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: tokens.textPrimary,
+                                ),
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 9,
+                                vertical: 5,
+                              ),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(color: tokens.border),
@@ -102,11 +132,19 @@ class _ServiceCard extends StatelessWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  AppIcon(Icons.timer_outlined, size: 13, color: tokens.textSecondary),
+                                  AppIcon(
+                                    Icons.timer_outlined,
+                                    size: 13,
+                                    color: tokens.textSecondary,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     '${service.minutes} min',
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: tokens.textSecondary),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: tokens.textSecondary,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -119,7 +157,11 @@ class _ServiceCard extends StatelessWidget {
                 ],
               ),
             ),
-            Divider(height: 1, thickness: 1, color: tokens.border.withValues(alpha: .7)),
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: tokens.border.withValues(alpha: .7),
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
               child: Row(
@@ -139,22 +181,30 @@ class _ServiceCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       service.active
-                          ? t(tk: 'Görünýär', ru: 'Видна', en: 'Visible')
-                          : t(tk: 'Gizlin', ru: 'Скрыта', en: 'Hidden'),
+                          ? AppStrings.servicesVisible2.select(language)
+                          : AppStrings.servicesHidden2.select(language),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
-                        color: service.active ? tokens.success : tokens.textSecondary,
+                        color: service.active
+                            ? tokens.success
+                            : tokens.textSecondary,
                       ),
                     ),
                   ),
                   InkWell(
                     borderRadius: BorderRadius.circular(12),
-                    onTap: () => Navigator.push(context, pageRoute(ServiceFormScreen(service: service))),
+                    onTap: () => Navigator.push(
+                      context,
+                      pageRoute(ServiceFormScreen(service: service)),
+                    ),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: tokens.border),
@@ -162,11 +212,19 @@ class _ServiceCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          AppIcon(Icons.edit_outlined, size: 14, color: tokens.textPrimary),
+                          AppIcon(
+                            Icons.edit_outlined,
+                            size: 14,
+                            color: tokens.textPrimary,
+                          ),
                           const SizedBox(width: 6),
                           Text(
-                            t(tk: 'Üýtget', ru: 'Изменить', en: 'Edit'),
-                            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: tokens.textPrimary),
+                            AppStrings.servicesEdit.select(language),
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: tokens.textPrimary,
+                            ),
                           ),
                         ],
                       ),
@@ -183,9 +241,15 @@ class _ServiceCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: tokens.danger.withValues(alpha: .10),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: tokens.danger.withValues(alpha: .3)),
+                        border: Border.all(
+                          color: tokens.danger.withValues(alpha: .3),
+                        ),
                       ),
-                      child: AppIcon(Icons.delete_outline, size: 16, color: tokens.danger),
+                      child: AppIcon(
+                        Icons.delete_outline,
+                        size: 16,
+                        color: tokens.danger,
+                      ),
                     ),
                   ),
                 ],
@@ -197,24 +261,23 @@ class _ServiceCard extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, SalonService service) async {
+  Future<void> _confirmDelete(
+    BuildContext context,
+    SalonService service,
+  ) async {
     final language = context.read<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final provider = context.read<ServiceProvider>();
     final toast = AppToast.of(context);
     final confirmed = await _showConfirmDialog(
       context,
       icon: Icons.delete_outline,
       danger: true,
-      title: t(tk: 'Hyzmaty pozmaly?', ru: 'Удалить услугу?', en: 'Delete this service?'),
-      message: t(
-        tk: '"${service.name}" hyzmaty sanawdan aýrylar.',
-        ru: '«${service.name}» будет удалена из списка.',
-        en: '"${service.name}" will be removed from the list.',
-      ),
-      confirmLabel: t(tk: 'Poz', ru: 'Удалить', en: 'Delete'),
-      cancelLabel: t(tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
+      title: AppStrings.servicesDeleteThisService.select(language),
+      message: AppStrings.servicesWillBeRemovedFromThe(
+        service.name,
+      ).select(language),
+      confirmLabel: AppStrings.servicesDelete.select(language),
+      cancelLabel: AppStrings.servicesCancel.select(language),
     );
     if (!confirmed) return;
     try {
@@ -244,18 +307,34 @@ class ServiceThumb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (service.imageIsNetwork) {
-      return Image.network(service.imagePath, width: size, height: size, fit: BoxFit.cover, errorBuilder: (_, _, _) => _placeholder(context));
+      return Image.network(
+        service.imagePath,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholder(context),
+      );
     }
     if (service.imageIsAsset) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: Image.asset(service.imagePath, width: size, height: size, fit: BoxFit.cover),
+        child: Image.asset(
+          service.imagePath,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+        ),
       );
     }
     if (service.imagePath.isEmpty) return _placeholder(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
-      child: Image.file(File(service.imagePath), width: size, height: size, fit: BoxFit.cover),
+      child: Image.file(
+        File(service.imagePath),
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+      ),
     );
   }
 
@@ -266,7 +345,11 @@ class ServiceThumb extends StatelessWidget {
     height: size,
     alignment: Alignment.center,
     color: context.appTokens.surfaceElevated,
-    child: AppIcon(Icons.image_outlined, size: (size * .4).clamp(16.0, 32.0), color: context.appTokens.disabled),
+    child: AppIcon(
+      Icons.image_outlined,
+      size: (size * .4).clamp(16.0, 32.0),
+      color: context.appTokens.disabled,
+    ),
   );
 }
 

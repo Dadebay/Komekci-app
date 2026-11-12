@@ -23,8 +23,6 @@ class _CustomersScreenState extends State<CustomersScreen>
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final provider = context.watch<CustomerProvider>();
     final results = provider.visible;
     final canPop = Navigator.of(context).canPop();
@@ -32,7 +30,7 @@ class _CustomersScreenState extends State<CustomersScreen>
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Müşderiler', ru: 'Клиенты', en: 'Customers'),
+        title: AppStrings.homeCustomers.select(language),
         action: Padding(
           padding: const EdgeInsets.only(right: 8),
           child: GestureDetector(
@@ -84,19 +82,29 @@ class _CustomersScreenState extends State<CustomersScreen>
                         child: EmptyState(
                           icon: Icons.people_outline,
                           backgroundColor: tokens.surface,
-                          title: t(tk: 'Müşderi tapylmady', ru: 'Клиенты не найдены', en: 'No customers found'),
-                          text: t(tk: 'Gözlegi ýa-da süzgüçi üýtgediň.', ru: 'Измените поиск или фильтр.', en: 'Try a different search or filter.'),
+                          title: AppStrings.scheduleNoCustomersFound.select(
+                            language,
+                          ),
+                          text: AppStrings.customersTryADifferentSearchOr
+                              .select(language),
                         ),
                       ),
                     )
                   else
                     SliverPadding(
                       // Clears the floating bottom nav bar when this is a tab root.
-                      padding: EdgeInsets.fromLTRB(20, 4, 20, canPop ? 16 : 110),
+                      padding: EdgeInsets.fromLTRB(
+                        20,
+                        4,
+                        20,
+                        canPop ? 16 : 110,
+                      ),
                       sliver: SliverList.builder(
                         itemCount: results.length,
-                        itemBuilder: (_, index) =>
-                            _CustomerCard(customer: results[index], language: language),
+                        itemBuilder: (_, index) => _CustomerCard(
+                          customer: results[index],
+                          language: language,
+                        ),
                       ),
                     ),
                 ],
@@ -128,7 +136,7 @@ class _CustomersScreenState extends State<CustomersScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                pickTr(language, tk: 'Süzgüç', ru: 'Фильтр', en: 'Filter'),
+                AppStrings.homeFilter.select(language),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -136,21 +144,25 @@ class _CustomersScreenState extends State<CustomersScreen>
               ),
               const SizedBox(height: 8),
               ...[
-                (CustomerFilter.all, pickTr(language, tk: 'Ähli', ru: 'Все', en: 'All'), Icons.people_outline),
+                (
+                  CustomerFilter.all,
+                  AppStrings.homeAll.select(language),
+                  Icons.people_outline,
+                ),
                 (CustomerFilter.vip, 'VIP', Icons.emoji_events_outlined),
                 (
                   CustomerFilter.regular,
-                  pickTr(language, tk: 'Hemişelik', ru: 'Постоянные', en: 'Regular'),
+                  AppStrings.customersRegular.select(language),
                   Icons.star_border,
                 ),
                 (
                   CustomerFilter.newClient,
-                  pickTr(language, tk: 'Täze', ru: 'Новые', en: 'New'),
+                  AppStrings.customersNew.select(language),
                   Icons.person_add_alt_1,
                 ),
                 (
                   CustomerFilter.inactive,
-                  pickTr(language, tk: 'Uzak wagt gelmedi', ru: 'Давно не приходили', en: 'Inactive'),
+                  AppStrings.customersInactive.select(language),
                   Icons.history,
                 ),
               ].map(

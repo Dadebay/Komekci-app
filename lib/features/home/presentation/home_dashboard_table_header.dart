@@ -36,12 +36,7 @@ class _ApptListHead extends StatelessWidget {
             const SizedBox(width: 7),
             Expanded(
               child: Text(
-                pickTr(
-                  language,
-                  tk: 'NOBAT TERTIBI',
-                  ru: 'ПОРЯДОК ОЧЕРЕДИ',
-                  en: 'QUEUE ORDER',
-                ).toUpperCase(),
+                AppStrings.homeQueueOrder.select(language).toUpperCase(),
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
@@ -53,8 +48,8 @@ class _ApptListHead extends StatelessWidget {
               ),
             ),
             Text(
-              '$people ${pickTr(language, tk: 'adam', ru: 'чел.', en: 'people')}'
-              '${freeSlots == 0 ? '' : ' · $freeSlots ${pickTr(language, tk: 'boş', ru: 'своб.', en: 'free')}'}',
+              '$people ${AppStrings.homePeople.select(language)}'
+              '${freeSlots == 0 ? '' : ' · $freeSlots ${AppStrings.homeFree.select(language)}'}',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,

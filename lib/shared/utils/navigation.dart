@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 Route<T> pageRoute<T>(Widget screen) => PageRouteBuilder<T>(
   pageBuilder: (_, animation, _) => FadeTransition(

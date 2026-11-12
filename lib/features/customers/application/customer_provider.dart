@@ -32,10 +32,14 @@ class CustomerProvider extends SessionScoped {
   ApiException? get error => _error;
 
   int get allCount => _customers.length;
-  int get vipCount => _customers.where((c) => c.status == CustomerStatus.vip).length;
-  int get regularCount => _customers.where((c) => c.status == CustomerStatus.regular).length;
-  int get newCount => _customers.where((c) => c.status == CustomerStatus.newClient).length;
-  int get inactiveCount => _customers.where((c) => c.isInactive(DateTime.now())).length;
+  int get vipCount =>
+      _customers.where((c) => c.status == CustomerStatus.vip).length;
+  int get regularCount =>
+      _customers.where((c) => c.status == CustomerStatus.regular).length;
+  int get newCount =>
+      _customers.where((c) => c.status == CustomerStatus.newClient).length;
+  int get inactiveCount =>
+      _customers.where((c) => c.isInactive(DateTime.now())).length;
 
   /// Customers after the active filter chip and the search query are applied,
   /// most recently visited first.
@@ -155,7 +159,22 @@ class CustomerProvider extends SessionScoped {
     await _repository.setClientNote(id, note);
     final current = byIdOrNull(id);
     if (current == null) return;
-    _customers = [for (final c in _customers) c.id == id ? c.copyWith(note: note) : c];
+    _customers = [
+      for (final c in _customers) c.id == id ? c.copyWith(note: note) : c,
+    ];
+    notifyListeners();
+  }
+
+  /// Sets the master's label for the client (`PATCH /me/clients/{id}`).
+  Future<void> setStatus(String id, CustomerStatus status) async {
+    final summary = await _repository.setClientStatus(
+      id,
+      Customer.statusToApi(status),
+    );
+    final saved = Customer.parseStatus(summary.status);
+    _customers = [
+      for (final c in _customers) c.id == id ? c.copyWith(status: saved) : c,
+    ];
     notifyListeners();
   }
 

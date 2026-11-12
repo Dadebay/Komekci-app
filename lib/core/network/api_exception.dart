@@ -71,7 +71,11 @@ class ApiException implements Exception {
             if (body['message_${lang.name}'] is String)
               lang.name: body['message_${lang.name}'] as String,
         },
-        details: details is Map<String, dynamic> ? details : const {},
+        details: {
+          if (details is Map<String, dynamic>) ...details,
+          // SMS sign-in answers failures with `{status: failed|expired}`.
+          if (body['status'] is String) 'status': body['status'],
+        },
       );
     }
     return ApiException(

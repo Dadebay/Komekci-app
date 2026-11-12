@@ -8,14 +8,10 @@ class CabinetSettingsScreen extends StatelessWidget {
     final language = context.watch<LanguageProvider>().language;
     final theme = context.watch<ThemeProvider>().selected;
     final tokens = context.appTokens;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
 
     return Scaffold(
       backgroundColor: tokens.surface,
-      appBar: CabinetAppBar(
-        title: t(tk: 'Sazlamalar', ru: 'Настройки', en: 'Settings'),
-      ),
+      appBar: CabinetAppBar(title: AppStrings.profileSettings.select(language)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
@@ -31,19 +27,15 @@ class CabinetSettingsScreen extends StatelessWidget {
                 children: [
                   _CabinetPreferenceTile(
                     icon: Icons.translate_rounded,
-                    title: t(tk: 'Dil', ru: 'Язык', en: 'Language'),
+                    title: AppStrings.profileLanguage.select(language),
                     value: _languageName(language),
                     trailing: LanguageFlag(language: language, size: 22),
                     onTap: () => _showLanguageSheet(context),
                   ),
-                  Divider(
-                    height: 1,
-                    indent: 70,
-                    color: _softLine(tokens),
-                  ),
+                  Divider(height: 1, indent: 70, color: _softLine(tokens)),
                   _CabinetPreferenceTile(
                     icon: Icons.palette_outlined,
-                    title: t(tk: 'Görnüşi', ru: 'Оформление', en: 'Appearance'),
+                    title: AppStrings.profileAppearance.select(language),
                     value: _themeLabel(themeStyleFor(theme), language),
                     trailing: Container(
                       width: 20,

@@ -88,6 +88,13 @@ class Customer {
     return now.difference(last).inDays > 30;
   }
 
+  /// The value `PATCH /me/clients/{id}` expects.
+  static String statusToApi(CustomerStatus status) => switch (status) {
+    CustomerStatus.newClient => 'new',
+    CustomerStatus.regular => 'regular',
+    CustomerStatus.vip => 'vip',
+  };
+
   static CustomerStatus parseStatus(String value) {
     final v = value.toLowerCase();
     if (v.contains('vip')) return CustomerStatus.vip;

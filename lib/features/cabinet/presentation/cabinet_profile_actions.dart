@@ -8,8 +8,19 @@ extension _CabinetProfileActions on _CabinetProfileScreenState {
     final before = [for (final c in _controllers) c.text];
     await profile.refresh();
     if (!mounted) return;
-    final fresh = [profile.name, profile.nickname, profile.address, profile.about, profile.instagram, profile.tiktok];
-    for (var i = _CabinetProfileScreenState._addressIndex; i < _controllers.length; i++) {
+    final fresh = [
+      profile.name,
+      profile.nickname,
+      profile.address,
+      profile.about,
+      profile.instagram,
+      profile.tiktok,
+    ];
+    for (
+      var i = _CabinetProfileScreenState._addressIndex;
+      i < _controllers.length;
+      i++
+    ) {
       if (_controllers[i].text == before[i]) _controllers[i].text = fresh[i];
     }
   }
@@ -32,12 +43,9 @@ extension _CabinetProfileActions on _CabinetProfileScreenState {
     final language = context.read<LanguageProvider>().language;
     final toast = AppToast.of(context);
     if (await showChangePhoneDialog(context)) {
-      toast.success(pickTr(
-              language,
-              tk: 'Telefon belgisi üýtgedildi. Tölegi täze belgiden geçiriň.',
-              ru: 'Номер изменён. Оплачивайте теперь с нового номера.',
-              en: 'Phone number updated. Pay from the new number from now on.',
-            ),);
+      toast.success(
+        AppStrings.cabinetPhoneNumberUpdatedPayFrom.select(language),
+      );
     }
   }
 
@@ -61,5 +69,4 @@ extension _CabinetProfileActions on _CabinetProfileScreenState {
       ),
     );
   }
-
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
 import 'app_icon.dart';
@@ -7,7 +7,14 @@ import 'app_icon.dart';
 /// an optional action. Used for empty search results, empty lists, and (via
 /// [RetryErrorState] / [OfflineState]) for retryable and offline states too.
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.icon, required this.title, required this.text, this.action, this.backgroundColor});
+  const EmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.text,
+    this.action,
+    this.backgroundColor,
+  });
   final IconData icon;
   final String title;
   final String text;
@@ -37,13 +44,21 @@ class EmptyState extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: t.textPrimary),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: t.textPrimary,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
             text,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12.5, color: t.textSecondary, height: 1.4),
+            style: TextStyle(
+              fontSize: 12.5,
+              color: t.textSecondary,
+              height: 1.4,
+            ),
           ),
           if (action != null) ...[const SizedBox(height: 16), action!],
         ],
@@ -141,7 +156,10 @@ class RetryErrorState extends StatelessWidget {
       text: text,
       action: OutlinedButton(
         onPressed: onRetry,
-        style: OutlinedButton.styleFrom(foregroundColor: t.textPrimary, side: BorderSide(color: t.border)),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: t.textPrimary,
+          side: BorderSide(color: t.border),
+        ),
         child: Text(retryLabel),
       ),
     );
@@ -156,7 +174,8 @@ class OfflineState extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => EmptyState(icon: Icons.wifi_off_rounded, title: title, text: text);
+  Widget build(BuildContext context) =>
+      EmptyState(icon: Icons.wifi_off_rounded, title: title, text: text);
 }
 
 /// A single pulsing placeholder block for skeleton loading rows. Plain
@@ -171,9 +190,12 @@ class LoadingSkeleton extends StatefulWidget {
   State<LoadingSkeleton> createState() => _LoadingSkeletonState();
 }
 
-class _LoadingSkeletonState extends State<LoadingSkeleton> with SingleTickerProviderStateMixin {
-  late final _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
-    ..repeat(reverse: true);
+class _LoadingSkeletonState extends State<LoadingSkeleton>
+    with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
 
   @override
   void dispose() {

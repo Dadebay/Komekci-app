@@ -102,12 +102,10 @@ class _PhonePaymentDialogState extends State<_PhonePaymentDialog> {
         final min = formatMoney(_topup?.phoneMinAmount ?? 20);
         final cur = context.read<AppSettingsProvider>().currencyLabel(language);
         setState(
-          () => _pendingMessage = pickTr(
-            language,
-            tk: 'Tölegiňiz gelip ýetdi, emma bir geçirimde iň az $min $cur bolmaly. Balansa goşulmady.',
-            ru: 'Перевод пришёл, но один перевод должен быть не меньше $min $cur. На баланс он не зачислен.',
-            en: 'Your transfer arrived, but a single transfer must be at least $min $cur. It was not added to your balance.',
-          ),
+          () => _pendingMessage = AppStrings.authYourTransferArrivedButA(
+            min,
+            cur,
+          ).select(language),
         );
       } else if (!silent) {
         setState(() => _pendingMessage = null);
@@ -133,8 +131,6 @@ class _PhonePaymentDialogState extends State<_PhonePaymentDialog> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final settings = context.watch<AppSettingsProvider>();
     final cur = settings.currencyLabel(language);
@@ -160,47 +156,25 @@ class _PhonePaymentDialogState extends State<_PhonePaymentDialog> {
     final notes = [
       (
         Icons.savings_outlined,
-        t(tk: 'Iň az möçber', ru: 'Минимальная сумма', en: 'Minimum amount'),
-        t(
-          tk: 'Bir geçirimde iň az $minAmount $cur bolmaly.',
-          ru: 'Один перевод должен быть не меньше $minAmount $cur.',
-          en: 'A single transfer must be at least $minAmount $cur.',
-        ),
+        AppStrings.authMinimumAmount.select(language),
+        AppStrings.authASingleTransferMustBe(minAmount, cur).select(language),
       ),
       (
         Icons.phone_android_outlined,
-        t(tk: 'Haýsy belgiden', ru: 'С какого номера', en: 'From which number'),
-        t(
-          tk: 'Töleg hasaba alnan telefon belgiňizden (${displayPhone(context.read<MasterProfileProvider>().phone)}) geçirilmeli.',
-          ru: 'Перевод нужно делать с вашего номера (${displayPhone(context.read<MasterProfileProvider>().phone)}).',
-          en: 'Send it from your registered number (${displayPhone(context.read<MasterProfileProvider>().phone)}).',
-        ),
+        AppStrings.authFromWhichNumber.select(language),
+        AppStrings.authSendItFromYourRegistered(
+          displayPhone(context.read<MasterProfileProvider>().phone),
+        ).select(language),
       ),
       (
         Icons.atm_outlined,
-        t(
-          tk: 'Bankomat we terminal',
-          ru: 'Банкомат и терминал',
-          en: 'ATM and terminal',
-        ),
-        t(
-          tk: 'Bankomat ýa-da terminal arkaly töleg kabul edilmeýär.',
-          ru: 'Оплата через банкомат или терминал не принимается.',
-          en: 'Payment via ATM or terminal is not accepted.',
-        ),
+        AppStrings.authAtmAndTerminal.select(language),
+        AppStrings.authPaymentViaAtmOrTerminal.select(language),
       ),
       (
         Icons.chat_bubble_outline,
-        t(
-          tk: 'Soraglaryňyz barmy?',
-          ru: 'Есть вопросы?',
-          en: 'Have questions?',
-        ),
-        t(
-          tk: 'Habarlaşmak bölüminden bize ýazyp bilersiňiz.',
-          ru: 'Напишите нам в разделе поддержки.',
-          en: 'You can reach us through the support section.',
-        ),
+        AppStrings.authHaveQuestions.select(language),
+        AppStrings.authYouCanReachUsThrough.select(language),
       ),
     ];
 
@@ -241,11 +215,7 @@ class _PhonePaymentDialogState extends State<_PhonePaymentDialog> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  t(
-                    tk: 'Telefon arkaly töleg',
-                    ru: 'Оплата с телефона',
-                    en: 'Pay by phone',
-                  ),
+                  AppStrings.authPayByPhone.select(language),
                   style: const TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.w700,
@@ -253,11 +223,10 @@ class _PhonePaymentDialogState extends State<_PhonePaymentDialog> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  t(
-                    tk: 'SIM kartyňyzyň balansyndan $amount $cur tutulýar.',
-                    ru: 'С баланса SIM-карты спишется $amount $cur.',
-                    en: '$amount $cur will be deducted from your SIM card balance.',
-                  ),
+                  AppStrings.authWillBeDeductedFromYour(
+                    amount,
+                    cur,
+                  ).select(language),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: tokens.textSecondary,
@@ -274,7 +243,7 @@ class _PhonePaymentDialogState extends State<_PhonePaymentDialog> {
               child: topup == null
                   ? _NotesList(
                       notes: notes,
-                      heading: t(tk: 'ÜNS BERIŇ', ru: 'ВНИМАНИЕ', en: 'NOTE'),
+                      heading: AppStrings.authNote.select(language),
                     )
                   : _TransferInstructions(
                       topup: topup,
@@ -297,16 +266,8 @@ class _PhonePaymentDialogState extends State<_PhonePaymentDialog> {
                 if (topup == null)
                   MasterActionButton(
                     label: _starting
-                        ? t(
-                            tk: 'Garaşyň...',
-                            ru: 'Подождите...',
-                            en: 'Please wait...',
-                          )
-                        : t(
-                            tk: 'Tölegi tassykla',
-                            ru: 'Подтвердить оплату',
-                            en: 'Confirm payment',
-                          ),
+                        ? AppStrings.requestsPleaseWait.select(language)
+                        : AppStrings.authConfirmPayment.select(language),
                     enabled: !_starting,
                     trailingArrow: true,
                     onTap: _start,
@@ -314,23 +275,15 @@ class _PhonePaymentDialogState extends State<_PhonePaymentDialog> {
                 else
                   MasterActionButton(
                     label: _checking
-                        ? t(
-                            tk: 'Barlanýar...',
-                            ru: 'Проверяем...',
-                            en: 'Checking...',
-                          )
-                        : t(
-                            tk: 'Tölegi barla',
-                            ru: 'Проверить оплату',
-                            en: 'Check payment',
-                          ),
+                        ? AppStrings.authChecking.select(language)
+                        : AppStrings.authCheckPayment.select(language),
                     enabled: !_checking,
                     trailingArrow: true,
                     onTap: _check,
                   ),
                 const SizedBox(height: 6),
                 _DialogCancelButton(
-                  label: t(tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
+                  label: AppStrings.servicesCancel.select(language),
                 ),
               ],
             ),

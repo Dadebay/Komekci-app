@@ -29,18 +29,8 @@ String _handleFor(Customer customer) {
 String _scheduleCustomerLabel(CustomerStatus status, AppLanguage language) =>
     switch (status) {
       CustomerStatus.vip => 'VIP',
-      CustomerStatus.regular => pickTr(
-        language,
-        tk: 'Hemişelik',
-        ru: 'Постоянный',
-        en: 'Regular',
-      ),
-      CustomerStatus.newClient => pickTr(
-        language,
-        tk: 'Täze müşderi',
-        ru: 'Новый клиент',
-        en: 'New client',
-      ),
+      CustomerStatus.regular => AppStrings.scheduleRegular.select(language),
+      CustomerStatus.newClient => AppStrings.scheduleNewClient.select(language),
     };
 
 Color _apptStatusBg(AppointmentStatus status, AppThemeTokens tokens) {
@@ -77,39 +67,16 @@ Color _apptStatusColor(AppointmentStatus status, AppThemeTokens tokens) {
   };
 }
 
-String _apptStatusLabel(AppointmentStatus status, AppLanguage language) =>
-    switch (status) {
-      AppointmentStatus.expected => pickTr(
-        language,
-        tk: 'Garaşylýar',
-        ru: 'Ожидание',
-        en: 'Upcoming',
-      ),
-      AppointmentStatus.arrived => pickTr(
-        language,
-        tk: 'Geldi',
-        ru: 'Пришёл',
-        en: 'Arrived',
-      ),
-      AppointmentStatus.completed => pickTr(
-        language,
-        tk: 'Tamamlandy',
-        ru: 'Завершено',
-        en: 'Completed',
-      ),
-      AppointmentStatus.cancelled => pickTr(
-        language,
-        tk: 'Ýatyryldy',
-        ru: 'Отменено',
-        en: 'Cancelled',
-      ),
-      AppointmentStatus.noShow => pickTr(
-        language,
-        tk: 'Gelmedi',
-        ru: 'Не пришёл',
-        en: 'No-show',
-      ),
-    };
+String _apptStatusLabel(
+  AppointmentStatus status,
+  AppLanguage language,
+) => switch (status) {
+  AppointmentStatus.expected => AppStrings.scheduleUpcoming.select(language),
+  AppointmentStatus.arrived => AppStrings.scheduleArrived.select(language),
+  AppointmentStatus.completed => AppStrings.scheduleCompleted.select(language),
+  AppointmentStatus.cancelled => AppStrings.scheduleCancelled.select(language),
+  AppointmentStatus.noShow => AppStrings.scheduleNoShow.select(language),
+};
 
 String _appointmentPhone(Appointment appointment, Customer? customer) {
   final customerPhone = customer?.phone.trim() ?? '';
@@ -117,4 +84,3 @@ String _appointmentPhone(Appointment appointment, Customer? customer) {
       ? customerPhone
       : appointment.clientPhone?.trim() ?? '';
 }
-

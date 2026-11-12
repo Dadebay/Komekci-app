@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// API theme codes. Legacy codes stay valid for existing accounts and servers.
 enum KomekciTheme { ivory, onyx, champagne, rose, blue, gold, red }

@@ -42,19 +42,13 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final focused = _focus.hasFocus;
     final ready = _phoneReady;
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: _MasterSetupHeader(
-        title: t(
-          tk: 'MASTER BELLIGI',
-          ru: 'РЕГИСТРАЦИЯ МАСТЕРА',
-          en: 'MASTER REGISTRATION',
-        ),
+        title: AppStrings.authMasterRegistration.select(language),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -80,11 +74,7 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
               ),
               const SizedBox(height: 22),
               Text(
-                t(
-                  tk: 'Telefon belgiňizi giriziň',
-                  ru: 'Введите номер телефона',
-                  en: 'Enter your phone number',
-                ),
+                AppStrings.authEnterYourPhoneNumber.select(language),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 25,
@@ -95,11 +85,7 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                t(
-                  tk: 'Profiliňizi dolduranyňyzdan soň şu belgä tassyklama kody iberiler.',
-                  ru: 'После заполнения профиля на этот номер придёт код подтверждения.',
-                  en: "We'll text a verification code to this number once your profile is filled in.",
-                ),
+                AppStrings.authWeLlTextAVerification.select(language),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: tokens.textSecondary,
@@ -190,16 +176,8 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
                   padding: const EdgeInsets.only(left: 4),
                   child: Text(
                     ready
-                        ? t(
-                            tk: 'Belgi dogry görünýär',
-                            ru: 'Номер выглядит верно',
-                            en: 'Number looks good',
-                          )
-                        : t(
-                            tk: '8 sanly belgini giriziň',
-                            ru: 'Введите 8 цифр номера',
-                            en: 'Enter the 8-digit number',
-                          ),
+                        ? AppStrings.authNumberLooksGood.select(language)
+                        : AppStrings.authEnterThe8DigitNumber.select(language),
                     style: TextStyle(
                       fontSize: 12.5,
                       color: ready ? tokens.success : tokens.textSecondary,
@@ -217,7 +195,7 @@ class _MasterPhoneScreenState extends State<MasterPhoneScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 14),
           child: MasterActionButton(
-            label: t(tk: 'Dowam et', ru: 'Продолжить', en: 'Continue'),
+            label: AppStrings.onboardingContinue.select(language),
             enabled: ready,
             trailingArrow: true,
             onTap: _continue,

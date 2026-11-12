@@ -162,12 +162,7 @@ Future<DateTime?> _pickAppointmentDateTime(
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  pickTr(
-                    language,
-                    tk: 'Sene we wagt saýlaň',
-                    ru: 'Выберите дату и время',
-                    en: 'Choose a date and time',
-                  ),
+                  AppStrings.scheduleChooseADateAndTime.select(language),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -175,7 +170,7 @@ Future<DateTime?> _pickAppointmentDateTime(
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${pickTr(language, tk: 'Häzirki wagt', ru: 'Текущее время', en: 'Current time')}: ${formatDate(initial)} · ${formatTime(TimeOfDay.fromDateTime(initial))}',
+                  '${AppStrings.scheduleCurrentTime.select(language)}: ${formatDate(initial)} · ${formatTime(TimeOfDay.fromDateTime(initial))}',
                   style: TextStyle(fontSize: 12.5, color: tokens.textSecondary),
                 ),
                 const SizedBox(height: 16),
@@ -210,7 +205,7 @@ Future<DateTime?> _pickAppointmentDateTime(
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  pickTr(language, tk: 'Wagt', ru: 'Время', en: 'Time'),
+                  AppStrings.bookingTime2.select(language),
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -271,12 +266,7 @@ Future<DateTime?> _pickAppointmentDateTime(
                 ),
                 const SizedBox(height: 22),
                 MasterActionButton(
-                  label: pickTr(
-                    language,
-                    tk: 'Tassykla',
-                    ru: 'Подтвердить',
-                    en: 'Confirm',
-                  ),
+                  label: AppStrings.profileConfirm.select(language),
                   enabled: canChoose(selectedTime),
                   leading: Icons.check,
                   onTap: () =>

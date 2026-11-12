@@ -66,7 +66,8 @@ class ClientMastersProvider extends SessionScoped {
 
   /// Exact nickname/phone match; null when [query] is too short. Throws
   /// `MASTER_NOT_FOUND` (404) when nothing matches.
-  Future<MasterBrief?> lookup(String query) => _repository.lookupMaster(query.trim());
+  Future<MasterBrief?> lookup(String query) =>
+      _repository.lookupMaster(query.trim());
 
   Future<ClientConnection> connect(int masterId) async {
     final connection = await _repository.connect(masterId);

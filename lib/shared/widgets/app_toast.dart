@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
 import 'app_icon.dart';
@@ -59,7 +59,9 @@ class AppToast {
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
           duration: const Duration(milliseconds: 3200),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
           content: Row(
             children: [
               Container(

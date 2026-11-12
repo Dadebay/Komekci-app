@@ -195,8 +195,6 @@ class _CardPaymentDialogState extends State<_CardPaymentDialog> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final cur = context.watch<AppSettingsProvider>().currencyLabel(language);
 
@@ -249,21 +247,16 @@ class _CardPaymentDialogState extends State<_CardPaymentDialog> {
             ),
             const SizedBox(height: 14),
             Text(
-              t(
-                tk: 'Bank kartasy bilen töleg',
-                ru: 'Оплата банковской картой',
-                en: 'Pay by bank card',
-              ),
+              AppStrings.authPayByBankCard.select(language),
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(
-              t(
-                tk: '${widget.amount} $cur tölemek üçin banky saýlaň.',
-                ru: 'Выберите банк для оплаты ${widget.amount} $cur.',
-                en: 'Choose a bank to pay ${widget.amount} $cur.',
-              ),
+              AppStrings.authChooseABankToPay(
+                widget.amount,
+                cur,
+              ).select(language),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: tokens.textSecondary,
@@ -299,29 +292,17 @@ class _CardPaymentDialogState extends State<_CardPaymentDialog> {
             const SizedBox(height: 18),
             MasterActionButton(
               label: _busy
-                  ? t(
-                      tk: 'Garaşyň...',
-                      ru: 'Подождите...',
-                      en: 'Please wait...',
-                    )
+                  ? AppStrings.requestsPleaseWait.select(language)
                   : _topup != null
-                  ? t(
-                      tk: 'Tölegi barla',
-                      ru: 'Проверить оплату',
-                      en: 'Check payment',
-                    )
-                  : t(
-                      tk: 'Tölemäge geç',
-                      ru: 'Перейти к оплате',
-                      en: 'Continue to payment',
-                    ),
+                  ? AppStrings.authCheckPayment.select(language)
+                  : AppStrings.authContinueToPayment.select(language),
               enabled: !_busy,
               trailingArrow: true,
               onTap: _topup != null ? _verify : _start,
             ),
             const SizedBox(height: 6),
             _DialogCancelButton(
-              label: t(tk: 'Ýatyr', ru: 'Отмена', en: 'Cancel'),
+              label: AppStrings.servicesCancel.select(language),
             ),
           ],
         ),
@@ -439,7 +420,7 @@ class _CardPaymentPageState extends State<_CardPaymentPage> {
       appBar: AppBar(
         backgroundColor: tokens.surface,
         title: Text(
-          pickTr(language, tk: 'Töleg', ru: 'Оплата', en: 'Payment'),
+          AppStrings.authPayment.select(language),
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         leading: IconButton(

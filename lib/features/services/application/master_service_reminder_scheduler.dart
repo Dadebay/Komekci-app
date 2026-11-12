@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../../core/services/local_notifications_service.dart';
+import '../../../core/localization/app_strings.dart';
 
 /// One local reminder, three days after a master completes registration.
 /// The deadline is stored per account so signing in again never restarts it.
@@ -74,20 +75,8 @@ class MasterServiceReminderScheduler {
       isUtc: true,
     );
     if (!when.isAfter(_now().toUtc())) return;
-    final (title, body) = switch (locale) {
-      'ru' => (
-        'Добавьте свою услугу',
-        'Добавьте услугу в Kömekçi и начните пользоваться приложением.',
-      ),
-      'en' => (
-        'Add your service',
-        'Add a service in Kömekçi and start using the app.',
-      ),
-      _ => (
-        'Hyzmatyňyzy goşuň',
-        'Kömekçide hyzmatyňyzy goşuň we programmanyň mümkinçiliklerinden peýdalanyň.',
-      ),
-    };
+    final title = AppStrings.serviceReminderTitle.selectCode(locale);
+    final body = AppStrings.serviceReminderBody.selectCode(locale);
     await _notifications.scheduleMasterServiceReminder(
       id: _notificationId(payload!),
       title: title,

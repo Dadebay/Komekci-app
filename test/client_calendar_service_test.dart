@@ -26,7 +26,7 @@ void main() {
   test('morning plan entry text follows the app language', () {
     expect(
       booking().dayPlanDescription,
-      startsWith('Şu gün sagat 15:00-da Aydogdy master bilen'),
+      startsWith('Şu gün sagat 15:00-da Aydogdy bilen'),
     );
     expect(
       booking(locale: 'ru').dayPlanDescription,
@@ -83,7 +83,7 @@ void main() {
     expect(
       original.description,
       '14 mart · 17:00–18:00\n'
-      'Ýazgyňyz 17:00-da. Haýyş edýäris, bellenen wagtyňyzda geliň.',
+      'Ýazylan wagtyňyz 17:00. Wagtynda geliň.',
     );
   });
 
@@ -100,7 +100,7 @@ void main() {
     expect(
       booking.description,
       '27 oktýabr · 14:30–15:00\n'
-      'Ýazgyňyz 14:30-da. Haýyş edýäris, bellenen wagtyňyzda geliň.',
+      'Ýazylan wagtyňyz 14:30. Wagtynda geliň.',
     );
   });
 

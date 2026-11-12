@@ -4,10 +4,8 @@ extension _ClientRegistrationSubmit on _ClientRegistrationScreenState {
   String? _validateName(_Tr t) {
     final length = _nameController.text.trim().length;
     if (length < 2 || length > 50) {
-      return t(
-        tk: 'Ady 2-50 harp aralygynda giriziň',
-        ru: 'Имя должно быть от 2 до 50 символов',
-        en: 'Name must be 2-50 characters',
+      return AppStrings.profileNameMustBe250.select(
+        context.read<LanguageProvider>().language,
       );
     }
     return null;
@@ -15,17 +13,13 @@ extension _ClientRegistrationSubmit on _ClientRegistrationScreenState {
 
   String? _validateNickname(_Tr t) {
     if (!nicknamePattern.hasMatch(_nickname)) {
-      return t(
-        tk: '3-20 harp: kiçi harp, san we _ (sanly başlanyp bilmez)',
-        ru: '3-20 символов: строчные буквы, цифры и _ (не с цифры)',
-        en: '3-20 chars: lowercase letters, numbers and _ (no leading digit)',
+      return AppStrings.auth320CharsLowercaseLetters.select(
+        context.read<LanguageProvider>().language,
       );
     }
     if (_nicknameState == _NicknameState.taken) {
-      return t(
-        tk: 'Bu lakam eýesiz däl',
-        ru: 'Этот никнейм уже занят',
-        en: 'This nickname is taken',
+      return AppStrings.authThisNicknameIsTaken.select(
+        context.read<LanguageProvider>().language,
       );
     }
     return null;
@@ -34,10 +28,8 @@ extension _ClientRegistrationSubmit on _ClientRegistrationScreenState {
   String? _validatePhone(_Tr t) {
     final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
     if (digits.length != 8) {
-      return t(
-        tk: 'Telefon belgini dolduryň (8 san)',
-        ru: 'Введите номер полностью (8 цифр)',
-        en: 'Enter the full number (8 digits)',
+      return AppStrings.profileEnterTheFullNumber8.select(
+        context.read<LanguageProvider>().language,
       );
     }
     return null;
@@ -49,10 +41,8 @@ extension _ClientRegistrationSubmit on _ClientRegistrationScreenState {
     final nicknameError = _validateNickname(t);
     final phoneError = _validatePhone(t);
     final photoError = _photo == null
-        ? t(
-            tk: 'Profil suraty hökmany',
-            ru: 'Фото профиля обязательно',
-            en: 'A profile photo is required',
+        ? AppStrings.authAProfilePhotoIsRequired.select(
+            context.read<LanguageProvider>().language,
           )
         : null;
     update(() {
@@ -94,10 +84,8 @@ extension _ClientRegistrationSubmit on _ClientRegistrationScreenState {
           _submitting = false;
           _nicknameState = _NicknameState.taken;
           _nicknameSuggestions = check.suggestions;
-          _nicknameError = t(
-            tk: 'Bu lakam eýesiz däl',
-            ru: 'Этот никнейм уже занят',
-            en: 'This nickname is taken',
+          _nicknameError = AppStrings.authThisNicknameIsTaken.select(
+            context.read<LanguageProvider>().language,
           );
         });
         return;

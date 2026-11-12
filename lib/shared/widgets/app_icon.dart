@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 /// Maps legacy Material icon choices to the app's HugeIcons set.
@@ -117,7 +117,8 @@ class AppIcon extends StatelessWidget {
       Icons.hourglass_top_outlined ||
       Icons.hourglass_top_rounded => HugeIcons.strokeRoundedHourglass,
       Icons.auto_awesome_outlined => HugeIcons.strokeRoundedSparkles,
-      Icons.format_list_numbered => HugeIcons.strokeRoundedLeftToRightListNumber,
+      Icons.format_list_numbered =>
+        HugeIcons.strokeRoundedLeftToRightListNumber,
       _ => HugeIcons.strokeRoundedCircle,
     },
     color: color,

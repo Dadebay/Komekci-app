@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:komekci/core/localization/language_provider.dart';
 import 'package:komekci/features/permissions/application/required_permissions.dart';

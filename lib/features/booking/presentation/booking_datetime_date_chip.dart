@@ -31,25 +31,46 @@ class _DateChip extends StatelessWidget {
             color: selected ? t.textPrimary : t.surface,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: selected ? t.textPrimary : t.border),
-            boxShadow: selected ? [BoxShadow(color: t.textPrimary.withValues(alpha: .22), blurRadius: 12, offset: const Offset(0, 5))] : null,
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: t.textPrimary.withValues(alpha: .22),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
+                    ),
+                  ]
+                : null,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 weekday,
-                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: selected ? t.surface.withValues(alpha: .7) : t.textSecondary),
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: selected
+                      ? t.surface.withValues(alpha: .7)
+                      : t.textSecondary,
+                ),
               ),
               const SizedBox(height: 5),
               Text(
                 '$dayNumber',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: selected ? t.surface : t.textPrimary),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: selected ? t.surface : t.textPrimary,
+                ),
               ),
               const SizedBox(height: 5),
               Container(
                 width: 5,
                 height: 5,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: isToday ? t.accent : Colors.transparent),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isToday ? t.accent : Colors.transparent,
+                ),
               ),
             ],
           ),

@@ -30,7 +30,7 @@ class _TopUpBalanceSummary extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  pickTr(language, tk: 'Balans', ru: 'Баланс', en: 'Balance'),
+                  AppStrings.cabinetBalance.select(language),
                   style: TextStyle(fontSize: 12, color: tokens.textSecondary),
                 ),
                 const SizedBox(height: 4),
@@ -52,12 +52,7 @@ class _TopUpBalanceSummary extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                pickTr(
-                  language,
-                  tk: 'Aýlyk abuna',
-                  ru: 'В месяц',
-                  en: 'Monthly',
-                ),
+                AppStrings.authMonthly.select(language),
                 style: TextStyle(fontSize: 12, color: tokens.textSecondary),
               ),
               const SizedBox(height: 4),
@@ -86,24 +81,18 @@ class _SubscriptionStatusStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final (label, color) = switch (billing.status) {
       SubscriptionStatus.active => (
-        t(tk: 'Abuna işjeň', ru: 'Подписка активна', en: 'Subscription active'),
+        AppStrings.authSubscriptionActive.select(language),
         tokens.success,
       ),
       SubscriptionStatus.grace => (
-        t(tk: 'Töleg wagty ýetdi', ru: 'Пора оплатить', en: 'Payment due'),
+        AppStrings.authPaymentDue.select(language),
         tokens.warning,
       ),
       SubscriptionStatus.suspended => (
-        t(
-          tk: 'Abuna işjeň däl',
-          ru: 'Подписка не активна',
-          en: 'Subscription inactive',
-        ),
+        AppStrings.authSubscriptionInactive.select(language),
         tokens.danger,
       ),
     };
@@ -136,11 +125,7 @@ class _SubscriptionStatusStrip extends StatelessWidget {
                 ),
                 if (until != null)
                   Text(
-                    t(
-                      tk: '${formatDate(until)} çenli',
-                      ru: 'до ${formatDate(until)}',
-                      en: 'until ${formatDate(until)}',
-                    ),
+                    AppStrings.authUntil(formatDate(until)).select(language),
                     style: TextStyle(
                       fontSize: 11.5,
                       color: tokens.textSecondary,
@@ -153,7 +138,7 @@ class _SubscriptionStatusStrip extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                t(tk: 'Balans', ru: 'Баланс', en: 'Balance'),
+                AppStrings.cabinetBalance.select(language),
                 style: TextStyle(fontSize: 11, color: tokens.textSecondary),
               ),
               Text(
@@ -180,25 +165,11 @@ class _PlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final perks = [
-      t(
-        tk: 'Onlaýn ýazgylary kabul ediň',
-        ru: 'Принимайте онлайн-записи',
-        en: 'Accept online bookings',
-      ),
-      t(
-        tk: 'Müşderi bazaňyzy dolandyryň',
-        ru: 'Ведите базу клиентов',
-        en: 'Manage your client list',
-      ),
-      t(
-        tk: 'Iş wagtyňyzy we dynç günlerini sazlaň',
-        ru: 'Настраивайте график и выходные',
-        en: 'Set your hours and days off',
-      ),
+      AppStrings.authAcceptOnlineBookings.select(language),
+      AppStrings.authManageYourClientList.select(language),
+      AppStrings.authSetYourHoursAndDays.select(language),
     ];
     return Container(
       width: double.infinity,
@@ -216,11 +187,7 @@ class _PlanCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  t(
-                    tk: 'MASTER ABUNA',
-                    ru: 'ПОДПИСКА МАСТЕРА',
-                    en: 'MASTER SUBSCRIPTION',
-                  ),
+                  AppStrings.authMasterSubscription.select(language),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -251,7 +218,7 @@ class _PlanCard extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
-                    '$cur / ${t(tk: 'aý', ru: 'мес.', en: 'month')}',
+                    '$cur / ${AppStrings.authMonth.select(language)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

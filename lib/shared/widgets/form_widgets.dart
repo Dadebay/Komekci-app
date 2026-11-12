@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
 import 'app_icon.dart';
@@ -26,18 +26,32 @@ class AppScaffold extends StatelessWidget {
     appBar: AppBar(
       centerTitle: true,
       title: titleInAppBar
-          ? Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700))
+          ? Text(
+              title,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            )
           : null,
-      leading: IconButton(icon: const AppIcon(Icons.arrow_back), onPressed: () => Navigator.maybePop(context)),
+      leading: IconButton(
+        icon: const AppIcon(Icons.arrow_back),
+        onPressed: () => Navigator.maybePop(context),
+      ),
     ),
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
         child: Column(
-          crossAxisAlignment: titleInAppBar ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+          crossAxisAlignment: titleInAppBar
+              ? CrossAxisAlignment.center
+              : CrossAxisAlignment.start,
           children: [
             if (!titleInAppBar)
-              Text(title, style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w700)),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 27,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             if (subtitle != null) ...[
               SizedBox(height: titleInAppBar ? 0 : 7),
               Text(
@@ -56,7 +70,15 @@ class AppScaffold extends StatelessWidget {
 }
 
 class FormScreen extends StatelessWidget {
-  const FormScreen({super.key, required this.title, this.subtitle, required this.fields, required this.action, required this.onAction, this.avatar = false});
+  const FormScreen({
+    super.key,
+    required this.title,
+    this.subtitle,
+    required this.fields,
+    required this.action,
+    required this.onAction,
+    this.avatar = false,
+  });
   final String title;
   final String? subtitle;
   final List<String> fields;
@@ -77,8 +99,14 @@ class FormScreen extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 48,
-                  backgroundColor: context.appTokens.accent.withValues(alpha: .18),
-                  child: AppIcon(Icons.person_outline, size: 42, color: context.appTokens.textPrimary),
+                  backgroundColor: context.appTokens.accent.withValues(
+                    alpha: .18,
+                  ),
+                  child: AppIcon(
+                    Icons.person_outline,
+                    size: 42,
+                    color: context.appTokens.textPrimary,
+                  ),
                 ),
                 Positioned(
                   right: 0,
@@ -86,7 +114,11 @@ class FormScreen extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 16,
                     backgroundColor: context.appTokens.textPrimary,
-                    child: AppIcon(Icons.camera_alt_outlined, size: 16, color: context.appTokens.surface),
+                    child: AppIcon(
+                      Icons.camera_alt_outlined,
+                      size: 16,
+                      color: context.appTokens.surface,
+                    ),
                   ),
                 ),
               ],
@@ -108,7 +140,13 @@ class FormScreen extends StatelessWidget {
 }
 
 class Field extends StatelessWidget {
-  const Field({super.key, required this.label, this.icon, this.controller, this.onChanged});
+  const Field({
+    super.key,
+    required this.label,
+    this.icon,
+    this.controller,
+    this.onChanged,
+  });
   final String label;
   final IconData? icon;
   final TextEditingController? controller;
@@ -118,7 +156,9 @@ class Field extends StatelessWidget {
     controller: controller,
     onChanged: onChanged,
     decoration: InputDecoration(
-      prefixIcon: icon == null ? null : AppIcon(icon!, size: 24, color: context.appTokens.textSecondary),
+      prefixIcon: icon == null
+          ? null
+          : AppIcon(icon!, size: 24, color: context.appTokens.textSecondary),
       prefixIconConstraints: const BoxConstraints(minWidth: 46, minHeight: 0),
       labelText: label,
       floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -127,7 +167,13 @@ class Field extends StatelessWidget {
 }
 
 class SelectRow extends StatelessWidget {
-  const SelectRow({super.key, required this.flag, required this.label, required this.onTap, this.selected = false});
+  const SelectRow({
+    super.key,
+    required this.flag,
+    required this.label,
+    required this.onTap,
+    this.selected = false,
+  });
   final String flag;
   final String label;
   final VoidCallback onTap;
@@ -167,7 +213,11 @@ class MasterAvatar extends StatelessWidget {
   final double radius;
   @override
   Widget build(BuildContext context) {
-    return RoundPhoto(url: url, radius: radius, placeholder: Icons.face_2_outlined);
+    return RoundPhoto(
+      url: url,
+      radius: radius,
+      placeholder: Icons.face_2_outlined,
+    );
   }
 }
 
@@ -178,7 +228,10 @@ class HeroPhoto extends StatelessWidget {
     height: 210,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(24),
-      image: const DecorationImage(image: AssetImage('assets/images/inspiration_02.jpeg'), fit: BoxFit.cover),
+      image: const DecorationImage(
+        image: AssetImage('assets/images/inspiration_02.jpeg'),
+        fit: BoxFit.cover,
+      ),
     ),
   );
 }
@@ -186,18 +239,21 @@ class HeroPhoto extends StatelessWidget {
 /// "+993" shown at the start of a phone field at all times. `prefixText`
 /// only appears once the field is focused or filled, so it is drawn as an
 /// icon-slot widget instead.
-Widget phonePrefix(BuildContext context, {double fontSize = 16, FontWeight weight = FontWeight.w800}) =>
-    Padding(
-      padding: const EdgeInsets.only(left: 16, right: 10),
-      child: Text(
-        '+993',
-        style: TextStyle(
-          color: context.appTokens.textPrimary,
-          fontSize: fontSize,
-          fontWeight: weight,
-        ),
-      ),
-    );
+Widget phonePrefix(
+  BuildContext context, {
+  double fontSize = 16,
+  FontWeight weight = FontWeight.w800,
+}) => Padding(
+  padding: const EdgeInsets.only(left: 16, right: 10),
+  child: Text(
+    '+993',
+    style: TextStyle(
+      color: context.appTokens.textPrimary,
+      fontSize: fontSize,
+      fontWeight: weight,
+    ),
+  ),
+);
 
 const phonePrefixConstraints = BoxConstraints(minWidth: 0, minHeight: 0);
 
@@ -212,23 +268,31 @@ InputDecoration registrationDecoration(
   Widget? suffix,
   bool error = false,
 }) {
-  OutlineInputBorder border(Color color, [double width = 1]) => OutlineInputBorder(
-    borderRadius: BorderRadius.circular(16),
-    borderSide: BorderSide(color: color, width: width),
-  );
+  OutlineInputBorder border(Color color, [double width = 1]) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: color, width: width),
+      );
   return InputDecoration(
     hintText: hint,
     hintStyle: TextStyle(color: tokens.disabled, fontWeight: FontWeight.w400),
     filled: true,
     fillColor: tokens.surfaceElevated,
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
-    prefixIcon: prefix ??
+    prefixIcon:
+        prefix ??
         Padding(
           padding: const EdgeInsets.only(left: 14, right: 10),
-          child: AppIcon(icon, size: 20, color: error ? tokens.danger : tokens.textSecondary),
+          child: AppIcon(
+            icon,
+            size: 20,
+            color: error ? tokens.danger : tokens.textSecondary,
+          ),
         ),
     prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-    suffixIcon: suffix == null ? null : Padding(padding: const EdgeInsets.only(right: 14), child: suffix),
+    suffixIcon: suffix == null
+        ? null
+        : Padding(padding: const EdgeInsets.only(right: 14), child: suffix),
     suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
     enabledBorder: border(error ? tokens.danger : tokens.border),
     focusedBorder: border(error ? tokens.danger : tokens.accent, 1.5),

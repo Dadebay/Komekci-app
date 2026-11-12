@@ -11,46 +11,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final slides = [
       (
-        t(
-          tk: 'Wagtyňyzy tertipli saklaň',
-          ru: 'Ваше время под контролем',
-          en: 'Your time, beautifully organised',
-        ),
-        t(
-          tk: 'Ähli gözellik hyzmatlaryna ýazgylaryňyzy bir ýerde saklaň.',
-          ru: 'Храните все записи на услуги красоты в одном месте.',
-          en: 'Keep every beauty appointment in one private place.',
-        ),
+        AppStrings.onboardingYourTimeBeautifullyOrganised.select(language),
+        AppStrings.onboardingKeepEveryBeautyAppointmentIn.select(language),
         Icons.calendar_month_outlined,
       ),
       (
-        t(
-          tk: 'Öz masterleriňiz',
-          ru: 'Ваш круг мастеров',
-          en: 'Your personal circle',
-        ),
-        t(
-          tk: 'Diňe tanaýan we ynanýan hünärmenleriňize ýazylyň.',
-          ru: 'Записывайтесь только к знакомым и проверенным специалистам.',
-          en: 'Book only with specialists you know and trust.',
-        ),
+        AppStrings.onboardingYourPersonalCircle.select(language),
+        AppStrings.onboardingBookOnlyWithSpecialistsYou.select(language),
         Icons.people_outline,
       ),
       (
-        t(
-          tk: 'Ýazgylaryňyzy sypdyrmaň',
-          ru: 'Не пропускайте записи',
-          en: 'Never miss a booking',
-        ),
-        t(
-          tk: 'Ýatlatmalar we has irki boş wagt barada bildirişler alyň.',
-          ru: 'Получайте напоминания и уведомления о более раннем свободном времени.',
-          en: 'Smart reminders and earlier-slot notifications.',
-        ),
+        AppStrings.onboardingNeverMissABooking.select(language),
+        AppStrings.onboardingSmartRemindersAndEarlierSlot.select(language),
         Icons.notifications_none,
       ),
     ];
@@ -106,8 +80,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               const SizedBox(height: 22),
               PrimaryButton(
                 label: page == 2
-                    ? t(tk: 'Başla', ru: 'Начать', en: 'Get started')
-                    : t(tk: 'Dowam et', ru: 'Продолжить', en: 'Continue'),
+                    ? AppStrings.onboardingGetStarted.select(language)
+                    : AppStrings.onboardingContinue.select(language),
                 onTap: () {
                   if (page == 2) {
                     Navigator.pushReplacement(
@@ -124,7 +98,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   context,
                   pageRoute(const RoleScreen()),
                 ),
-                child: Text(t(tk: 'Geç', ru: 'Пропустить', en: 'Skip')),
+                child: Text(AppStrings.onboardingSkip.select(language)),
               ),
             ],
           ),

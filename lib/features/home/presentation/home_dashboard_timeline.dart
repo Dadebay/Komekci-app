@@ -88,7 +88,7 @@ class _DayTimelineCardState extends State<_DayTimelineCard> {
                     ),
                   ),
                   Text(
-                    '${widget.count} ${pickTr(context.watch<LanguageProvider>().language, tk: "adam", ru: "человек", en: "people")}',
+                    '${widget.count} ${AppStrings.homePeople2.select(context.watch<LanguageProvider>().language)}',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -166,6 +166,17 @@ class _HomeApptTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Flip [_useTimelineQueueDesign] to false to get the original rows back.
+    if (_useTimelineQueueDesign) {
+      return _HomeQueueTimeline(
+        entries: entries,
+        customers: customers,
+        language: language,
+        onTapAppointment: onTapAppointment,
+        onTapFree: onTapFree,
+        onTapClosed: onTapClosed,
+      );
+    }
     final busy = entries.whereType<_ApptEntry>().length;
     final free = entries.whereType<_FreeEntry>().length;
     return Column(

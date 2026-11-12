@@ -139,8 +139,6 @@ class _OtpScreenState extends State<OtpScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final shownPhone = displayPhone(widget.phone);
     final countdown =
@@ -165,11 +163,7 @@ class _OtpScreenState extends State<OtpScreen> {
               AppIcon(Icons.sms_outlined, size: 72, color: tokens.accent),
               const SizedBox(height: 18),
               Text(
-                t(
-                  tk: 'Belgiňizi tassyklaň',
-                  ru: 'Подтвердите номер',
-                  en: 'Verify your number',
-                ),
+                AppStrings.authVerifyYourNumber.select(language),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 25,
@@ -179,11 +173,7 @@ class _OtpScreenState extends State<OtpScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                t(
-                  tk: '6 sanly kody şu belgä iberdik',
-                  ru: 'Мы отправили 6-значный код на номер',
-                  en: 'We sent a 6-digit code to',
-                ),
+                AppStrings.authWeSentA6Digit.select(language),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: tokens.textSecondary,
@@ -203,11 +193,7 @@ class _OtpScreenState extends State<OtpScreen> {
               TextButton(
                 onPressed: () => Navigator.maybePop(context),
                 child: Text(
-                  t(
-                    tk: 'Belgini üýtgetmek',
-                    ru: 'Изменить номер',
-                    en: 'Change number',
-                  ),
+                  AppStrings.authChangeNumber.select(language),
                   style: TextStyle(
                     color: tokens.accent,
                     fontSize: 13,
@@ -259,11 +245,7 @@ class _OtpScreenState extends State<OtpScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    t(
-                      tk: 'Kody täzeden ibermek: $countdown',
-                      ru: 'Отправить код повторно: $countdown',
-                      en: 'Resend code in $countdown',
-                    ),
+                    AppStrings.authResendCodeIn(countdown).select(language),
                     style: TextStyle(
                       fontSize: 12.5,
                       color: tokens.textSecondary,
@@ -277,16 +259,8 @@ class _OtpScreenState extends State<OtpScreen> {
                   icon: AppIcon(Icons.refresh, size: 18, color: tokens.accent),
                   label: Text(
                     _resending
-                        ? t(
-                            tk: 'Iberilýär...',
-                            ru: 'Отправка...',
-                            en: 'Sending...',
-                          )
-                        : t(
-                            tk: 'Kody täzeden iber',
-                            ru: 'Отправить код снова',
-                            en: 'Resend code',
-                          ),
+                        ? AppStrings.authSending.select(language)
+                        : AppStrings.profileResendCode.select(language),
                     style: TextStyle(
                       color: tokens.accent,
                       fontWeight: FontWeight.w700,
@@ -304,8 +278,8 @@ class _OtpScreenState extends State<OtpScreen> {
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 14),
           child: PrimaryButton(
             label: _verifying
-                ? t(tk: 'Barlanýar...', ru: 'Проверка...', en: 'Verifying...')
-                : t(tk: 'Tassykla', ru: 'Подтвердить', en: 'Verify'),
+                ? AppStrings.authVerifying.select(language)
+                : AppStrings.authVerify2.select(language),
             loading: _verifying,
             onTap: _codeReady ? _verify : () => _focus.requestFocus(),
           ),

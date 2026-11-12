@@ -16,7 +16,10 @@ const uploadLimitBytes = 1000 * 1024;
 /// JPEG copy re-encoded at a lower quality and, if that is not enough,
 /// smaller dimensions until it fits. Falls back to the original file if the
 /// image cannot be decoded.
-Future<File> compressImageUnder(File file, {int maxBytes = maxUploadBytes}) async {
+Future<File> compressImageUnder(
+  File file, {
+  int maxBytes = maxUploadBytes,
+}) async {
   if (await file.length() <= maxBytes) return file;
   final bytes = await file.readAsBytes();
   final shrunk = await Isolate.run(() => shrinkJpeg(bytes, maxBytes));
@@ -42,7 +45,9 @@ Uint8List? shrinkJpeg(Uint8List bytes, int maxBytes) {
   while (edge >= 480) {
     final image = _fit(source, edge);
     for (final quality in const [85, 75, 65, 55, 45]) {
-      final encoded = Uint8List.fromList(img.encodeJpg(image, quality: quality));
+      final encoded = Uint8List.fromList(
+        img.encodeJpg(image, quality: quality),
+      );
       best = encoded;
       if (encoded.length <= maxBytes) return encoded;
     }
@@ -55,6 +60,14 @@ img.Image _fit(img.Image source, int edge) {
   final longest = source.width > source.height ? source.width : source.height;
   if (longest <= edge) return source;
   return source.width >= source.height
-      ? img.copyResize(source, width: edge, interpolation: img.Interpolation.average)
-      : img.copyResize(source, height: edge, interpolation: img.Interpolation.average);
+      ? img.copyResize(
+          source,
+          width: edge,
+          interpolation: img.Interpolation.average,
+        )
+      : img.copyResize(
+          source,
+          height: edge,
+          interpolation: img.Interpolation.average,
+        );
 }

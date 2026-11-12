@@ -20,8 +20,6 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final notifications = context.watch<NotificationProvider>();
     final auth = context.watch<AuthProvider>();
@@ -32,18 +30,14 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: t(tk: 'Bildirişler', ru: 'Уведомления', en: 'Notifications'),
+        title: AppStrings.profileNotifications.select(language),
         action: notifications.unreadCount == 0
             ? null
             : TextButton(
                 onPressed: () =>
                     context.read<NotificationProvider>().markAllRead(),
                 child: Text(
-                  t(
-                    tk: 'Ählisini okal',
-                    ru: 'Прочитать все',
-                    en: 'Mark all read',
-                  ),
+                  AppStrings.profileMarkAllRead.select(language),
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
@@ -63,15 +57,9 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
               if (!auth.isMaster) ...[
                 _NotificationPrefRow(
                   icon: Icons.calendar_month_outlined,
-                  title: t(
-                    tk: 'Duşuşyk ýatlatmalary',
-                    ru: 'Напоминания о записи',
-                    en: 'Booking reminders',
-                  ),
-                  subtitle: t(
-                    tk: 'Duşuşykdan 1 sagat öň ýatlat',
-                    ru: 'Напомнить за час до визита',
-                    en: 'Remind me one hour before my appointment',
+                  title: AppStrings.profileBookingReminders.select(language),
+                  subtitle: AppStrings.profileRemindMeOneHourBefore.select(
+                    language,
                   ),
                   value: pref('reminders'),
                   onChanged: (value) =>
@@ -79,15 +67,9 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                 ),
                 _NotificationPrefRow(
                   icon: Icons.schedule_outlined,
-                  title: t(
-                    tk: 'Has irki wagt',
-                    ru: 'Более раннее время',
-                    en: 'Earlier slots',
-                  ),
-                  subtitle: t(
-                    tk: 'Has irki wagt boşanda habar ber',
-                    ru: 'Сообщать, когда освободится время пораньше',
-                    en: 'Tell me when an earlier time opens up',
+                  title: AppStrings.profileEarlierSlots.select(language),
+                  subtitle: AppStrings.profileTellMeWhenAnEarlier.select(
+                    language,
                   ),
                   value: pref('earlier_slot'),
                   onChanged: (value) =>
@@ -95,15 +77,9 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                 ),
                 _NotificationPrefRow(
                   icon: Icons.chat_bubble_outline,
-                  title: t(
-                    tk: 'Master habarlary',
-                    ru: 'Сообщения мастера',
-                    en: 'Master messages',
-                  ),
-                  subtitle: t(
-                    tk: 'Masterlerden gelýän habarlar',
-                    ru: 'Сообщения от ваших мастеров',
-                    en: 'Messages from your masters',
+                  title: AppStrings.profileMasterMessages.select(language),
+                  subtitle: AppStrings.profileMessagesFromYourMasters.select(
+                    language,
                   ),
                   value: pref('master_messages'),
                   onChanged: (value) =>
@@ -115,11 +91,7 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      t(
-                        tk: 'Soňky bildirişler',
-                        ru: 'Последние уведомления',
-                        en: 'Recent notifications',
-                      ),
+                      AppStrings.profileRecentNotifications.select(language),
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
@@ -138,7 +110,7 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        '${notifications.unreadCount} ${t(tk: 'täze', ru: 'новых', en: 'new')}',
+                        '${notifications.unreadCount} ${AppStrings.profileNew.select(language)}',
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w700,
@@ -157,35 +129,20 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                       )
                     : notifications.error != null
                     ? RetryErrorState(
-                        title: t(
-                          tk: 'Bildirişleri ýükläp bolmady',
-                          ru: 'Не удалось загрузить уведомления',
-                          en: 'Could not load notifications',
-                        ),
-                        text: t(
-                          tk: 'Baglanyşygy barlap, täzeden synanyşyň.',
-                          ru: 'Проверьте соединение и попробуйте ещё раз.',
-                          en: 'Check your connection and try again.',
-                        ),
-                        retryLabel: t(
-                          tk: 'Täzeden synanyş',
-                          ru: 'Повторить',
-                          en: 'Try again',
-                        ),
+                        title: AppStrings.profileCouldNotLoadNotifications
+                            .select(language),
+                        text: AppStrings.profileCheckYourConnectionAndTry
+                            .select(language),
+                        retryLabel: AppStrings.profileTryAgain.select(language),
                         onRetry: notifications.load,
                       )
                     : EmptyState(
                         icon: Icons.notifications_none,
-                        title: t(
-                          tk: 'Heniz bildiriş ýok',
-                          ru: 'Уведомлений пока нет',
-                          en: 'No notifications yet',
+                        title: AppStrings.profileNoNotificationsYet.select(
+                          language,
                         ),
-                        text: t(
-                          tk: 'Täze bildirişler şu ýerde peýda bolar.',
-                          ru: 'Новые уведомления появятся здесь.',
-                          en: 'New notifications will appear here.',
-                        ),
+                        text: AppStrings.profileNewNotificationsWillAppearHere
+                            .select(language),
                       )
               else ...[
                 ...notifications.items.map(
@@ -198,23 +155,15 @@ class ClientNotificationSettingsScreen extends StatelessWidget {
                         : notifications.loadMore,
                     child: Text(
                       notifications.loadingMore
-                          ? t(
-                              tk: 'Ýüklenýär...',
-                              ru: 'Загрузка...',
-                              en: 'Loading...',
-                            )
-                          : t(
-                              tk: 'Köpräk görkez',
-                              ru: 'Показать ещё',
-                              en: 'Show more',
-                            ),
+                          ? AppStrings.billingLoading.select(language)
+                          : AppStrings.billingShowMore.select(language),
                     ),
                   ),
               ],
               if (auth.isMaster) ...[
                 const SizedBox(height: 28),
                 Text(
-                  t(tk: 'Sazlamalar', ru: 'Настройки', en: 'Settings'),
+                  AppStrings.profileSettings.select(language),
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -253,16 +202,9 @@ class _NotificationPrefRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: tokens.surfaceElevated,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: tokens.border),
-        boxShadow: [
-          BoxShadow(
-            color: tokens.textPrimary.withValues(alpha: .07),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
       // ListTile needs a Material ancestor between it and the decorated
       // Container, otherwise Flutter warns that splashes may be invisible.

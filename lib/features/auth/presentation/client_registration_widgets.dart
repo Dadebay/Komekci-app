@@ -126,36 +126,44 @@ class _PhoneTakenDialogState extends State<_PhoneTakenDialog> {
       _busy = true;
       _message = null;
     });
+    // Clients sign in by texting a code (see SmsOtpScreen).
+    final SmsOtpChallenge? challenge;
     try {
-      await auth.requestOtp(widget.phone);
+      challenge = await auth.requestSmsOtp(widget.phone);
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _busy = false;
         _message =
             error is ApiException && error.code == ApiErrors.phoneNotFound
-            ? pickTr(
-                language,
-                tk: 'Bu belgi bilen hasap açylypdyr, ýöne tassyklanmandyr. Goldaw bilen habarlaşyň.',
-                ru: 'Аккаунт с этим номером создан, но не подтверждён. Обратитесь в поддержку.',
-                en: 'An account with this number was started but never confirmed. Please contact support.',
-              )
+            ? AppStrings.authAnAccountWithThisNumber.select(language)
             : apiErrorMessage(error, language);
       });
       return;
     }
     if (!mounted) return;
+    if (challenge == null) {
+      navigator.pushAndRemoveUntil(
+        pageRoute(homeForAccount(auth.me!)),
+        (route) => false,
+      );
+      return;
+    }
     navigator.pop();
     navigator.push(
-      pageRoute(OtpScreen(phone: widget.phone, nextBuilder: homeForAccount)),
+      pageRoute(
+        SmsOtpScreen(
+          phone: widget.phone,
+          challenge: challenge,
+          nextBuilder: homeForAccount,
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -185,11 +193,7 @@ class _PhoneTakenDialogState extends State<_PhoneTakenDialog> {
             ),
             const SizedBox(height: 18),
             Text(
-              t(
-                tk: 'Bu belgi eýýäm hasaba alnypdyr',
-                ru: 'Этот номер уже зарегистрирован',
-                en: 'This number is already registered',
-              ),
+              AppStrings.authThisNumberIsAlreadyRegistered.select(language),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 17.5,
@@ -214,11 +218,7 @@ class _PhoneTakenDialogState extends State<_PhoneTakenDialog> {
             ),
             const SizedBox(height: 12),
             Text(
-              t(
-                tk: 'Täze hasap açmak mümkin däl. Şol hasaba SMS kod bilen girip bilersiňiz.',
-                ru: 'Создать новый аккаунт нельзя. Вы можете войти в существующий по SMS-коду.',
-                en: 'A new account cannot be created. You can sign in to the existing one with an SMS code.',
-              ),
+              AppStrings.authANewAccountCannotBe.select(language),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13.5,
@@ -257,11 +257,7 @@ class _PhoneTakenDialogState extends State<_PhoneTakenDialog> {
                         ),
                       )
                     : Text(
-                        t(
-                          tk: 'Şu belgi bilen giriş',
-                          ru: 'Войти по этому номеру',
-                          en: 'Sign in with this number',
-                        ),
+                        AppStrings.authSignInWithThisNumber.select(language),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -274,11 +270,7 @@ class _PhoneTakenDialogState extends State<_PhoneTakenDialog> {
             TextButton(
               onPressed: _busy ? null : () => Navigator.pop(context),
               child: Text(
-                t(
-                  tk: 'Başga belgi ulan',
-                  ru: 'Другой номер',
-                  en: 'Use another number',
-                ),
+                AppStrings.authUseAnotherNumber.select(language),
                 style: TextStyle(color: tokens.textSecondary),
               ),
             ),
@@ -319,20 +311,17 @@ class _PhoneTakenNoticeState extends State<PhoneTakenNotice> {
       _busy = true;
       _message = null;
     });
+    // Clients sign in by texting a code (see SmsOtpScreen).
+    final SmsOtpChallenge? challenge;
     try {
-      await auth.requestOtp(widget.phone);
+      challenge = await auth.requestSmsOtp(widget.phone);
     } catch (error) {
       if (!mounted) return;
       setState(() {
         _busy = false;
         _message =
             error is ApiException && error.code == ApiErrors.phoneNotFound
-            ? pickTr(
-                language,
-                tk: 'Bu belgi bilen hasap açylypdyr, ýöne tassyklanmandyr. Goldaw bilen habarlaşyň.',
-                ru: 'Аккаунт с этим номером создан, но не подтверждён. Обратитесь в поддержку.',
-                en: 'An account with this number was started but never confirmed. Please contact support.',
-              )
+            ? AppStrings.authAnAccountWithThisNumber.select(language)
             : apiErrorMessage(error, language);
       });
       return;
@@ -340,17 +329,28 @@ class _PhoneTakenNoticeState extends State<PhoneTakenNotice> {
     if (!mounted) return;
     setState(() => _busy = false);
     widget.beforeSignIn?.call();
+    if (challenge == null) {
+      Navigator.of(context).pushAndRemoveUntil(
+        pageRoute(homeForAccount(auth.me!)),
+        (route) => false,
+      );
+      return;
+    }
     Navigator.push(
       context,
-      pageRoute(OtpScreen(phone: widget.phone, nextBuilder: homeForAccount)),
+      pageRoute(
+        SmsOtpScreen(
+          phone: widget.phone,
+          challenge: challenge,
+          nextBuilder: homeForAccount,
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     return Container(
       margin: const EdgeInsets.only(top: 10),
@@ -364,11 +364,7 @@ class _PhoneTakenNoticeState extends State<PhoneTakenNotice> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            t(
-              tk: 'Bu belgi bilen hasap eýýäm bar. Şol hasaba girip bilersiňiz.',
-              ru: 'С этим номером уже есть аккаунт. Вы можете войти в него.',
-              en: 'An account with this number already exists. You can sign in to it.',
-            ),
+            AppStrings.authAnAccountWithThisNumber2.select(language),
             style: const TextStyle(fontSize: 13, height: 1.4),
           ),
           const SizedBox(height: 10),
@@ -389,13 +385,7 @@ class _PhoneTakenNoticeState extends State<PhoneTakenNotice> {
                         color: tokens.surface,
                       ),
                     )
-                  : Text(
-                      t(
-                        tk: 'Şu belgi bilen giriş',
-                        ru: 'Войти по этому номеру',
-                        en: 'Sign in with this number',
-                      ),
-                    ),
+                  : Text(AppStrings.authSignInWithThisNumber.select(language)),
             ),
           ),
           if (_message != null) _FieldError(_message!),

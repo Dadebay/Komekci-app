@@ -5,7 +5,8 @@ class _MasterNotificationToggle extends StatefulWidget {
   final Map<String, bool> prefs;
 
   @override
-  State<_MasterNotificationToggle> createState() => _MasterNotificationToggleState();
+  State<_MasterNotificationToggle> createState() =>
+      _MasterNotificationToggleState();
 }
 
 class _MasterNotificationToggleState extends State<_MasterNotificationToggle> {
@@ -21,10 +22,7 @@ class _MasterNotificationToggleState extends State<_MasterNotificationToggle> {
       _pendingValue = value;
       _saving = true;
     });
-    final updated = {
-      ...widget.prefs,
-      for (final code in _codes) code: value,
-    };
+    final updated = {...widget.prefs, for (final code in _codes) code: value};
     await runApi(
       context,
       () => context.read<AuthProvider>().updateNotificationPrefs(updated),
@@ -39,21 +37,12 @@ class _MasterNotificationToggleState extends State<_MasterNotificationToggle> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     return _NotificationPrefRow(
       icon: Icons.notifications_active_outlined,
-      title: t(
-        tk: 'Ähli bildiriş görnüşleri',
-        ru: 'Все типы уведомлений',
-        en: 'All notification types',
-      ),
-      subtitle: t(
-        tk: 'Hemmesini bir wagtda aç ýa-da öçür',
-        ru: 'Включить или выключить все сразу',
-        en: 'Turn every type on or off at once',
-      ),
-      value: _pendingValue ?? _codes.every((code) => widget.prefs[code] ?? true),
+      title: AppStrings.profileAllNotificationTypes.select(language),
+      subtitle: AppStrings.profileTurnEveryTypeOnOr.select(language),
+      value:
+          _pendingValue ?? _codes.every((code) => widget.prefs[code] ?? true),
       onChanged: _saving ? null : _setAll,
     );
   }

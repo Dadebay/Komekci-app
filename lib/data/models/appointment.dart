@@ -23,6 +23,7 @@ class Appointment {
     this.source = 'online',
     this.noShowSuggested = false,
     this.lateMinutes,
+    this.clientPhotoUrl,
   });
   final String id;
   final String clientName;
@@ -45,6 +46,9 @@ class Appointment {
 
   final int? serviceId;
   final String? clientPhone;
+
+  /// The client's profile photo, when they have one.
+  final String? clientPhotoUrl;
 
   /// `online` (client booked) or `manual` (master typed it in).
   final String source;
@@ -75,6 +79,7 @@ class Appointment {
     note: a.note ?? '',
     serviceId: a.service.id,
     clientPhone: a.client.phone,
+    clientPhotoUrl: a.client.photoUrl,
     source: a.source,
     noShowSuggested: a.noShowSuggested,
     lateMinutes: a.lateMinutes,
@@ -100,6 +105,7 @@ class Appointment {
     notifyEarlierSlot: notifyEarlierSlot,
     serviceId: serviceId,
     clientPhone: clientPhone,
+    clientPhotoUrl: clientPhotoUrl,
     source: source,
     noShowSuggested: noShowSuggested,
     lateMinutes: lateMinutes,

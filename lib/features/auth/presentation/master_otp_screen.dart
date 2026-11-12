@@ -145,15 +145,13 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
   @override
   Widget build(BuildContext context) {
     final language = context.watch<LanguageProvider>().language;
-    String t({required String tk, required String ru, required String en}) =>
-        pickTr(language, tk: tk, ru: ru, en: en);
     final tokens = context.appTokens;
     final countdown =
         '${(_secondsLeft ~/ 60).toString().padLeft(2, '0')}:${(_secondsLeft % 60).toString().padLeft(2, '0')}';
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: _MasterSetupHeader(
-        title: t(tk: 'TASSYKLAMA', ru: 'ПОДТВЕРЖДЕНИЕ', en: 'VERIFICATION'),
+        title: AppStrings.authVerification.select(language),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -164,11 +162,7 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
               const _MasterProgressIndicator(step: 3),
               const SizedBox(height: 34),
               Text(
-                t(
-                  tk: 'Telefon belgiňizi tassyklaň',
-                  ru: 'Подтвердите номер телефона',
-                  en: 'Verify your phone number',
-                ),
+                AppStrings.authVerifyYourPhoneNumber.select(language),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 24,
@@ -186,11 +180,7 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
                   ),
                   children: [
                     TextSpan(
-                      text: t(
-                        tk: 'Size SMS arkaly iberilen 6 belgili kody giriziň.\n',
-                        ru: 'Введите 6-значный код из SMS.\n',
-                        en: 'Enter the 6-digit code sent to you by SMS.\n',
-                      ),
+                      text: AppStrings.authEnterThe6DigitCode.select(language),
                     ),
                     TextSpan(
                       text: displayPhone(widget.phone),
@@ -223,22 +213,14 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
               Row(
                 children: [
                   Text(
-                    t(
-                      tk: 'Kod gelmedi?',
-                      ru: 'Код не пришёл?',
-                      en: "Didn't get a code?",
-                    ),
+                    AppStrings.authDidnTGetACode.select(language),
                     style: TextStyle(color: tokens.textSecondary, fontSize: 13),
                   ),
                   const SizedBox(width: 6),
                   GestureDetector(
                     onTap: _secondsLeft == 0 ? _resend : null,
                     child: Text(
-                      t(
-                        tk: 'Kody täzeden iber',
-                        ru: 'Отправить снова',
-                        en: 'Resend',
-                      ),
+                      AppStrings.authResend.select(language),
                       style: TextStyle(
                         color: _secondsLeft == 0
                             ? tokens.accent
@@ -262,12 +244,8 @@ class _MasterOtpScreenState extends State<MasterOtpScreen> {
               const SizedBox(height: 26),
               MasterActionButton(
                 label: _verifying
-                    ? t(
-                        tk: 'Barlanýar...',
-                        ru: 'Проверка...',
-                        en: 'Verifying...',
-                      )
-                    : t(tk: 'Tassyklaň', ru: 'Подтвердить', en: 'Verify'),
+                    ? AppStrings.authVerifying.select(language)
+                    : AppStrings.authVerify.select(language),
                 enabled: _codeReady && !_verifying,
                 onTap: _verify,
               ),

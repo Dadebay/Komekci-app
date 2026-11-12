@@ -59,12 +59,7 @@ class _WeekOverviewScreenState extends State<WeekOverviewScreen> {
     return Scaffold(
       backgroundColor: tokens.surface,
       appBar: CabinetAppBar(
-        title: pickTr(
-          language,
-          tk: 'Hepde görnüşi',
-          ru: 'Недельный вид',
-          en: 'Week view',
-        ),
+        title: AppStrings.scheduleWeekView2.select(language),
         action: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -283,4 +278,3 @@ class _WeekStrip extends StatelessWidget {
     );
   }
 }
-

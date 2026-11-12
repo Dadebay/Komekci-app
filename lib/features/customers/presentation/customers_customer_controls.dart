@@ -29,12 +29,7 @@ class _CustomerControls extends StatelessWidget {
                 Expanded(
                   child: _SearchField(
                     controller: searchController,
-                    hint: pickTr(
-                      language,
-                      tk: 'Müşderi gözlemek',
-                      ru: 'Поиск клиента',
-                      en: 'Search customers',
-                    ),
+                    hint: AppStrings.customersSearchCustomers.select(language),
                     onChanged: provider.setQuery,
                     backgroundColor: tokens.surface,
                   ),
@@ -103,7 +98,7 @@ class _StatGrid extends StatelessWidget {
           padding: const EdgeInsets.only(right: 8),
           child: _StatCard(
             icon: Icons.people_outline,
-            label: pickTr(language, tk: 'Ähli', ru: 'Все', en: 'All'),
+            label: AppStrings.homeAll.select(language),
             value: provider.allCount,
             color: context.appTokens.textPrimary,
             selected: provider.filter == CustomerFilter.all,
@@ -125,12 +120,7 @@ class _StatGrid extends StatelessWidget {
           padding: const EdgeInsets.only(right: 8),
           child: _StatCard(
             icon: Icons.star_border,
-            label: pickTr(
-              language,
-              tk: 'Hemişelik',
-              ru: 'Постоянные',
-              en: 'Regular',
-            ),
+            label: AppStrings.customersRegular.select(language),
             value: provider.regularCount,
             color: _statusColor(CustomerStatus.regular, context.appTokens),
             selected: provider.filter == CustomerFilter.regular,
@@ -141,7 +131,7 @@ class _StatGrid extends StatelessWidget {
           padding: const EdgeInsets.only(right: 8),
           child: _StatCard(
             icon: Icons.person_add_alt_1,
-            label: pickTr(language, tk: 'Täze', ru: 'Новые', en: 'New'),
+            label: AppStrings.customersNew.select(language),
             value: provider.newCount,
             color: _statusColor(CustomerStatus.newClient, context.appTokens),
             selected: provider.filter == CustomerFilter.newClient,

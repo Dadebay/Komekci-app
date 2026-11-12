@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import '../../core/localization/app_strings.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/localization/language_provider.dart';
@@ -10,36 +11,24 @@ import '../widgets/app_toast.dart';
 String apiErrorMessage(Object error, AppLanguage language) {
   if (error is ApiException) {
     if (error.isNetwork) {
-      return pickTr(
-        language,
-        tk: 'Internet baglanyşygy ýok. Täzeden synanyşyň.',
-        ru: 'Нет соединения с интернетом. Попробуйте снова.',
-        en: 'No internet connection. Please try again.',
-      );
+      return AppStrings.sharedNoInternetConnectionPleaseTry.select(language);
     }
-    if (error.code == ApiErrors.rateLimited && error.retryAfterSeconds != null) {
+    if (error.code == ApiErrors.rateLimited &&
+        error.retryAfterSeconds != null) {
       final s = error.retryAfterSeconds!;
-      return pickTr(
-        language,
-        tk: 'Gaty köp synanyşyk. $s sekuntdan soň täzeden synanyşyň.',
-        ru: 'Слишком часто. Повторите через $s сек.',
-        en: 'Too many attempts. Try again in $s s.',
-      );
+      return AppStrings.sharedTooManyAttemptsTryAgain(s).select(language);
     }
     return error.localized(language);
   }
-  return pickTr(
-    language,
-    tk: 'Näbelli ýalňyşlyk. Täzeden synanyşyň.',
-    ru: 'Неизвестная ошибка. Попробуйте снова.',
-    en: 'Something went wrong. Please try again.',
-  );
+  return AppStrings.sharedSomethingWentWrongPleaseTry.select(language);
 }
 
 /// `+993` + the eight digits found in [input] (any spacing/prefix).
 String toApiPhone(String input) {
   var digits = input.replaceAll(RegExp(r'\D'), '');
-  if (digits.startsWith('993') && digits.length > 8) digits = digits.substring(3);
+  if (digits.startsWith('993') && digits.length > 8) {
+    digits = digits.substring(3);
+  }
   return '+993$digits';
 }
 
@@ -66,7 +55,10 @@ String? socialUrl(String input, {required String host, bool atPrefix = false}) {
 
 /// Runs [action]; an `ApiException` (or any failure) is shown as a snackbar
 /// in the user's language. Resolves true when the action succeeded.
-Future<bool> runApi(BuildContext context, Future<void> Function() action) async {
+Future<bool> runApi(
+  BuildContext context,
+  Future<void> Function() action,
+) async {
   final language = context.read<LanguageProvider>().language;
   final toast = AppToast.of(context);
   try {
